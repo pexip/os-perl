@@ -1,0 +1,35 @@
+From 92d5b181336581ee7e1a30a510287d7f9b4cffdd Mon Sep 17 00:00:00 2001
+From: Dominic Hargreaves <dom@earth.li>
+Date: Sun, 27 Nov 2011 16:33:54 +0000
+Subject: Disable failing GNU/Hurd tests cpan/autodie/t/recv.t
+
+These tests currently fail on GNU/Hurd, so disable them
+
+Bug-Debian: http://bugs.debian.org/650095
+
+Patch-Name: debian/hurd_test_skip_recv.diff
+---
+ cpan/autodie/t/recv.t |    8 +++++++-
+ 1 files changed, 7 insertions(+), 1 deletions(-)
+
+diff --git a/cpan/autodie/t/recv.t b/cpan/autodie/t/recv.t
+index cfaa679..6d432a4 100644
+--- a/cpan/autodie/t/recv.t
++++ b/cpan/autodie/t/recv.t
+@@ -1,9 +1,15 @@
+ #!/usr/bin/perl -w
+ use strict;
+-use Test::More tests => 8;
++use Test::More;
+ use Socket;
+ use autodie qw(socketpair);
+ 
++if ($^O eq 'gnu') {
++    plan skip_all => 'fails on GNU/Hurd (Debian #650095)';
++} else {
++    plan tests => 8;
++}
++
+ # All of this code is based around recv returning an empty
+ # string when it gets data from a local machine (using AF_UNIX),
+ # but returning an undefined value on error.  Fatal/autodie

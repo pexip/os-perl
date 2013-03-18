@@ -1,0 +1,28 @@
+From ccdda2f5cd1844f4e968070d191b6c321cd13236 Mon Sep 17 00:00:00 2001
+From: Dominic Hargreaves <dom@earth.li>
+Date: Sun, 27 Nov 2011 16:38:05 +0000
+Subject: Disable failing GNU/Hurd tests dist/threads/t/libc.t
+
+These tests currently fail on GNU/Hurd, so disable them
+
+Bug-Debian: http://bugs.debian.org/650097
+
+Patch-Name: debian/hurd_test_skip_libc.diff
+---
+ dist/threads/t/libc.t |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
+
+diff --git a/dist/threads/t/libc.t b/dist/threads/t/libc.t
+index 4f6f6ed..ec074f6 100644
+--- a/dist/threads/t/libc.t
++++ b/dist/threads/t/libc.t
+@@ -8,6 +8,9 @@ BEGIN {
+     if (! $Config{'useithreads'}) {
+         skip_all(q/Perl not compiled with 'useithreads'/);
+     }
++    if ($^O eq 'gnu') {
++        skip_all(q|fails on GNU/Hurd (Debian #650097)|);
++    }
+ 
+     plan(11);
+ }
