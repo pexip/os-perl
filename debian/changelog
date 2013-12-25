@@ -1,3 +1,9 @@
+perl (5.14.2-6ubuntu2.3pexip1) pexip; urgency=low
+
+  * Prepare Pexip packaging
+
+ -- John-Mark Bell <jmb@pexip.com>  Wed, 25 Dec 2013 01:31:15 +0000
+
 perl (5.14.2-6ubuntu2.3) precise-security; urgency=low
 
   * SECURITY UPDATE: algorithmic complexity attack on hash keys

@@ -1,9 +1,10 @@
 Source: perl
 Section: perl
 Priority: standard
-Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
+Maintainer: Pexip AS <packaging@pexip.com>
+XSBC-Pexip-Original-Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
 XSBC-Original-Maintainer: Niko Tyni <ntyni@debian.org>
-Uploaders: Dominic Hargreaves <dom@earth.li>
+XSBC-Pexip-Original-Uploaders: Dominic Hargreaves <dom@earth.li>
 Standards-Version: 3.9.2
 Build-Depends: file, cpio (>= 2.6-5), libdb-dev, libgdbm-dev, netbase [!hurd-any],
  gcc (>= 4:4.2), procps [!hurd-any], zlib1g-dev | libz-dev, libbz2-dev,
@@ -11,6 +12,7 @@ Build-Depends: file, cpio (>= 2.6-5), libdb-dev, libgdbm-dev, netbase [!hurd-any
 Build-Conflicts: libterm-readline-gnu-perl (<< 1.17), libfile-sharedir-perl
 Vcs-Git: git://anonscm.debian.org/perl/perl.git
 Vcs-Browser: http://anonscm.debian.org/gitweb/?p=perl/perl.git
+XS-Pexip-Upstream: http://archive.ubuntu.com/ubuntu/ precise
 
 Package: perl-base
 Essential: yes
