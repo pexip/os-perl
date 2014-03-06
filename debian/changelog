@@ -1,8 +1,19 @@
-perl (5.14.2-6ubuntu2.3pexip1) pexip; urgency=low
+perl (5.14.2-6ubuntu2.4pexip1) pexip; urgency=low
 
   * Prepare Pexip packaging
 
- -- John-Mark Bell <jmb@pexip.com>  Wed, 25 Dec 2013 01:31:15 +0000
+ -- John-Mark Bell <jmb@pexip.com>  Thu, 06 Mar 2014 09:52:19 +0000
+
+perl (5.14.2-6ubuntu2.4) precise-security; urgency=medium
+
+  * SECURITY UPDATE: arbitrary command execution via _compile function in
+    Maketext.pm
+    - debian/patches/CVE-2012-6329.patch: escape backslashes and reject
+      method names with colons or apostrophes in
+      dist/Locale-Maketext/lib/Locale/Maketext.pm.
+    - CVE-2012-6329
+
+ -- Marc Deslauriers <marc.deslauriers@ubuntu.com>  Tue, 04 Feb 2014 16:02:26 -0500
 
 perl (5.14.2-6ubuntu2.3) precise-security; urgency=low
 
