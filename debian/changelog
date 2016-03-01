@@ -1,3 +1,22 @@
+perl (5.14.2-6ubuntu2.5) precise-security; urgency=medium
+
+  * SECURITY UPDATE: denial of service via regular expression invalid
+    backreference
+    - debian/patches/CVE-2013-7422.patch: properly handle big
+      backreferences in regcomp.c.
+    - CVE-2013-7422
+  * SECURITY UPDATE: denial of service in Data::Dumper
+    - debian/patches/CVE-2014-4330.patch: limit recursion in MANIFEST,
+      dist/Data-Dumper/Dumper.pm, dist/Data-Dumper/Dumper.xs,
+      dist/Data-Dumper/t/recurse.t.
+    - CVE-2014-4330
+  * SECURITY UPDATE: environment variable confusion issue
+    - debian/patches/CVE-2016-2381.patch: remove duplicate environment
+      variables from environ in perl.c.
+    - CVE-2016-2381
+
+ -- Marc Deslauriers <marc.deslauriers@ubuntu.com>  Tue, 01 Mar 2016 11:02:10 -0500
+
 perl (5.14.2-6ubuntu2.4) precise-security; urgency=medium
 
   * SECURITY UPDATE: arbitrary command execution via _compile function in

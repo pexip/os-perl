@@ -55,3 +55,6 @@ fixes/CVE-2012-5195.diff
 fixes/CVE-2012-5526.diff
 CVE-2013-1667.patch
 CVE-2012-6329.patch
+CVE-2013-7422.patch
+CVE-2014-4330.patch
+CVE-2016-2381.patch
