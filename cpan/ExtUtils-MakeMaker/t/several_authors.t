@@ -8,7 +8,11 @@ BEGIN {
 }
 
 use strict;
-use Test::More tests => 18;
+use Config;
+use Test::More
+    $ENV{PERL_CORE} && $Config{'usecrosscompile'}
+    ? (skip_all => "no toolchain installed when cross-compiling")
+    : (tests => 20);
 
 use TieOut;
 use MakeMaker::Test::Utils;
@@ -37,9 +41,7 @@ END {
 ok( chdir $MakeMaker::Test::Setup::SAS::dirname, "entering dir $MakeMaker::Test::Setup::SAS::dirname" ) ||
     diag("chdir failed: $!");
 
-{
-    # ----- argument verification -----
-
+note "argument verification"; {
     my $stdout = tie *STDOUT, 'TieOut';
     ok( $stdout, 'capturing stdout' );
     my $warnings = '';
@@ -59,9 +61,7 @@ ok( chdir $MakeMaker::Test::Setup::SAS::dirname, "entering dir $MakeMaker::Test:
 }
 
 
-{
-    # ----- argument verification -----
-
+note "argument verification via CONFIGURE"; {
     my $stdout = tie *STDOUT, 'TieOut';
     ok( $stdout, 'capturing stdout' );
     my $warnings = '';
@@ -72,7 +72,7 @@ ok( chdir $MakeMaker::Test::Setup::SAS::dirname, "entering dir $MakeMaker::Test:
     eval {
         WriteMakefile(
             NAME             => 'Multiple::Authors',
-            CONFIGURE => sub { 
+            CONFIGURE => sub {
                return {AUTHOR => 'John Doe <jd@example.com>',};
             },
         );
@@ -83,8 +83,7 @@ ok( chdir $MakeMaker::Test::Setup::SAS::dirname, "entering dir $MakeMaker::Test:
 }
 
 
-# ----- generated files verification -----
-{
+note "generated files verification"; {
     unlink $makefile;
     my @mpl_out = run(qq{$perl Makefile.PL});
     END { unlink $makefile, makefile_backup() }
@@ -94,8 +93,7 @@ ok( chdir $MakeMaker::Test::Setup::SAS::dirname, "entering dir $MakeMaker::Test:
 }
 
 
-# ----- ppd output -----
-{
+note "ppd output"; {
     my $ppd_file = 'Multiple-Authors.ppd';
     my @make_out = run(qq{$make ppd});
     END { unlink $ppd_file }
@@ -110,21 +108,34 @@ ok( chdir $MakeMaker::Test::Setup::SAS::dirname, "entering dir $MakeMaker::Test:
 }
 
 
-# ----- META.yml output -----
-{
+note "META.yml output"; {
     my $distdir  = 'Multiple-Authors-0.05';
     $distdir =~ s{\.}{_}g if $Is_VMS;
 
     my $meta_yml = "$distdir/META.yml";
+    my $meta_json = "$distdir/META.json";
     my @make_out    = run(qq{$make metafile});
     END { rmtree $distdir }
 
     cmp_ok( $?, '==', 0, 'Make metafile exiting normally' ) || diag(@make_out);
-    my $meta = slurp($meta_yml);
-    ok( defined($meta),  '  META.yml present' );
 
-    like( $meta, qr{\nauthor:\n\s+- John Doe <jd\@example.com>\n\s+- Jane Doe <jd\@example.com>\n},
-                         '  META.yml content good');
+    for my $case (
+        ['META.yml', $meta_yml],
+        ['META.json', $meta_json],
+    ) {
+        my ($label, $meta_name) = @$case;
+        ok(
+          my $obj = eval {
+            CPAN::Meta->load_file($meta_name, {lazy_validation => 0})
+          },
+          "$label validates"
+        );
+        is_deeply( [ $obj->authors ],
+          [
+            q{John Doe <jd@example.com>},
+            q{Jane Doe <jd@example.com>},
+          ],
+          "$label content good"
+        );
+    }
 }
-
-__END__

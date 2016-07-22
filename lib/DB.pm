@@ -38,17 +38,17 @@ BEGIN {
 
   $DB::package = '';    # current package space
   $DB::filename = '';   # current filename
-  $DB::subname = '';    # currently executing sub (fullly qualified name)
+  $DB::subname = '';    # currently executing sub (fully qualified name)
   $DB::lineno = '';     # current line number
 
-  $DB::VERSION = $DB::VERSION = '1.03';
+  $DB::VERSION = $DB::VERSION = '1.07';
 
   # initialize private globals to avoid warnings
 
   $running = 1;         # are we running, or are we stopped?
   @stack = (0);
   @clients = ();
-  $deep = 100;
+  $deep = 1000;
   $ready = 0;
   @saved = ();
   @skippkg = ();
@@ -258,7 +258,7 @@ sub backtrace {
     } elsif ($s eq '(eval)') {
       $s = "eval {...}";
     }
-    $f = "file `$f'" unless $f eq '-e';
+    $f = "file '$f'" unless $f eq '-e';
     push @ret, "$w&$s$a from $f line $l";
     last if $DB::signal;
   }
@@ -559,7 +559,8 @@ DB - programmatic interface to the Perl debugging API
     CLIENT->register()      # register a client package name
     CLIENT->done()          # de-register from the debugging API
     CLIENT->skippkg('hide::hide')  # ask DB not to stop in this package
-    CLIENT->cont([WHERE])       # run some more (until BREAK or another breakpt)
+    CLIENT->cont([WHERE])       # run some more (until BREAK or 
+                                # another breakpointt)
     CLIENT->step()              # single step
     CLIENT->next()              # step over
     CLIENT->ret()               # return from current subroutine
@@ -588,7 +589,8 @@ DB - programmatic interface to the Perl debugging API
     CLIENT->stop(FILE,LINE) # when execution stops
     CLIENT->idle()          # while stopped (can be a client event loop)
     CLIENT->cleanup()       # just before exit
-    CLIENT->output(LIST)    # called to print any output that API must show
+    CLIENT->output(LIST)    # called to print any output that
+                            # the API must show
 
 =head1 DESCRIPTION
 

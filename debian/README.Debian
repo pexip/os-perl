@@ -6,18 +6,14 @@ Perl Packages for Debian
   perl-modules     - Core Perl modules.
   perl-doc         - Perl documentation.
   perl-debug       - Debug-enabled Perl interpreter.
-  libperl5.14      - Shared Perl library.
+  libperl5.20      - Shared Perl library.
   libperl-dev      - Perl library: development files.
-  libcgi-fast-perl - CGI::Fast Perl module.
 
 To provide a minimal working perl, the ``perl-base'' package provides
 the /usr/bin/perl binary plus a basic set of libraries.
 
 The remainder of the application is included in the perl, perl-modules
 and perl-doc packages.
-
-libcgi-fast-perl has been split from -modules as it depends on
-libfcgi-perl.
 
 See the 'README.source' file in the perl source package for information
 on building the package.

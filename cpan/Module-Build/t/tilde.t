@@ -46,7 +46,8 @@ SKIP: {
 
     unless (defined $home) {
       my @info = eval { getpwuid $> };
-      skip "No home directory for tilde-expansion tests", 15 if $@;
+      skip "No home directory for tilde-expansion tests", 15 if $@
+        or !defined $info[7];
       $home = $info[7];
     }
 
@@ -95,17 +96,18 @@ SKIP: {
 # Again, with named users
 SKIP: {
     my @info = eval { getpwuid $> };
-    skip "No home directory for tilde-expansion tests", 1 if $@;
+    skip "No home directory for tilde-expansion tests", 1 if $@
+        or !defined $info[7] or !defined $info[0];
     my ($me, $home) = @info[0,7];
 
-    my $expected = "$home/fooxzy";
-
     if ($^O eq 'VMS') {
-        # Convert the path to UNIX format and trim off the trailing slash
-        $home = VMS::Filespec::unixify($home);
+        # Convert the path to UNIX format and trim off the trailing slash.
+        # Also, the fake module we're in has mangled $ENV{HOME} for its own
+        # purposes; getpwuid doesn't know about that but _detildefy does.
+        $home = VMS::Filespec::unixify($ENV{HOME});
         $home =~ s#/$##;
-        $expected = $home . '/../[^/]+' . '/fooxzy';
     }
+    my $expected = "$home/fooxzy";
 
     like( run_sample( $p => "~$me/fooxzy")->$p(),  qr(\Q$expected\E)i );
 }

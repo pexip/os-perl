@@ -5,6 +5,7 @@ BEGIN {
 }
 
 use strict;
+use warnings;
 
 use Test::More;
 use File::Spec;
@@ -12,12 +13,11 @@ use File::Spec;
 use App::Prove;
 use Getopt::Long;
 
-use TAP::Parser::Utils qw( split_shell );
+use Text::ParseWords qw(shellwords);
 
 package FakeProve;
-use vars qw( @ISA );
 
-@ISA = qw( App::Prove );
+use base qw( App::Prove );
 
 sub new {
     my $class = shift;
@@ -1086,10 +1086,10 @@ BEGIN {    # START PLAN
         },
 
         # Specify an oddball extension
-        {   name => 'Switch --ext=.wango',
-            switches => [ '--ext=.wango' ],
-            expect => { extensions => ['.wango'] },
-            runlog => [
+        {   name     => 'Switch --ext=.wango',
+            switches => ['--ext=.wango'],
+            expect   => { extensions => ['.wango'] },
+            runlog   => [
                 [   '_runtests',
                     {   verbosity  => 0,
                         show_count => 1,
@@ -1100,10 +1100,10 @@ BEGIN {    # START PLAN
         },
 
         # Handle multiple extensions
-        {   name => 'Switch --ext=.foo --ext=.bar',
+        {   name     => 'Switch --ext=.foo --ext=.bar',
             switches => [ '--ext=.foo', '--ext=.bar', ],
-            expect => { extensions => ['.foo','.bar'] },
-            runlog => [
+            expect   => { extensions => [ '.foo', '.bar' ] },
+            runlog   => [
                 [   '_runtests',
                     {   verbosity  => 0,
                         show_count => 1,
@@ -1157,10 +1157,10 @@ BEGIN {    # START PLAN
                 sources => {
                     Perl     => { foo => 'bar baz', avg => 0.278 },
                     MyCustom => {},
-                    File => {
+                    File     => {
                         extensions => [ '.txt', '.tmp' ],
-                        hash => { this => 'that', foo => 'bar'},
-                        sep => 'foo=bar',
+                        hash => { this => 'that', foo => 'bar' },
+                        sep  => 'foo=bar',
                     },
                 },
             },
@@ -1169,10 +1169,10 @@ BEGIN {    # START PLAN
                     {   sources => {
                             Perl     => { foo => 'bar baz', avg => 0.278 },
                             MyCustom => {},
-                            File => {
+                            File     => {
                                 extensions => [ '.txt', '.tmp' ],
-                                hash => { this => 'that', foo => 'bar'},
-                                sep => 'foo=bar',
+                                hash => { this => 'that', foo => 'bar' },
+                                sep  => 'foo=bar',
                             },
                         },
                         verbosity  => 0,
@@ -1627,7 +1627,7 @@ for my $test (@SCHEDULE) {
 
                 # adapt our expectations if HARNESS_PERL_SWITCHES is set
                 push @{ $runlog->[0][1]{switches} },
-                  split_shell( $ENV{HARNESS_PERL_SWITCHES} )
+                  shellwords( $ENV{HARNESS_PERL_SWITCHES} )
                   if $ENV{HARNESS_PERL_SWITCHES};
 
                 unless (

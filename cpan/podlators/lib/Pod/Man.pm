@@ -1,12 +1,5 @@
 # Pod::Man -- Convert POD data to formatted *roff input.
 #
-# Copyright 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-#     2010 Russ Allbery <rra@stanford.edu>
-# Substantial contributions by Sean Burke <sburke@cpan.org>
-#
-# This program is free software; you may redistribute it and/or modify it
-# under the same terms as Perl itself.
-#
 # This module translates POD documentation into *roff markup using the man
 # macro set, and is intended for converting POD documents written as Unix
 # manual pages to manual pages that can be read by the man(1) command.  It is
@@ -17,6 +10,13 @@
 # maintained outside of the Perl core as part of the podlators.  Please send
 # me any patches at the address above in addition to sending them to the
 # standard Perl mailing lists.
+#
+# Copyright 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
+#     2010, 2012, 2013 Russ Allbery <rra@stanford.edu>
+# Substantial contributions by Sean Burke <sburke@cpan.org>
+#
+# This program is free software; you may redistribute it and/or modify it
+# under the same terms as Perl itself.
 
 ##############################################################################
 # Modules and declarations
@@ -36,7 +36,7 @@ use Pod::Simple ();
 
 @ISA = qw(Pod::Simple);
 
-$VERSION = '2.25';
+$VERSION = '2.28';
 
 # Set the debugging level.  If someone has inserted a debug function into this
 # class already, use that.  Otherwise, use any Pod::Simple debug function
@@ -56,6 +56,27 @@ BEGIN { *ASCII = \&Pod::Simple::ASCII }
 # Pretty-print a data structure.  Only used for debugging.
 BEGIN { *pretty = \&Pod::Simple::pretty }
 
+# Formatting instructions for various types of blocks.  cleanup makes hyphens
+# hard, adds spaces between consecutive underscores, and escapes backslashes.
+# convert translates characters into escapes.  guesswork means to apply the
+# transformations done by the guesswork sub.  literal says to protect literal
+# quotes from being turned into UTF-8 quotes.  By default, all transformations
+# are on except literal, but some elements override.
+#
+# DEFAULT specifies the default settings.  All other elements should list only
+# those settings that they are overriding.  Data indicates =for roff blocks,
+# which should be passed along completely verbatim.
+#
+# Formatting inherits negatively, in the sense that if the parent has turned
+# off guesswork, all child elements should leave it off.
+my %FORMATTING = (
+    DEFAULT  => { cleanup => 1, convert => 1, guesswork => 1, literal => 0 },
+    Data     => { cleanup => 0, convert => 0, guesswork => 0, literal => 0 },
+    Verbatim => {                             guesswork => 0, literal => 1 },
+    C        => {                             guesswork => 0, literal => 1 },
+    X        => { cleanup => 0,               guesswork => 0               },
+);
+
 ##############################################################################
 # Object initialization
 ##############################################################################
@@ -73,8 +94,8 @@ sub new {
     $self->nbsp_for_S (1);
 
     # Tell Pod::Simple to keep whitespace whenever possible.
-    if ($self->can ('preserve_whitespace')) {
-        $self->preserve_whitespace (1);
+    if (my $preserve_whitespace = $self->can ('preserve_whitespace')) {
+        $self->$preserve_whitespace (1);
     } else {
         $self->fullstop_space_harden (1);
     }
@@ -93,11 +114,30 @@ sub new {
     %$self = (%$self, @_);
 
     # Send errors to stderr if requested.
-    if ($$self{stderr}) {
+    if ($$self{stderr} and not $$self{errors}) {
+        $$self{errors} = 'stderr';
+    }
+    delete $$self{stderr};
+
+    # Validate the errors parameter and act on it.
+    if (not defined $$self{errors}) {
+        $$self{errors} = 'pod';
+    }
+    if ($$self{errors} eq 'stderr' || $$self{errors} eq 'die') {
         $self->no_errata_section (1);
         $self->complain_stderr (1);
-        delete $$self{stderr};
+        if ($$self{errors} eq 'die') {
+            $$self{complain_die} = 1;
+        }
+    } elsif ($$self{errors} eq 'pod') {
+        $self->no_errata_section (0);
+        $self->complain_stderr (0);
+    } elsif ($$self{errors} eq 'none') {
+        $self->no_whining (1);
+    } else {
+        croak (qq(Invalid errors setting: "$$self{errors}"));
     }
+    delete $$self{errors};
 
     # Initialize various other internal constants based on our arguments.
     $self->init_fonts;
@@ -238,8 +278,7 @@ sub _handle_text {
 # Given an element name, get the corresponding method name.
 sub method_for_element {
     my ($self, $element) = @_;
-    $element =~ tr/-/_/;
-    $element =~ tr/A-Z/a-z/;
+    $element =~ tr/A-Z-/a-z_/;
     $element =~ tr/_a-z0-9//cd;
     return $element;
 }
@@ -265,13 +304,14 @@ sub _handle_element_start {
         # and also depends on our parent tags.  Thankfully, inside tags that
         # turn off guesswork and reformatting, nothing else can turn it back
         # on, so this can be strictly inherited.
-        my $formatting = $$self{PENDING}[-1][1];
-        $formatting = $self->formatting ($formatting, $element);
+        my $formatting = {
+            %{ $$self{PENDING}[-1][1] || $FORMATTING{DEFAULT} },
+            %{ $FORMATTING{$element} || {} },
+        };
         push (@{ $$self{PENDING} }, [ $attrs, $formatting, '' ]);
         DEBUG > 4 and print "Pending: [", pretty ($$self{PENDING}), "]\n";
-    } elsif ($self->can ("start_$method")) {
-        my $method = 'start_' . $method;
-        $self->$method ($attrs, '');
+    } elsif (my $start_method = $self->can ("start_$method")) {
+        $self->$start_method ($attrs, '');
     } else {
         DEBUG > 2 and print "No $method start method, skipping\n";
     }
@@ -287,13 +327,12 @@ sub _handle_element_end {
 
     # If we have a command handler, pull off the pending text and pass it to
     # the handler along with the saved attribute hash.
-    if ($self->can ("cmd_$method")) {
+    if (my $cmd_method = $self->can ("cmd_$method")) {
         DEBUG > 2 and print "</$element> stops saving a tag\n";
         my $tag = pop @{ $$self{PENDING} };
         DEBUG > 4 and print "Popped: [", pretty ($tag), "]\n";
         DEBUG > 4 and print "Pending: [", pretty ($$self{PENDING}), "]\n";
-        my $method = 'cmd_' . $method;
-        my $text = $self->$method ($$tag[0], $$tag[2]);
+        my $text = $self->$cmd_method ($$tag[0], $$tag[2]);
         if (defined $text) {
             if (@{ $$self{PENDING} } > 1) {
                 $$self{PENDING}[-1][2] .= $text;
@@ -301,9 +340,8 @@ sub _handle_element_end {
                 $self->output ($text);
             }
         }
-    } elsif ($self->can ("end_$method")) {
-        my $method = 'end_' . $method;
-        $self->$method ();
+    } elsif (my $end_method = $self->can ("end_$method")) {
+        $self->$end_method ();
     } else {
         DEBUG > 2 and print "No $method end method, skipping\n";
     }
@@ -312,34 +350,6 @@ sub _handle_element_end {
 ##############################################################################
 # General formatting
 ##############################################################################
-
-# Return formatting instructions for a new block.  Takes the current
-# formatting and the new element.  Formatting inherits negatively, in the
-# sense that if the parent has turned off guesswork, all child elements should
-# leave it off.  We therefore return a copy of the same formatting
-# instructions but possibly with more things turned off depending on the
-# element.
-sub formatting {
-    my ($self, $current, $element) = @_;
-    my %options;
-    if ($current) {
-        %options = %$current;
-    } else {
-        %options = (guesswork => 1, cleanup => 1, convert => 1);
-    }
-    if ($element eq 'Data') {
-        $options{guesswork} = 0;
-        $options{cleanup} = 0;
-        $options{convert} = 0;
-    } elsif ($element eq 'X') {
-        $options{guesswork} = 0;
-        $options{cleanup} = 0;
-    } elsif ($element eq 'Verbatim' || $element eq 'C') {
-        $options{guesswork} = 0;
-        $options{literal} = 1;
-    }
-    return \%options;
-}
 
 # Format a text block.  Takes a hash of formatting options and the text to
 # format.  Currently, the only formatting options are guesswork, cleanup, and
@@ -437,7 +447,7 @@ sub guesswork {
     local $_ = shift;
     DEBUG > 5 and print "   Guesswork called on [$_]\n";
 
-    # By the time we reach this point, all hypens will be escaped by adding a
+    # By the time we reach this point, all hyphens will be escaped by adding a
     # backslash.  We want to undo that escaping if they're part of regular
     # words and there's only a single dash, since that's a real hyphen that
     # *roff gets to consider a possible break point.  Make sure that a dash
@@ -474,11 +484,16 @@ sub guesswork {
     # line or following regular punctuation (like quotes) or whitespace (1),
     # and followed by either similar punctuation, an em-dash, or the end of
     # the line (3).
+    #
+    # Allow the text we're changing to small caps to include double quotes,
+    # commas, newlines, and periods as long as it doesn't otherwise interrupt
+    # the string of small caps and still fits the criteria.  This lets us turn
+    # entire warranty disclaimers in man page output into small caps.
     if ($$self{MAGIC_SMALLCAPS}) {
         s{
-            ( ^ | [\s\(\"\'\`\[\{<>] | \\\  )                   # (1)
-            ( [A-Z] [A-Z] (?: [/A-Z+:\d_\$&] | \\- )* )         # (2)
-            (?= [\s>\}\]\(\)\'\".?!,;] | \\*\(-- | \\\  | $ )   # (3)
+            ( ^ | [\s\(\"\'\`\[\{<>] | \\[ ]  )                     # (1)
+            ( [A-Z] [A-Z] (?: [/A-Z+:\d_\$&] | \\- | [.,\"\s] )* )  # (2)
+            (?= [\s>\}\]\(\)\'\".?!,;] | \\*\(-- | \\[ ] | $ )      # (3)
         } {
             $1 . '\s-1' . $2 . '\s0'
         }egx;
@@ -488,7 +503,7 @@ sub guesswork {
     # strings inserted around things that we've made small-caps if later
     # transforms should work on those strings.
 
-    # Italize functions in the form func(), including functions that are in
+    # Italicize functions in the form func(), including functions that are in
     # all capitals, but don't italize if there's anything between the parens.
     # The function must start with an alphabetic character or underscore and
     # then consist of word characters or colons.
@@ -715,6 +730,7 @@ sub outindex {
     # Print out the .IX commands.
     for (@output) {
         my ($type, $entry) = @$_;
+        $entry =~ s/\s+/ /g;
         $entry =~ s/\"/\"\"/g;
         $entry =~ s/\\/\\\\/g;
         $self->output (".IX $type " . '"' . $entry . '"' . "\n");
@@ -742,7 +758,8 @@ sub start_document {
     if ($$attrs{contentless} && !$$self{ALWAYS_EMIT_SOMETHING}) {
         DEBUG and print "Document is contentless\n";
         $$self{CONTENTLESS} = 1;
-        return;
+    } else {
+        delete $$self{CONTENTLESS};
     }
 
     # When UTF-8 output is set, check whether our output file handle already
@@ -753,24 +770,28 @@ sub start_document {
     if ($$self{utf8}) {
         $$self{ENCODE} = 1;
         eval {
-            my @layers = PerlIO::get_layers ($$self{output_fh});
-            if (grep { $_ eq 'utf8' } @layers) {
+            my @options = (output => 1, details => 1);
+            my $flag = (PerlIO::get_layers ($$self{output_fh}, @options))[-1];
+            if ($flag & PerlIO::F_UTF8 ()) {
                 $$self{ENCODE} = 0;
             }
         }
     }
 
-    # Determine information for the preamble and then output it.
-    my ($name, $section);
-    if (defined $$self{name}) {
-        $name = $$self{name};
-        $section = $$self{section} || 1;
-    } else {
-        ($name, $section) = $self->devise_title;
+    # Determine information for the preamble and then output it unless the
+    # document was content-free.
+    if (!$$self{CONTENTLESS}) {
+        my ($name, $section);
+        if (defined $$self{name}) {
+            $name = $$self{name};
+            $section = $$self{section} || 1;
+        } else {
+            ($name, $section) = $self->devise_title;
+        }
+        my $date = $$self{date} || $self->devise_date;
+        $self->preamble ($name, $section, $date)
+            unless $self->bare_output or DEBUG > 9;
     }
-    my $date = $$self{date} || $self->devise_date;
-    $self->preamble ($name, $section, $date)
-        unless $self->bare_output or DEBUG > 9;
 
     # Initialize a few per-document variables.
     $$self{INDENT}    = 0;      # Current indentation level.
@@ -784,10 +805,14 @@ sub start_document {
     $$self{PENDING}   = [[]];   # Pending output.
 }
 
-# Handle the end of the document.  This does nothing but print out a final
-# comment at the end of the document under debugging.
+# Handle the end of the document.  This handles dying on POD errors, since
+# Pod::Parser currently doesn't.  Otherwise, does nothing but print out a
+# final comment at the end of the document under debugging.
 sub end_document {
     my ($self) = @_;
+    if ($$self{complain_die} && $self->errors_seen) {
+        croak ("POD document had syntax errors");
+    }
     return if $self->bare_output;
     return if ($$self{CONTENTLESS} && !$$self{ALWAYS_EMIT_SOMETHING});
     $self->output (q(.\" [End document]) . "\n") if DEBUG;
@@ -956,9 +981,12 @@ sub cmd_para {
         if defined ($line) && DEBUG && !$$self{IN_NAME};
 
     # Force exactly one newline at the end and strip unwanted trailing
-    # whitespace at the end, but leave "\ " backslashed space from an S< >
-    # at the end of a line.
-    $text =~ s/((?:\\ )*)\s*$/$1\n/;
+    # whitespace at the end, but leave "\ " backslashed space from an S< > at
+    # the end of a line.  Reverse the text first, to avoid having to scan the
+    # entire paragraph.
+    $text = reverse $text;
+    $text =~ s/\A\s*?(?= \\|\S|\z)/\n/;
+    $text = reverse $text;
 
     # Output the paragraph.
     $self->output ($self->protect ($self->textmapfonts ($text)));
@@ -977,8 +1005,11 @@ sub cmd_verbatim {
     return unless $text =~ /\S/;
 
     # Force exactly one newline at the end and strip unwanted trailing
-    # whitespace at the end.
-    $text =~ s/\s*$/\n/;
+    # whitespace at the end.  Reverse the text first, to avoid having to scan
+    # the entire paragraph.
+    $text = reverse $text;
+    $text =~ s/\A\s*/\n/;
+    $text = reverse $text;
 
     # Get a count of the number of lines before the first blank line, which
     # we'll pass to .Vb as its parameter.  This tells *roff to keep that many
@@ -1106,12 +1137,21 @@ sub cmd_x {
 }
 
 # Links reduce to the text that we're given, wrapped in angle brackets if it's
-# a URL.
+# a URL, followed by the URL.  We take an option to suppress the URL if anchor
+# text is given.  We need to format the "to" value of the link before
+# comparing it to the text since we may escape hyphens.
 sub cmd_l {
     my ($self, $attrs, $text) = @_;
     if ($$attrs{type} eq 'url') {
-        if (not defined($$attrs{to}) or $$attrs{to} eq $text) {
+        my $to = $$attrs{to};
+        if (defined $to) {
+            my $tag = $$self{PENDING}[-1];
+            $to = $self->format_text ($$tag[1], $to);
+        }
+        if (not defined ($to) or $to eq $text) {
             return "<$text>";
+        } elsif ($$self{nourls}) {
+            return $text;
         } else {
             return "$text <$$attrs{to}>";
         }
@@ -1299,7 +1339,38 @@ sub parse_from_file {
 # parse_from_file supports.
 sub parse_from_filehandle {
     my $self = shift;
-    $self->parse_from_file (@_);
+    return $self->parse_from_file (@_);
+}
+
+# Pod::Simple's parse_file doesn't set output_fh.  Wrap the call and do so
+# ourself unless it was already set by the caller, since our documentation has
+# always said that this should work.
+sub parse_file {
+    my ($self, $in) = @_;
+    unless (defined $$self{output_fh}) {
+        $self->output_fh (\*STDOUT);
+    }
+    return $self->SUPER::parse_file ($in);
+}
+
+# Do the same for parse_lines, just to be polite.  Pod::Simple's man page
+# implies that the caller is responsible for setting this, but I don't see any
+# reason not to set a default.
+sub parse_lines {
+    my ($self, @lines) = @_;
+    unless (defined $$self{output_fh}) {
+        $self->output_fh (\*STDOUT);
+    }
+    return $self->SUPER::parse_lines (@lines);
+}
+
+# Likewise for parse_string_document.
+sub parse_string_document {
+    my ($self, $doc) = @_;
+    unless (defined $$self{output_fh}) {
+        $self->output_fh (\*STDOUT);
+    }
+    return $self->SUPER::parse_string_document ($doc);
 }
 
 ##############################################################################
@@ -1321,7 +1392,7 @@ sub parse_from_filehandle {
     undef, undef, undef, undef,            undef, undef, undef, undef,
     undef, undef, undef, undef,            undef, undef, undef, undef,
 
-    "A\\*`",  "A\\*'", "A\\*^", "A\\*~",   "A\\*:", "A\\*o", "\\*(AE", "C\\*,",
+    "A\\*`",  "A\\*'", "A\\*^", "A\\*~",   "A\\*:", "A\\*o", "\\*(Ae", "C\\*,",
     "E\\*`",  "E\\*'", "E\\*^", "E\\*:",   "I\\*`", "I\\*'", "I\\*^",  "I\\*:",
 
     "\\*(D-", "N\\*~", "O\\*`", "O\\*'",   "O\\*^", "O\\*~", "O\\*:",  undef,
@@ -1382,6 +1453,8 @@ sub preamble_template {
 .    ds PI \(*p
 .    ds L" ``
 .    ds R" ''
+.    ds C`
+.    ds C'
 'br\}
 .\"
 .\" Escape single quotes in literal strings from groff's Unicode transform.
@@ -1392,18 +1465,26 @@ sub preamble_template {
 .\" titles (.TH), headers (.SH), subsections (.SS), items (.Ip), and index
 .\" entries marked with X<> in POD.  Of course, you'll have to process the
 .\" output yourself in some meaningful fashion.
-.ie \nF \{\
-.    de IX
-.    tm Index:\\$1\t\\n%\t"\\$2"
+.\"
+.\" Avoid warning from groff about undefined register 'F'.
+.de IX
 ..
-.    nr % 0
-.    rr F
-.\}
-.el \{\
-.    de IX
+.nr rF 0
+.if \n(.g .if rF .nr rF 1
+.if (\n(rF:(\n(.g==0)) \{
+.    if \nF \{
+.        de IX
+.        tm Index:\\$1\t\\n%\t"\\$2"
 ..
+.        if !\nF==2 \{
+.            nr % 0
+.            nr F 2
+.        \}
+.    \}
 .\}
+.rr rF
 ----END OF PREAMBLE----
+#'# for cperl-mode
 
     if ($accents) {
         $preamble .= <<'----END OF PREAMBLE----'
@@ -1482,14 +1563,14 @@ sub preamble_template {
 1;
 __END__
 
-=head1 NAME
-
-Pod::Man - Convert POD data to formatted *roff input
-
 =for stopwords
 en em ALLCAPS teeny fixedbold fixeditalic fixedbolditalic stderr utf8
 UTF-8 Allbery Sean Burke Ossanna Solaris formatters troff uppercased
-Christiansen
+Christiansen nourls parsers
+
+=head1 NAME
+
+Pod::Man - Convert POD data to formatted *roff input
 
 =head1 SYNOPSIS
 
@@ -1551,6 +1632,16 @@ argument.
 Sets the centered page header to use instead of "User Contributed Perl
 Documentation".
 
+=item errors
+
+How to report errors.  C<die> says to throw an exception on any POD
+formatting error.  C<stderr> says to report errors on standard error, but
+not to throw an exception.  C<pod> says to include a POD ERRORS section
+in the resulting documentation summarizing the errors.  C<none> ignores
+POD errors entirely, as much as possible.
+
+The default is C<pod>.
+
 =item date
 
 Sets the left-hand footer.  By default, the modification date of the input
@@ -1591,6 +1682,22 @@ module path.  If it is, a path like C<.../lib/Pod/Man.pm> is converted into
 a name like C<Pod::Man>.  This option, if given, overrides any automatic
 determination of the name.
 
+=item nourls
+
+Normally, LZ<><> formatting codes with a URL but anchor text are formatted
+to show both the anchor text and the URL.  In other words:
+
+    L<foo|http://example.com/>
+
+is formatted as:
+
+    foo <http://example.com/>
+
+This option, if set to a true value, suppresses the URL when anchor text
+is given, so this example would be formatted as just C<foo>.  This can
+produce less cluttered output in cases where the URLs are not particularly
+important.
+
 =item quotes
 
 Sets the quote marks used to surround CE<lt>> text.  If the value is a
@@ -1628,7 +1735,9 @@ case section 3 will be selected.
 =item stderr
 
 Send error messages about invalid POD to standard error instead of
-appending a POD ERRORS section to the generated *roff output.
+appending a POD ERRORS section to the generated *roff output.  This is
+equivalent to setting C<errors> to C<stderr> if C<errors> is not already
+set.  It is supported for backward compatibility.
 
 =item utf8
 
@@ -1656,16 +1765,22 @@ L<perlpod(1)> for more information on the C<=encoding> command.
 
 The standard Pod::Simple method parse_file() takes one argument naming the
 POD file to read from.  By default, the output is sent to C<STDOUT>, but
-this can be changed with the output_fd() method.
+this can be changed with the output_fh() method.
 
 The standard Pod::Simple method parse_from_file() takes up to two
 arguments, the first being the input file to read POD from and the second
 being the file to write the formatted output to.
 
 You can also call parse_lines() to parse an array of lines or
-parse_string_document() to parse a document already in memory.  To put the
-output into a string instead of a file handle, call the output_string()
-method.  See L<Pod::Simple> for the specific details.
+parse_string_document() to parse a document already in memory.  As with
+parse_file(), parse_lines() and parse_string_document() default to sending
+their output to C<STDOUT> unless changed with the output_fh() method.
+
+To put the output from any parse method into a string instead of a file
+handle, call the output_string() method instead of output_fh().
+
+See L<Pod::Simple> for more specific details on the methods available to
+all derived parsers.
 
 =head1 DIAGNOSTICS
 
@@ -1675,13 +1790,23 @@ method.  See L<Pod::Simple> for the specific details.
 
 (F) You specified a *roff font (using C<fixed>, C<fixedbold>, etc.) that
 wasn't either one or two characters.  Pod::Man doesn't support *roff fonts
-longer than two characters, although some *roff extensions do (the canonical
-versions of B<nroff> and B<troff> don't either).
+longer than two characters, although some *roff extensions do (the
+canonical versions of B<nroff> and B<troff> don't either).
+
+=item Invalid errors setting "%s"
+
+(F) The C<errors> parameter to the constructor was set to an unknown value.
 
 =item Invalid quote specification "%s"
 
-(F) The quote specification given (the quotes option to the constructor) was
-invalid.  A quote specification must be one, two, or four characters long.
+(F) The quote specification given (the C<quotes> option to the
+constructor) was invalid.  A quote specification must be one, two, or four
+characters long.
+
+=item POD document had syntax errors
+
+(F) The POD document being formatted had syntax errors and the C<errors>
+option was set to C<die>.
 
 =back
 
@@ -1743,8 +1868,8 @@ mine).
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
-Russ Allbery <rra@stanford.edu>.
+Copyright 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
+2009, 2010, 2012, 2013 Russ Allbery <rra@stanford.edu>.
 
 This program is free software; you may redistribute it and/or modify it
 under the same terms as Perl itself.

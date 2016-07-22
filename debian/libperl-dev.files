@@ -1,2 +1,2 @@
-usr/lib/libperl.a
-usr/lib/libperl.so
+usr/lib/*/libperl.a
+usr/lib/*/libperl.so

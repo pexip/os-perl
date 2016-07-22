@@ -10,7 +10,7 @@ use File::Path ();
 use File::Spec ();
 use CPAN::Mirrors ();
 use vars qw($VERSION $auto_config);
-$VERSION = "5.5303";
+$VERSION = "5.5306";
 
 =head1 NAME
 
@@ -132,6 +132,9 @@ warnings, debugging output, and the output of the modules being
 installed. Set your favorite colors after some experimenting with the
 Term::ANSIColor module.
 
+Please note that on Windows platforms colorized output also requires
+the Win32::Console::ANSI module.
+
 Do you want to turn on colored output?
 
 =item colorize_print
@@ -202,8 +205,9 @@ Preferred method for determining the current working directory?
 =item halt_on_failure
 
 Normally, CPAN.pm continues processing the full list of targets and
-dependencies, even if one of them fails.  However, you can specify 
-that CPAN should halt after the first failure. 
+dependencies, even if one of them fails.  However, you can specify
+that CPAN should halt after the first failure.  (Note that optional
+recommended or suggested modules that fail will not cause a halt.)
 
 Do you want to halt on failure (yes/no)?
 
@@ -339,7 +343,7 @@ Your choice:
 Parameters for the './Build install' command? Typical frequently used
 setting:
 
-    --uninst 1                           # uninstall conflicting files
+    --uninst 1       # uninstall conflicting files
                      # (but do NOT use with local::lib or INSTALL_BASE)
 
 Your choice:
@@ -420,6 +424,14 @@ host should be tried first.
 
 Randomize parameter
 
+=item recommends_policy
+
+(Experimental feature!) Some CPAN modules recommend additional, optional dependencies.  These should
+generally be installed except in resource constrained environments.  When this
+policy is true, recommended modules will be included with required modules.
+
+Included recommended modules?
+
 =item scan_cache
 
 By default, each time the CPAN module is started, cache scanning is
@@ -461,6 +473,14 @@ want this report to be very verbose, say yes to the following
 variable.
 
 Show all individual modules that have a $VERSION of zero?
+
+=item suggests_policy
+
+(Experimental feature!) Some CPAN modules suggest additional, optional dependencies.  These 'suggest'
+dependencies provide enhanced operation.  When this policy is true, suggested
+modules will be included with required modules.
+
+Included suggested modules?
 
 =item tar_verbosity
 
@@ -537,6 +557,17 @@ because of missing dependencies.  Also, tests can be run
 regardless of the history using "force".
 
 Do you want to rely on the test report history (yes/no)?
+
+=item use_prompt_default
+
+When this is true, CPAN will set PERL_MM_USE_DEFAULT to a true
+value.  This causes ExtUtils::MakeMaker (and compatible) prompts
+to use default values instead of stopping to prompt you to answer
+questions. It also sets NONINTERACTIVE_TESTING to a true value to
+signal more generally that distributions should not try to
+interact with you.
+
+Do you want to use prompt defaults (yes/no)?
 
 =item use_sqlite
 
@@ -781,8 +812,8 @@ sub init {
     if ( $args{autoconfig} ) {
         $auto_config = 1;
     } elsif ($matcher) {
-            $auto_config = 0;
-        } else {
+        $auto_config = 0;
+    } else {
         my $_conf = prompt($prompts{auto_config}, "yes");
         $auto_config = ($_conf and $_conf =~ /^y/i) ? 1 : 0;
     }
@@ -795,7 +826,7 @@ sub init {
             my $i_am_mad = 0;
             # silent prompting -- just quietly use default
             *_real_prompt = sub { return $_[1] };
-        }
+    }
 
     #
     # bootstrap local::lib or sudo
@@ -865,6 +896,8 @@ sub init {
                    'follow|ask|ignore');
     my_prompt_loop(build_requires_install_policy => 'yes', $matcher,
                    'yes|no|ask/yes|ask/no');
+    my_yn_prompt(recommends_policy => 1, $matcher);
+    my_yn_prompt(suggests_policy => 0, $matcher);
 
     #
     #= Module::Signature
@@ -993,8 +1026,8 @@ sub init {
         my_dflt_prompt(makepl_arg => "", $matcher);
         my_dflt_prompt(make_arg => "", $matcher);
         if ( $CPAN::Config->{makepl_arg} =~ /LIBS=|INC=/ ) {
-            $CPAN::Frontend->mywarn( 
-                "Warning: Using LIBS or INC in makepl_arg will likely break distributions\n" . 
+            $CPAN::Frontend->mywarn(
+                "Warning: Using LIBS or INC in makepl_arg will likely break distributions\n" .
                 "that specify their own LIBS or INC options in Makefile.PL.\n"
             );
         }
@@ -1029,7 +1062,7 @@ sub init {
         and $^O ne "MSWin32") {
         # as long as Windows needs $self->_build_command, we cannot
         # support sudo on windows :-)
-        my $default = "./Build";
+        my $default = $^O eq 'VMS' ? '@Build.com' : "./Build";
         if ( $CPAN::Config->{install_help} eq 'sudo' ) {
             if ( find_exe('sudo') ) {
                 $default = "sudo $default";
@@ -1044,6 +1077,11 @@ sub init {
     }
 
     my_dflt_prompt(mbuild_install_arg => "", $matcher);
+
+    #
+    #== use_prompt_default
+    #
+    my_yn_prompt(use_prompt_default => 0, $matcher);
 
     #
     #= Alarm period
@@ -1224,10 +1262,7 @@ sub init {
             );
         }
         else {
-          $CPAN::Frontend->myprint(
-            "Autoconfigured everything but 'urllist'.\n"
-          );
-            _do_pick_mirrors();
+            $CPAN::Config->{urllist} = [ 'http://www.cpan.org/' ];
         }
     }
     elsif (!$matcher || "urllist" =~ $matcher) {
@@ -1247,8 +1282,8 @@ sub init {
             $CPAN::Frontend->myprint(
                 "Skipping local::lib bootstrap because 'urllist' is not configured.\n"
             );
-          }
-          else {
+        }
+        else {
             $CPAN::Frontend->myprint("\nAttempting to bootstrap local::lib...\n");
             $CPAN::Frontend->myprint("\nWriting $configpm for bootstrap...\n");
             delete $CPAN::Config->{install_help}; # temporary only
@@ -1268,11 +1303,11 @@ sub init {
                 $CPAN::Frontend->myprint("From the CPAN Shell, you might try 'look local::lib' and \n"
                     . "run 'perl Makefile --bootstrap' and see if that is successful.  Then\n"
                     . "restart your CPAN client\n"
-            );
+                );
             }
             else {
                 _local_lib_config();
-          }
+            }
         }
     }
 
@@ -1298,16 +1333,18 @@ sub init {
 sub _local_lib_config {
     # Set environment stuff for this process
     require local::lib;
-    my %env = local::lib->build_environment_vars_for(_local_lib_path(), 1);
-    while ( my ($k, $v) = each %env ) {
-        $ENV{$k} = $v;
-    }
 
     # Tell user about environment vars to set
     $CPAN::Frontend->myprint($prompts{local_lib_installed});
     local $ENV{SHELL} = $CPAN::Config->{shell} || $ENV{SHELL};
     my $shellvars = local::lib->environment_vars_string_for(_local_lib_path());
     $CPAN::Frontend->myprint($shellvars);
+
+    # Set %ENV after getting string above
+    my %env = local::lib->build_environment_vars_for(_local_lib_path(), 1);
+    while ( my ($k, $v) = each %env ) {
+        $ENV{$k} = $v;
+    }
 
     # Offer to mangle the shell config
     my $munged_rc;
@@ -1393,6 +1430,8 @@ sub _do_pick_mirrors {
     my $_conf = 'n';
     if ( $CPAN::META->has_usable("Net::Ping") && Net::Ping->VERSION gt '2.13') {
         $_conf = prompt($prompts{auto_pick}, "yes");
+    } else {
+        prompt("Autoselection disabled due to Net::Ping missing or insufficient. Please press ENTER");
     }
     my @old_list = @{ $CPAN::Config->{urllist} };
     if ( $_conf =~ /^y/i ) {
@@ -1515,7 +1554,7 @@ ALERT: 'make' is an essential tool for building perl Modules.
 Please make sure you have 'make' (or some equivalent) working.
 
 HERE
-                    if ($^O eq "MSWin32") {
+  if ($^O eq "MSWin32") {
     $CPAN::Frontend->mywarn(<<"HERE");
 Windows users may want to follow this procedure when back in the CPAN shell:
 
@@ -1528,7 +1567,7 @@ substitute. You can then revisit this dialog with
     o conf init make
 
 HERE
-    }
+  }
 }
 
 sub init_cpan_home {
@@ -1657,7 +1696,7 @@ sub my_prompt_loop {
 # (2) We don't have a copy at all
 #   (2a) If we are allowed to connect, we try to get a new copy.  If it succeeds,
 #        we use it, otherwise, we warn about failure
-#   (2b) If we aren't allowed to connect, 
+#   (2b) If we aren't allowed to connect,
 
 sub conf_sites {
     my %args = @_;
@@ -1732,7 +1771,7 @@ HERE
       }
       else {
         $CPAN::Frontend->mywarn(<<'HERE');
-You will need to provide CPAN mirror URLs yourself or set 
+You will need to provide CPAN mirror URLs yourself or set
 'o conf connect_to_internet_ok 1' and try again.
 HERE
       }
@@ -1852,6 +1891,7 @@ sub auto_mirrored_by {
     local $|=1;
     $CPAN::Frontend->myprint("Looking for CPAN mirrors near you (please be patient)\n");
     my $mirrors = CPAN::Mirrors->new($local);
+
     my $cnt = 0;
     my @best = $mirrors->best_mirrors(
       how_many => 3,
@@ -1860,9 +1900,11 @@ sub auto_mirrored_by {
           if ($cnt++>60) { $cnt=0; $CPAN::Frontend->myprint("\n"); }
       },
     );
+
     my $urllist = [ map { $_->http } @best ];
     push @$urllist, grep { /^file:/ } @{$CPAN::Config->{urllist}};
     $CPAN::Frontend->myprint(" done!\n\n");
+
     return $urllist
 }
 
@@ -1998,8 +2040,8 @@ later if you\'re sure it\'s right.\n},
 sub _print_urllist {
     my ($which) = @_;
     $CPAN::Frontend->myprint("$which urllist\n");
-    for ( @{$CPAN::Config->{urllist} || []} ) { 
-      $CPAN::Frontend->myprint("  $_\n") 
+    for ( @{$CPAN::Config->{urllist} || []} ) {
+      $CPAN::Frontend->myprint("  $_\n")
     };
 }
 

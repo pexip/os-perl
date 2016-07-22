@@ -10,6 +10,7 @@ use strict;
 use warnings;
 use bytes;
 
+use File::Spec ;
 use Test::More ;
 use CompTestUtils;
 
@@ -47,7 +48,7 @@ sub readWithGzip
 
     my $lex = new LexFile my $outfile;
 
-    my $comp = "$GZIP -dc" ;
+    my $comp = "$GZIP -d -c" ;
 
     if ( system("$comp $file >$outfile") == 0 )
     {
@@ -91,9 +92,12 @@ BEGIN {
 
     for my $dir (reverse split $split, $ENV{PATH})    
     {
-        $GZIP = "$dir/$name"
-            if -x "$dir/$name" ;
+        $GZIP = File::Spec->catfile($dir,$name)
+            if -x File::Spec->catfile($dir,$name)
     }
+
+    # Handle spaces in path to gzip 
+    $GZIP = "\"$GZIP\"" if defined $GZIP && $GZIP =~ /\s/;    
 
     plan(skip_all => "Cannot find $name")
         if ! $GZIP ;

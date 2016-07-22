@@ -6,13 +6,11 @@ use File::Basename;
 use Cwd ();
 use Config;
 use Text::ParseWords;
-use IO::File;
-use Data::Dumper;$Data::Dumper::Indent=1;
 use IPC::Cmd qw(can_run);
 use File::Temp qw(tempfile);
 
 use vars qw($VERSION);
-$VERSION = '0.280203';
+$VERSION = '0.280217';
 
 # More details about C/C++ compilers:
 # http://developers.sun.com/sunstudio/documentation/product/compiler.jsp
@@ -40,11 +38,13 @@ sub new {
     $self->{config}{$k} = $v unless exists $self->{config}{$k};
   }
   $self->{config}{cc} = $ENV{CC} if defined $ENV{CC};
-  $self->{config}{ccflags} = $ENV{CFLAGS} if defined $ENV{CFLAGS};
+  $self->{config}{ccflags} = join(" ", $self->{config}{ccflags}, $ENV{CFLAGS})
+     if defined $ENV{CFLAGS};
   $self->{config}{cxx} = $ENV{CXX} if defined $ENV{CXX};
   $self->{config}{cxxflags} = $ENV{CXXFLAGS} if defined $ENV{CXXFLAGS};
   $self->{config}{ld} = $ENV{LD} if defined $ENV{LD};
-  $self->{config}{ldflags} = $ENV{LDFLAGS} if defined $ENV{LDFLAGS};
+  $self->{config}{ldflags} = join(" ", $self->{config}{ldflags}, $ENV{LDFLAGS})
+     if defined $ENV{LDFLAGS};
 
   unless ( exists $self->{config}{cxx} ) {
     my ($ccpath, $ccbase, $ccsfx ) = fileparse($self->{config}{cc}, qr/\.[^.]*/);
@@ -64,7 +64,7 @@ sub new {
     }
     unless ( exists $self->{config}{cxx} ) {
       $self->{config}{cxx} = $self->{config}{cc};
-      my $cflags = $self->{config}{cflags};
+      my $cflags = $self->{config}{ccflags};
       $self->{config}{cxxflags} = '-x c++';
       $self->{config}{cxxflags} .= " $cflags" if defined $cflags;
     }
@@ -222,10 +222,23 @@ sub have_cplusplus {
 }
 
 sub lib_file {
-  my ($self, $dl_file) = @_;
+  my ($self, $dl_file, %args) = @_;
   $dl_file =~ s/\.[^.]+$//;
   $dl_file =~ tr/"//d;
-  return "$dl_file.$self->{config}{dlext}";
+  
+  if (defined $args{module_name} and length $args{module_name}) {
+    # Need to create with the same name as DynaLoader will load with.
+    require DynaLoader;
+    if (defined &DynaLoader::mod2fname) {
+      my $lib = DynaLoader::mod2fname([split /::/, $args{module_name}]);
+      my ($dev, $lib_dir, undef) = File::Spec->splitpath($dl_file);
+      $dl_file = File::Spec->catpath($dev, $lib_dir, $lib);
+    }
+  }
+  
+  $dl_file .= ".$self->{config}{dlext}";
+
+  return $dl_file;
 }
 
 
@@ -287,7 +300,7 @@ sub _do_link {
   
   my $objects = delete $args{objects};
   $objects = [$objects] unless ref $objects;
-  my $out = $args{$type} || $self->$type($objects->[0]);
+  my $out = $args{$type} || $self->$type($objects->[0], %args);
   
   my @temp_files;
   @temp_files =

@@ -12,8 +12,10 @@ use Config;
 
 my $file = tempfile();
 
+my $ungetc_count = 8200;    # Somewhat over the likely buffer size
+
 {
-    plan(tests => 16);
+    plan(tests => 16 + 2 * $ungetc_count);
     ok(open(FOO,">:crlf",$file));
     ok(print FOO 'a'.((('a' x 14).qq{\n}) x 2000) || close(FOO));
     ok(open(FOO,"<:crlf",$file));
@@ -30,8 +32,10 @@ my $file = tempfile();
 
     SKIP:
     {
-	skip_if_miniperl("miniperl can't rely on loading PerlIO::scalar");
-	skip("no PerlIO::scalar") unless $Config{extensions} =~ m!\bPerlIO/scalar\b!;
+	skip_if_miniperl("miniperl can't rely on loading PerlIO::scalar",
+			  2 * $ungetc_count + 1);
+	skip("no PerlIO::scalar", 2 * $ungetc_count + 1)
+	    unless $Config{extensions} =~ m!\bPerlIO/scalar\b!;
 	require PerlIO::scalar;
 	my $fcontents = join "", map {"$_\015\012"} "a".."zzz";
 	open my $fh, "<:crlf", \$fcontents;
@@ -42,6 +46,16 @@ my $file = tempfile();
 	$/ = "\n";
 	$s = <$fh>.<$fh>;
 	is($s, "\nxxy\n");
+
+        for my $i (0 .. $ungetc_count - 1) {
+            my $j = $i % 256;
+            is($fh->ungetc($j), $j, "ungetc of $j returns itself");
+        }
+
+        for (my $i = $ungetc_count - 1; $i >= 0; $i--) {
+            my $j = $i % 256;
+            is(ord($fh->getc()), $j, "getc gets back $j");
+        }
     }
 
     ok(close(FOO));

@@ -11,7 +11,7 @@ use strict;
 
 BEGIN {
     require '../../t/test.pl';
-    plan(436);
+    plan(437);
     use_ok('XS::APItest')
 };
 
@@ -27,6 +27,13 @@ sub f {
     pop @_;
     @_, defined wantarray ? wantarray ? 'x' :  'y' : 'z';
 }
+
+our $call_sv_count = 0;
+sub i {
+    $call_sv_count++;
+}
+call_sv_C();
+is($call_sv_count, 6, "call_sv_C passes");
 
 sub d {
     die "its_dead_jim\n";
@@ -186,9 +193,10 @@ foreach my $inx ("", "aabbcc\n", [qw(aa bb cc)]) {
 }
 
 {
+    no warnings "misc";
     my $warn = "";
     local $SIG{__WARN__} = sub { $warn .= $_[0] };
-    call_sv(sub { no warnings "misc"; die "aa\n" }, G_VOID|G_EVAL|G_KEEPERR);
+    call_sv(sub { use warnings "misc"; die "aa\n" }, G_VOID|G_EVAL|G_KEEPERR);
     is $warn, "\t(in cleanup) aa\n";
 }
 

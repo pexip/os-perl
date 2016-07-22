@@ -14,7 +14,7 @@ our $NUM_SECTS;
 chomp(my @strs= grep { !/^\s*\#/ } <DATA>);
 my $out = runperl(progfile => "t/regop.pl", stderr => 1 );
 # VMS currently embeds linefeeds in the output.
-$out =~ s/\cJ//g if $^O = 'VMS';
+$out =~ s/\cJ//g if $^O == 'VMS';
 my @tests = grep { /\S/ } split /(?=Compiling REx)/, $out;
 # on debug builds we get an EXECUTING... message in there at the top
 shift @tests
@@ -55,7 +55,7 @@ foreach my $testout ( @tests ) {
 # that the tests for this result set are finished.
 # If you add a test make sure you update $NUM_SECTS
 # the commented output is just for legacy/debugging purposes
-BEGIN{ $NUM_SECTS= 6 }
+BEGIN{ $NUM_SECTS= 7 }
 
 __END__
 #Compiling REx "X(A|[B]Q||C|D)Y"
@@ -98,7 +98,7 @@ matched empty string
 Match successful!
 Found floating substr "Y" at offset 1...
 Found anchored substr "X" at offset 0...
-Guessed: match at offset 0
+Successfully guessed: match at offset 0
 checking floating
 minlen 2
 S:1/6   
@@ -121,7 +121,7 @@ foobar
 checking anchored isall
 minlen 6
 anchored "foobar" at 0
-Guessed: match at offset 0
+Successfully guessed: match at offset 0
 Compiling REx "[f][o][o][b][a][r]"
 Freeing REx: "[f][o][o][b][a][r]"
 %MATCHED%
@@ -241,21 +241,44 @@ floating ""$ at 3..4 (checking floating)
 #Matching stclass EXACTF <.> against ".exe"
 ---
 #Compiling REx "[q]"
-#size 12 nodes Got 100 bytes for offset annotations.
+#size 3 nodes Got 28 bytes for offset annotations.
 #first at 1
 #Final program:
 #   1: EXACT <q>(3)
 #   3: END(0)
 #anchored "q" at 0 (checking anchored isall) minlen 1
-#Offsets: [12]
+#Offsets: [3]
 #        1:1[3] 3:4[0]
 #Guessing start of match, REx "[q]" against "q"...
 #Found anchored substr "q" at offset 0...
 #Guessed: match at offset 0
 #%MATCHED%
 #Freeing REx: "[q]"
-Got 100 bytes for offset annotations.
-Offsets: [12]
+Got 28 bytes for offset annotations.
+Offsets: [3]
 1:1[3] 3:4[0]
 %MATCHED%        
 Freeing REx: "[q]"
+---
+#Compiling REx "^(\S{1,9}):\s*(\d+)$"
+#synthetic stclass "ANYOF[\x{00}-\x{08}\x{0E}-\x{1F}\x{21}-\x{FF}][{utf8}0100-167F 1681-1FFF 200B-2027 202A-202E 2030-205E 2060-2FFF 3001-INFINITY]".
+#Final program:
+#   1: BOL (2)
+#   2: OPEN1 (4)
+#   4:   CURLY {1,9} (7)
+#   6:     NPOSIXD[\s] (0)
+#   7: CLOSE1 (9)
+#   9: EXACT <:> (11)
+#  11: STAR (13)
+#  12:   POSIXD[\s] (0)
+#  13: OPEN2 (15)
+#  15:   PLUS (17)
+#  16:     POSIXD[\d] (0)
+#  17: CLOSE2 (19)
+#  19: EOL (20)
+#  20: END (0)
+#floating ":" at 1..9 (checking floating) stclass ANYOF[\x{00}-\x{08}\x{0E}-\x{1F}\x{21}-\x{FF}][{utf8}0100-167F 1681-1FFF 200B-2027 202A-202E 2030-205E 2060-2FFF 3001-INFINITY] anchored(BOL) minlen 3
+#Freeing REx: "^(\S{1,9}):\s*(\d+)$"
+floating ":" at 1..9 (checking floating) stclass ANYOF[\x{00}-\x{08}\x{0E}-\x{1F}\x{21}-\x{FF}][{utf8}0100-167F 1681-1FFF 200B-2027 202A-202E 2030-205E 2060-2FFF 3001-INFINITY] anchored(BOL) minlen 3
+%MATCHED%
+synthetic stclass

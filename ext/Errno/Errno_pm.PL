@@ -2,10 +2,9 @@ use ExtUtils::MakeMaker;
 use Config;
 use strict;
 
-our $VERSION = "1.13";
+our $VERSION = "1.20_05";
 
 my %err = ();
-my %wsa = ();
 
 # Symbian cross-compiling environment.
 my $IsSymbian = exists $ENV{SDK} && -d "$ENV{SDK}\\epoc32";
@@ -84,10 +83,6 @@ sub process_file {
     while(<FH>) {
 	$err{$1} = 1
 	    if /^\s*#\s*define\s+(E\w+)\s+/;
-	if ($IsMSWin32) {
-	    $wsa{$1} = 1
-		if /^\s*#\s*define\s+WSA(E\w+)\s+/;
-	}
     }
 
     close(FH);
@@ -125,12 +120,6 @@ sub get_files {
     } elsif ($^O eq 'os390') {
 	# OS/390 C compiler doesn't generate #file or #line directives
 	$file{'/usr/include/errno.h'} = 1;
-    } elsif ($^O eq 'vmesa') {
-	# OS/390 C compiler doesn't generate #file or #line directives
-	$file{'../../vmesa/errno.h'} = 1;
-    } elsif ($Config{archname} eq 'epoc') {
-	# Watch out for cross compiling for EPOC (usually done on linux)
-	$file{'/usr/local/epocemx/epocsdk/include/libc/sys/errno.h'} = 1;
     } elsif ($Config{archname} eq 'arm-riscos') {
 	# Watch out for cross compiling for RISC OS
 	my $dep = `echo "#include <errno.h>" | gcc -E -M -`;
@@ -142,12 +131,16 @@ sub get_files {
 	      $Config{gccversion} !~ /intel/i
 	      # might be using, say, Intel's icc
 	     ) {
+    # When cross-compiling we may store a path for gcc's "sysroot" option:
+    my $sysroot = $Config{sysroot} || '';
 	# Some Linuxes have weird errno.hs which generate
 	# no #file or #line directives
-	my $linux_errno_h = -e '/usr/include/errno.h' ?
-	    '/usr/include/errno.h' : '/usr/local/include/errno.h';
+	my ($linux_errno_h) = grep { -e $_ } map { "$_/errno.h" }
+	    "$sysroot/usr/include", "$sysroot/usr/local/include",
+	    split / / => $Config{locincpth} or
+		die "Cannot find errno.h";
 	$file{$linux_errno_h} = 1;
-    } elsif ($^O eq 'beos' || $^O eq 'haiku') {
+    } elsif ($^O eq 'haiku') {
 	# hidden in a special place
 	$file{'/boot/develop/headers/posix/errno.h'} = 1;
 
@@ -167,8 +160,7 @@ sub get_files {
 	} else {
 	    print CPPI "#include <errno.h>\n";
 	    if ($IsMSWin32) {
-		print CPPI "#define _WINSOCKAPI_\n"; # don't drag in everything
-		print CPPI "#include <winsock.h>\n";
+		print CPPI qq[#include "../../win32/include/sys/errno2.h"\n];
 	    }
 	}
 
@@ -184,13 +176,7 @@ sub get_files {
 		die "Cannot exec $cpp";
 	}
 
-	my $pat;
-	if (($IsMSWin32 || $^O eq 'NetWare') and $Config{cc} =~ /^bcc/i) {
-	    $pat = '^/\*\s+(.+)\s+\d+\s*:\s+\*/';
-	}
-	else {
-	    $pat = '^#\s*(?:line)?\s*\d+\s+"([^"]+)"';
-	}
+	my $pat = '^#\s*(?:line)?\s*\d+\s+"([^"]+)"';
 	while(<CPPO>) {
 	    if ($^O eq 'os2' or $IsMSWin32 or $^O eq 'NetWare') {
 		if (/$pat/o) {
@@ -227,16 +213,7 @@ sub write_errno_pm {
 	print CPPI "#include <errno.h>\n";
     }
     if ($IsMSWin32) {
-	print CPPI "#include <winsock.h>\n";
-	foreach $err (keys %wsa) {
-	    print CPPI "#if defined($err) && $err >= 100\n";
-	    print CPPI "#undef $err\n";
-	    print CPPI "#endif\n";
-	    print CPPI "#ifndef $err\n";
-	    print CPPI "#define $err WSA$err\n";
-	    print CPPI "#endif\n";
-	    $err{$err} = 1;
-	}
+	print CPPI qq[#include "../../win32/include/sys/errno2.h"\n];
     }
  
     foreach $err (keys %err) {
@@ -245,7 +222,7 @@ sub write_errno_pm {
 
     close(CPPI);
 
-    unless ($^O eq 'beos') {	# trust what we have / get later
+    {	# BeOS (support now removed) did not enter this block
     # invoke CPP and read the output
 
 	if ($^O eq 'VMS') {
@@ -272,55 +249,23 @@ sub write_errno_pm {
 	    my($name,$expr);
 	    next unless ($name, $expr) = /"(.*?)"\s*\[\s*\[\s*(.*?)\s*\]\s*\]/;
 	    next if $name eq $expr;
-	    $expr =~ s/\(?\([a-z_]\w*\)([^\)]*)\)?/$1/i; # ((type)0xcafebabe) at alia
-	    $expr =~ s/((?:0x)?[0-9a-fA-F]+)[LU]+\b/$1/g; # 2147483647L et alia
-	    next if $expr =~ m/^[a-zA-Z]+$/; # skip some Win32 functions
+	    $expr =~ s/\(?\(\s*[a-z_]\w*\s*\)\(?([^\)]+)\)?\)?/$1/i; # ((type)0xcafebabe) at alia
+	    $expr =~ s/\b((?:0x)?[0-9a-f]+)[LU]+\b/$1/gi; # 2147483647L et alia
+	    next if $expr =~ m/\b[a-z_]\w*\b/i; # skip expressions containing function names etc
 	    if($expr =~ m/^0[xX]/) {
 		$err{$name} = hex $expr;
 	    }
 	    else {
-	    $err{$name} = eval $expr;
-	}
+		$err{$name} = eval $expr;
+	    }
 	    delete $err{$name} unless defined $err{$name};
 	}
 	close(CPPO);
     }
 
-    # Many of the E constants (including ENOENT, which is being
-    # used in the Perl test suite a lot), are available only as
-    # enums in BeOS, so compiling and executing some code is about
-    # only way to find out what the numeric Evalues are. In fact above, we
-    # didn't even bother to get the values of the ones that have numeric
-    # values, since we can get all of them here, anyway.
-
-    if ($^O eq 'beos') {
-	if (open(C, ">errno.c")) {
-	    my @allerrs = keys %err;
-	    print C <<EOF;
-#include <errno.h>
-#include <stdio.h>
-int main() {
-EOF
-            for (@allerrs) {
-		print C qq[printf("$_ %d\n", $_);]
-	    }
-            print C "}\n";
-            close C;
-            system("cc -o errno errno.c");
-            unlink("errno.c");
-            if (open(C, "./errno|")) {
-		while (<C>) {
-		    if (/^(\w+) (-?\d+)$/) { $err{$1} = $2 }
-		}
-		close(C);
-	    } else {
-		die "failed to execute ./errno: $!\n";
-	    }
-            unlink("errno");
-        } else {
-	    die "failed to create errno.c: $!\n";
-	}
-    }
+    # escape $Config{'archname'}
+    my $archname = $Config{'archname'};
+    $archname =~ s/([@%\$])/\\$1/g;
 
     # Write Errno.pm
 
@@ -336,8 +281,8 @@ use Config;
 use strict;
 
 "\$Config{'archname'}-\$Config{'osvers'}" eq
-"$Config{'archname'}-$Config{'osvers'}" or
-	die "Errno architecture ($Config{'archname'}-$Config{'osvers'}) does not match executable architecture (\$Config{'archname'}-\$Config{'osvers'})";
+"$archname-$Config{'osvers'}" or
+	die "Errno architecture ($archname-$Config{'osvers'}) does not match executable architecture (\$Config{'archname'}-\$Config{'osvers'})";
 
 our \$VERSION = "$VERSION";
 \$VERSION = eval \$VERSION;
@@ -349,7 +294,7 @@ BEGIN {
     %err = (
 EDQ
 
-    my @err = sort { $err{$a} <=> $err{$b} }
+    my @err = sort { $err{$a} <=> $err{$b} || $a cmp $b }
 	grep { $err{$_} =~ /-?\d+$/ } keys %err;
 
     foreach $err (@err) {

@@ -16,12 +16,11 @@ if ( -f "t/testfunc.pl" ) {
 }
 
 unshift(@INC,$dir);
-use Locale::Country;
+use Locale::Codes::Country;
 
 %type = ( "LOCALE_CODE_ALPHA_2" => LOCALE_CODE_ALPHA_2,
           "LOCALE_CODE_ALPHA_3" => LOCALE_CODE_ALPHA_3,
           "LOCALE_CODE_NUMERIC" => LOCALE_CODE_NUMERIC,
-          "LOCALE_CODE_FIPS"    => LOCALE_CODE_FIPS,
         );
 
 sub test {
@@ -31,45 +30,45 @@ sub test {
       shift(@test);
       $test[2]  = $type{$test[2]}
         if (@test == 3  &&  $test[2]  &&  exists $type{$test[2]});
-      return Locale::Country::rename_country(@test,"nowarn");
+      return Locale::Codes::Country::rename_country(@test,"nowarn");
 
    } elsif ($test[0] eq "add_country") {
       shift(@test);
       $test[2]  = $type{$test[2]}
         if (@test == 3  &&  $test[2]  &&  exists $type{$test[2]});
-      return Locale::Country::add_country(@test,"nowarn");
+      return Locale::Codes::Country::add_country(@test,"nowarn");
 
    } elsif ($test[0] eq "delete_country") {
       shift(@test);
       $test[1]  = $type{$test[1]}
         if (@test == 2  &&  $test[1]  &&  exists $type{$test[1]});
-      return Locale::Country::delete_country(@test,"nowarn");
+      return Locale::Codes::Country::delete_country(@test,"nowarn");
 
    } elsif ($test[0] eq "add_country_alias") {
       shift(@test);
-      return Locale::Country::add_country_alias(@test,"nowarn");
+      return Locale::Codes::Country::add_country_alias(@test,"nowarn");
 
    } elsif ($test[0] eq "delete_country_alias") {
       shift(@test);
-      return Locale::Country::delete_country_alias(@test,"nowarn");
+      return Locale::Codes::Country::delete_country_alias(@test,"nowarn");
 
    } elsif ($test[0] eq "rename_country_code") {
       shift(@test);
       $test[2]  = $type{$test[2]}
         if (@test == 3  &&  $test[2]  &&  exists $type{$test[2]});
-      return Locale::Country::rename_country_code(@test,"nowarn");
+      return Locale::Codes::Country::rename_country_code(@test,"nowarn");
 
    } elsif ($test[0] eq "add_country_code_alias") {
       shift(@test);
       $test[2]  = $type{$test[2]}
         if (@test == 3  &&  $test[2]  &&  exists $type{$test[2]});
-      return Locale::Country::add_country_code_alias(@test,"nowarn");
+      return Locale::Codes::Country::add_country_code_alias(@test,"nowarn");
 
    } elsif ($test[0] eq "delete_country_code_alias") {
       shift(@test);
       $test[1]  = $type{$test[1]}
         if (@test == 2  &&  $test[1]  &&  exists $type{$test[1]});
-      return Locale::Country::delete_country_code_alias(@test,"nowarn");
+      return Locale::Codes::Country::delete_country_code_alias(@test,"nowarn");
 
    } elsif ($test[0] eq "country2code") {
       shift(@test);
@@ -111,6 +110,20 @@ rename_country gb NewName ~ 1
 gb
    ~
    NewName
+
+us
+   ~
+   United States
+
+rename_country
+us
+The United States
+   ~
+   1
+
+us
+   ~
+   The United States
 
 ###################################
 # Test add_country

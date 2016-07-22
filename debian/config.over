@@ -1,15 +1,12 @@
 #!/bin/sh
 
-# convert install paths
-eval $(set | sed -n 's!^\(install.*\)=/usr/!\1='$(pwd)'/debian/tmp/usr/!p')
-
 # we use a different method to get old site versions into @INC
 sitelib_stem=
 
 # no versions under vendorlib
 vendorlib_stem=
 
-# remove -rpath (shared libperl is moved to /usr/lib by rules)
+# remove -rpath (shared libperl is moved to /usr/lib/<triplet> by rules)
 tmp=
 for t in $ccdlflags
 do

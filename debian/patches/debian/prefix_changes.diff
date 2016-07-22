@@ -1,4 +1,4 @@
-From 148e2717682ce8c65475ffdeea84b3cdd1ab1649 Mon Sep 17 00:00:00 2001
+From 1073a78f95b4668323d2e7e3944915ca75ef0f24 Mon Sep 17 00:00:00 2001
 From: Brendan O'Dea <bod@debian.org>
 Date: Tue, 8 Mar 2005 19:30:38 +1100
 Subject: Fiddle with *PREFIX and variables written to the makefile
@@ -10,17 +10,17 @@ modules).
 
 Patch-Name: debian/prefix_changes.diff
 ---
- cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Any.pm  |   12 ++++++------
- cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm |    3 +--
- cpan/ExtUtils-MakeMaker/t/INST.t                |    4 +---
- cpan/ExtUtils-MakeMaker/t/INST_PREFIX.t         |   10 +++++-----
+ cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Any.pm  | 12 ++++++------
+ cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm |  3 +--
+ cpan/ExtUtils-MakeMaker/t/INST.t                |  4 +---
+ cpan/ExtUtils-MakeMaker/t/INST_PREFIX.t         | 10 +++++-----
  4 files changed, 13 insertions(+), 16 deletions(-)
 
 diff --git a/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Any.pm b/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Any.pm
-index a38f274..93d3fe9 100644
+index 2066311..0a1fb49 100644
 --- a/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Any.pm
 +++ b/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Any.pm
-@@ -701,8 +701,6 @@ all POD files in MAN1PODS and MAN3PODS.
+@@ -765,8 +765,6 @@ all POD files in MAN1PODS and MAN3PODS.
  sub manifypods_target {
      my($self) = shift;
  
@@ -29,16 +29,16 @@ index a38f274..93d3fe9 100644
      my $dependencies  = '';
  
      # populate manXpods & dependencies:
-@@ -718,7 +716,7 @@ END
+@@ -782,7 +780,7 @@ END
      foreach my $section (qw(1 3)) {
          my $pods = $self->{"MAN${section}PODS"};
-         push @man_cmds, $self->split_command(<<CMD, %$pods);
+         push @man_cmds, $self->split_command(<<CMD, map {($_,$pods->{$_})} sort keys %$pods);
 -	\$(NOECHO) \$(POD2MAN) --section=$section --perm_rw=\$(PERM_RW)
 +	\$(NOECHO) \$(POD2MAN) --section=\$(MAN${section}EXT) --perm_rw=\$(PERM_RW)
  CMD
      }
  
-@@ -1521,9 +1519,11 @@ sub init_INSTALL_from_PREFIX {
+@@ -1748,9 +1746,11 @@ sub init_INSTALL_from_PREFIX {
          $self->{SITEPREFIX}   ||= $sprefix;
          $self->{VENDORPREFIX} ||= $vprefix;
  
@@ -54,24 +54,24 @@ index a38f274..93d3fe9 100644
  
      my $arch    = $Config{archname};
 diff --git a/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm b/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm
-index a16e2d0..c308c49 100644
+index 0a6797f..c19a5f9 100644
 --- a/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm
 +++ b/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm
-@@ -2981,8 +2981,7 @@ sub prefixify {
-     print STDERR "  prefixify $var => $path\n" if $Verbose >= 2;
-     print STDERR "    from $sprefix to $rprefix\n" if $Verbose >= 2;
+@@ -3029,8 +3029,7 @@ sub prefixify {
+     warn "  prefixify $var => $path\n" if $Verbose >= 2;
+     warn "    from $sprefix to $rprefix\n" if $Verbose >= 2;
  
 -    if( $self->{ARGS}{PREFIX} &&
--        $path !~ s{^\Q$sprefix\E\b}{$rprefix}s ) 
+-        $path !~ s{^\Q$sprefix\E\b}{$rprefix}s )
 +    if( $path !~ s{^\Q$sprefix\E\b}{$rprefix}s && $self->{ARGS}{PREFIX} )
      {
  
-         print STDERR "    cannot prefix, using default.\n" if $Verbose >= 2;
+         warn "    cannot prefix, using default.\n" if $Verbose >= 2;
 diff --git a/cpan/ExtUtils-MakeMaker/t/INST.t b/cpan/ExtUtils-MakeMaker/t/INST.t
-index 6aac294..28294f2 100644
+index 91058bb..e399ced 100644
 --- a/cpan/ExtUtils-MakeMaker/t/INST.t
 +++ b/cpan/ExtUtils-MakeMaker/t/INST.t
-@@ -61,9 +61,7 @@ isa_ok( $mm, 'ExtUtils::MakeMaker' );
+@@ -65,9 +65,7 @@ isa_ok( $mm, 'ExtUtils::MakeMaker' );
  is( $mm->{NAME}, 'Big::Dummy',  'NAME' );
  is( $mm->{VERSION}, 0.01,            'VERSION' );
  
@@ -83,7 +83,7 @@ index 6aac294..28294f2 100644
  is( !!$mm->{PERL_CORE}, !!$ENV{PERL_CORE}, 'PERL_CORE' );
  
 diff --git a/cpan/ExtUtils-MakeMaker/t/INST_PREFIX.t b/cpan/ExtUtils-MakeMaker/t/INST_PREFIX.t
-index fbb18a3..8987569 100644
+index e8de7c6..3fb3f12 100644
 --- a/cpan/ExtUtils-MakeMaker/t/INST_PREFIX.t
 +++ b/cpan/ExtUtils-MakeMaker/t/INST_PREFIX.t
 @@ -10,7 +10,7 @@ BEGIN {
@@ -95,8 +95,8 @@ index fbb18a3..8987569 100644
  use MakeMaker::Test::Utils;
  use MakeMaker::Test::Setup::BFD;
  use ExtUtils::MakeMaker;
-@@ -58,16 +58,16 @@ like( $stdout->read, qr{
- 			Writing\ MYMETA.yml\n
+@@ -62,16 +62,16 @@ like( $stdout->read, qr{
+                         (?:Writing\ MYMETA.yml\ and\ MYMETA.json\n)?
  }x );
  
 -is( $mm->{PREFIX}, '$(SITEPREFIX)', 'PREFIX set based on INSTALLDIRS' );

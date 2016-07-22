@@ -5,13 +5,7 @@
 #
 ################################################################################
 #
-#  $Revision: 35 $
-#  $Author: mhx $
-#  $Date: 2009/06/12 12:29:35 +0200 $
-#
-################################################################################
-#
-#  Version 3.x, Copyright (C) 2004-2009, Marcus Holland-Moritz.
+#  Version 3.x, Copyright (C) 2004-2013, Marcus Holland-Moritz.
 #  Version 2.x, Copyright (C) 2001, Paul Marquess.
 #  Version 1.x, Copyright (C) 1999, Kenneth Albanowski.
 #
@@ -261,7 +255,7 @@ for $f (@f) {
   }
   my $aTHX_args = "$aTHX$args";
 
-  unless ($f->{flags}{'m'} and @arg == 0) {
+  if (!$f->{flags}{'m'} or $f->{flags}{'b'} or @arg > 0) {
     $args = "($args)";
     $aTHX_args = "($aTHX_args)";
   }
@@ -320,4 +314,3 @@ END
 }
 
 @ARGV and close OUT;
-

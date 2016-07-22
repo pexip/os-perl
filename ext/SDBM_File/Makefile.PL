@@ -20,8 +20,13 @@ WriteMakefile(
               XSPROTOARG => '-noprototypes', 		# XXX remove later?
               VERSION_FROM => 'SDBM_File.pm',
               DEFINE => $define,
-	      PERL_MALLOC_OK => 1,
              );
+
+# We don't want the default subdir rule, as it creates a race condition with the
+# rule we add below.
+sub MY::subdir_x {
+    return '';
+}
 
 sub MY::postamble {
   if ($^O =~ /MSWin32/ && !defined($ENV{SYSTEMROOT})) {

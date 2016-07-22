@@ -1,4 +1,4 @@
-From 718e9cbd59f0739fc9104af111e42fff66f927a7 Mon Sep 17 00:00:00 2001
+From 35533e0b026619307735d82e89b6ab4c500ef75c Mon Sep 17 00:00:00 2001
 From: Niko Tyni <ntyni@debian.org>
 Date: Sun, 3 Oct 2010 21:36:17 +0300
 Subject: Squelch locale warnings in Debian package maintainer scripts
@@ -15,30 +15,30 @@ the warning will be triggered normally again at that point.
 
 Patch-Name: debian/squelch-locale-warnings.diff
 ---
- locale.c           |    4 ++++
- pod/perllocale.pod |    8 ++++++++
- 2 files changed, 12 insertions(+), 0 deletions(-)
+ locale.c           | 4 ++++
+ pod/perllocale.pod | 8 ++++++++
+ 2 files changed, 12 insertions(+)
 
 diff --git a/locale.c b/locale.c
-index 4631b86..94a0962 100644
+index 27225f3..c451b33 100644
 --- a/locale.c
 +++ b/locale.c
-@@ -359,6 +359,10 @@ Perl_init_i18nl10n(pTHX_ int printwarn)
- 	char *p;
- 	const bool locwarn = (printwarn > 1 ||
- 			(printwarn &&
+@@ -512,6 +512,10 @@ Perl_init_i18nl10n(pTHX_ int printwarn)
+     char *p;
+     const bool locwarn = (printwarn > 1 ||
+                     (printwarn &&
 +
-+			 /* Debian specific change - see http://bugs.debian.org/508764 */
-+			 (!PerlEnv_getenv("DPKG_RUNNING_VERSION")) &&
++                     /* Debian specific change - see http://bugs.debian.org/508764 */
++                     (!PerlEnv_getenv("DPKG_RUNNING_VERSION")) &&
 +
- 			 (!(p = PerlEnv_getenv("PERL_BADLANG")) || atoi(p))));
- 
- 	if (locwarn) {
+                      (!(p = PerlEnv_getenv("PERL_BADLANG")) || atoi(p))));
+     bool done = FALSE;
+     const char *system_default_locale = NULL;
 diff --git a/pod/perllocale.pod b/pod/perllocale.pod
-index 8926d8b..6c55889 100644
+index 40fc3e6..96a63e8 100644
 --- a/pod/perllocale.pod
 +++ b/pod/perllocale.pod
-@@ -861,6 +861,14 @@ B<NOTE>: PERL_BADLANG only gives you a way to hide the warning message.
+@@ -1148,6 +1148,14 @@ B<NOTE>: C<PERL_BADLANG> only gives you a way to hide the warning message.
  The message tells about some problem in your system's locale support,
  and you should investigate what the problem is.
  

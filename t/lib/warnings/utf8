@@ -1,7 +1,7 @@
 
   utf8.c AOK
 
-     [utf8_to_uv]
+     [utf8_to_uvchr_buf]
      Malformed UTF-8 character
 	my $a = ord "\x80" ;
 
@@ -14,7 +14,7 @@
      <<<<<< Add a test when something actually calls utf16_to_utf8
 
 __END__
-# utf8.c [utf8_to_uv] -W
+# utf8.c [utf8_to_uvchr_buf] -W
 BEGIN {
     if (ord('A') == 193) {
         print "SKIPPED\n# ebcdic platforms do not generate Malformed UTF-8 warnings.";
@@ -157,6 +157,7 @@ Operation "ucfirst" returns its argument for UTF-16 surrogate U+D800 at - line 3
 Operation "ucfirst" returns its argument for UTF-16 surrogate U+DFFF at - line 4.
 Operation "ucfirst" returns its argument for non-Unicode code point 0x110000 at - line 14.
 ########
+# NAME Matching \p{} against above-Unicode
 use warnings 'utf8';
 chr(0xD7FF) =~ /\p{Any}/;
 chr(0xD800) =~ /\p{Any}/;
@@ -170,7 +171,60 @@ chr(0x10000) =~ /\p{Any}/;
 chr(0x100000) =~ /\p{Any}/;
 chr(0x10FFFE) =~ /\p{Any}/;
 chr(0x10FFFF) =~ /\p{Any}/;
-chr(0x110000) =~ /\p{Any}/;
+chr(0x110000) =~ /[\p{Any}]/;
+chr(0x110001) =~ /[\w\p{Any}]/;
+chr(0x10FFFF) =~ /\p{All}/;
+chr(0x110002) =~ /[\w\p{All}]/;
+chr(0x110003) =~ /[\p{XPosixWord}]/;
+chr(0x110004) =~ /[\P{XPosixWord}]/;
+chr(0x110005) =~ /^[\p{Unassigned}]/;
+chr(0x110006) =~ /^[\P{Unassigned}]/;
+# Only Unicode properties give non-Unicode warnings, and only those properties
+# which do match above Unicode; and not when something else in the class
+# matches above Unicode.  Below we test three ways where something outside the
+# property may match non-Unicode: a code point above it, a class \S that we
+# know at compile time doesn't, and a class \W whose values aren't (at the time
+# of this writing) specified at compile time, but which wouldn't match
+chr(0x110050) =~ /\w/;
+chr(0x110051) =~ /\W/;
+chr(0x110052) =~ /\d/;
+chr(0x110053) =~ /\D/;
+chr(0x110054) =~ /\s/;
+chr(0x110055) =~ /\S/;
+chr(0x110056) =~ /[[:word:]]/;
+chr(0x110057) =~ /[[:^word:]]/;
+chr(0x110058) =~ /[[:alnum:]]/;
+chr(0x110059) =~ /[[:^alnum:]]/;
+chr(0x11005A) =~ /[[:space:]]/;
+chr(0x11005B) =~ /[[:^space:]]/;
+chr(0x11005C) =~ /[[:digit:]]/;
+chr(0x11005D) =~ /[[:^digit:]]/;
+chr(0x11005E) =~ /[[:alpha:]]/;
+chr(0x11005F) =~ /[[:^alpha:]]/;
+chr(0x110060) =~ /[[:ascii:]]/;
+chr(0x110061) =~ /[[:^ascii:]]/;
+chr(0x110062) =~ /[[:cntrl:]]/;
+chr(0x110063) =~ /[[:^cntrl:]]/;
+chr(0x110064) =~ /[[:graph:]]/;
+chr(0x110065) =~ /[[:^graph:]]/;
+chr(0x110066) =~ /[[:lower:]]/;
+chr(0x110067) =~ /[[:^lower:]]/;
+chr(0x110068) =~ /[[:print:]]/;
+chr(0x110069) =~ /[[:^print:]]/;
+chr(0x11006A) =~ /[[:punct:]]/;
+chr(0x11006B) =~ /[[:^punct:]]/;
+chr(0x11006C) =~ /[[:upper:]]/;
+chr(0x11006D) =~ /[[:^upper:]]/;
+chr(0x11006E) =~ /[[:xdigit:]]/;
+chr(0x11006F) =~ /[[:^xdigit:]]/;
+chr(0x110070) =~ /[[:blank:]]/;
+chr(0x110071) =~ /[[:^blank:]]/;
+chr(0x111010) =~ /[\W\p{Unassigned}]/;
+chr(0x111011) =~ /[\W\P{Unassigned}]/;
+chr(0x112010) =~ /[\S\p{Unassigned}]/;
+chr(0x112011) =~ /[\S\P{Unassigned}]/;
+chr(0x113010) =~ /[\x{110000}\p{Unassigned}]/;
+chr(0x113011) =~ /[\x{110000}\P{Unassigned}]/;
 no warnings 'utf8';
 chr(0xD7FF) =~ /\p{Any}/;
 chr(0xD800) =~ /\p{Any}/;
@@ -184,16 +238,110 @@ chr(0x10000) =~ /\p{Any}/;
 chr(0x100000) =~ /\p{Any}/;
 chr(0x10FFFE) =~ /\p{Any}/;
 chr(0x10FFFF) =~ /\p{Any}/;
-chr(0x110000) =~ /\p{Any}/;
+chr(0x110000) =~ /[\p{Any}]/;
+chr(0x110001) =~ /[\w\p{Any}]/;
+chr(0x10FFFF) =~ /\p{All}/;
+chr(0x110002) =~ /[\w\p{All}]/;
+chr(0x110003) =~ /[\p{XPosixWord}]/;
+chr(0x110004) =~ /[\P{XPosixWord}]/;
+chr(0x110005) =~ /^[\p{Unassigned}]/;
+chr(0x110006) =~ /^[\P{Unassigned}]/;
+chr(0x110050) =~ /\w/;
+chr(0x110051) =~ /\W/;
+chr(0x110052) =~ /\d/;
+chr(0x110053) =~ /\D/;
+chr(0x110054) =~ /\s/;
+chr(0x110055) =~ /\S/;
+chr(0x110056) =~ /[[:word:]]/;
+chr(0x110057) =~ /[[:^word:]]/;
+chr(0x110058) =~ /[[:alnum:]]/;
+chr(0x110059) =~ /[[:^alnum:]]/;
+chr(0x11005A) =~ /[[:space:]]/;
+chr(0x11005B) =~ /[[:^space:]]/;
+chr(0x11005C) =~ /[[:digit:]]/;
+chr(0x11005D) =~ /[[:^digit:]]/;
+chr(0x11005E) =~ /[[:alpha:]]/;
+chr(0x11005F) =~ /[[:^alpha:]]/;
+chr(0x110060) =~ /[[:ascii:]]/;
+chr(0x110061) =~ /[[:^ascii:]]/;
+chr(0x110062) =~ /[[:cntrl:]]/;
+chr(0x110063) =~ /[[:^cntrl:]]/;
+chr(0x110064) =~ /[[:graph:]]/;
+chr(0x110065) =~ /[[:^graph:]]/;
+chr(0x110066) =~ /[[:lower:]]/;
+chr(0x110067) =~ /[[:^lower:]]/;
+chr(0x110068) =~ /[[:print:]]/;
+chr(0x110069) =~ /[[:^print:]]/;
+chr(0x11006A) =~ /[[:punct:]]/;
+chr(0x11006B) =~ /[[:^punct:]]/;
+chr(0x11006C) =~ /[[:upper:]]/;
+chr(0x11006D) =~ /[[:^upper:]]/;
+chr(0x11006E) =~ /[[:xdigit:]]/;
+chr(0x11006F) =~ /[[:^xdigit:]]/;
+chr(0x110070) =~ /[[:blank:]]/;
+chr(0x110071) =~ /[[:^blank:]]/;
+chr(0x111010) =~ /[\W\p{Unassigned}]/;
+chr(0x111011) =~ /[\W\P{Unassigned}]/;
+chr(0x112010) =~ /[\S\p{Unassigned}]/;
+chr(0x112011) =~ /[\S\P{Unassigned}]/;
+chr(0x113010) =~ /[\x{110000}\p{Unassigned}]/;
+chr(0x113011) =~ /[\x{110000}\P{Unassigned}]/;
 EXPECT
-Code point 0x110000 is not Unicode, no properties match it; all inverse properties do at - line 14.
+Matched non-Unicode code point 0x110005 against Unicode property; may not be portable at - line 20.
+Matched non-Unicode code point 0x110006 against Unicode property; may not be portable at - line 21.
+########
+# NAME Matching Unicode property against above-Unicode code point outputs a warning even if optimizer rejects the match (in synthetic start class)
+# Now have to make FATAL to guarantee being output
+use warnings FATAL => 'non_unicode';
+"\x{110000}" =~ /b?\p{Space}/;
+EXPECT
+Matched non-Unicode code point 0x110000 against Unicode property; may not be portable at - line 3.
+########
+# NAME Matching POSIX class property against above-Unicode code point doesn't output a warning
+use warnings 'non_unicode';
+use warnings FATAL => 'non_unicode';
+"\x{110000}" =~ /b?[[:space:]]/;
+EXPECT
 ########
 use warnings 'utf8';
 chr(0x110000) =~ /\p{Any}/;
+########
+# NAME utf8, non_unicode warnings categories work on Matched non-Unicode code point warning
+use warnings qw(utf8 non_unicode);
+chr(0x110000) =~ /^\p{Unassigned}/;
 no warnings 'non_unicode';
-chr(0x110000) =~ /\p{Any}/;
+chr(0x110001) =~ /\p{Unassigned}/;
+use warnings 'non_unicode';
+no warnings 'utf8';
+chr(0x110002) =~ /\p{Unassigned}/;
 EXPECT
-Code point 0x110000 is not Unicode, no properties match it; all inverse properties do at - line 2.
+Matched non-Unicode code point 0x110000 against Unicode property; may not be portable at - line 2.
+########
+# NAME optimizable regnode should still give non_unicode warnings when fatalized
+use warnings 'utf8';
+use warnings FATAL => 'non_unicode';
+chr(0x110000) =~ /\p{lb=cr}/;
+EXPECT
+Matched non-Unicode code point 0x110000 against Unicode property; may not be portable at - line 3.
+########
+# NAME optimizable regnode should not give non_unicode warnings when warnings are off
+no warnings 'non_unicode';
+chr(0x110000) =~ /\p{lb=cr}/;
+EXPECT
+########
+# NAME 'All' matches above-Unicode without any warning
+use warnings qw(utf8 non_unicode);
+chr(0x110000) =~ /\p{All}/;
+EXPECT
+########
+require "../test.pl";
+use warnings 'utf8';
+sub Is_Super { return '!utf8::Any' }
+# The extra char is to avoid an optimization that avoids the problem when the
+# property is the only non-latin1 char in a class
+print "\x{1100000}" =~ /^[\p{Is_Super}\x{100}]$/, "\n";
+EXPECT
+1
 ########
 require "../test.pl";
 use warnings 'utf8';
@@ -339,6 +487,36 @@ close $fh;
 EXPECT
 Unicode surrogate U+D800 is illegal in UTF-8 at - line 6.
 Unicode non-character U+FFFF is illegal for open interchange at - line 7.
+########
+# NAME C<use warnings "nonchar"> works in isolation
+require "../test.pl";
+use warnings 'nonchar';
+my $file = tempfile();
+open(my $fh, "+>:utf8", $file);
+print $fh "\x{FFFF}", "\n";
+close $fh;
+EXPECT
+Unicode non-character U+FFFF is illegal for open interchange at - line 5.
+########
+# NAME C<use warnings "surrogate"> works in isolation
+require "../test.pl";
+use warnings 'surrogate';
+my $file = tempfile();
+open(my $fh, "+>:utf8", $file);
+print $fh "\x{D800}", "\n";
+close $fh;
+EXPECT
+Unicode surrogate U+D800 is illegal in UTF-8 at - line 5.
+########
+# NAME C<use warnings "non_unicode"> works in isolation
+require "../test.pl";
+use warnings 'non_unicode';
+my $file = tempfile();
+open(my $fh, "+>:utf8", $file);
+print $fh "\x{110000}", "\n";
+close $fh;
+EXPECT
+Code point 0x110000 is not Unicode, may not be portable at - line 5.
 ########
 require "../test.pl";
 no warnings 'utf8';

@@ -4,7 +4,7 @@ use strict;
 use ExtUtils::CBuilder::Platform::Unix;
 
 use vars qw($VERSION @ISA);
-$VERSION = '0.280203';
+$VERSION = '0.280217';
 @ISA = qw(ExtUtils::CBuilder::Platform::Unix);
 
 sub need_prelink { 1 }
@@ -29,18 +29,12 @@ sub _do_link {
   if ($how eq 'lib_file'
       and (defined $args{module_name} and length $args{module_name})) {
 
-    # DynaLoader::mod2fname() is a builtin func
-    my $lib = DynaLoader::mod2fname([split /::/, $args{module_name}]);
-
     # Now know the basename, find directory parts via lib_file, or objects
     my $objs = ( (ref $args{objects}) ? $args{objects} : [$args{objects}] );
     my $near_obj = $self->lib_file(@$objs);
-    my $ref_file = ( defined $args{lib_file} ? $args{lib_file} : $near_obj );
-    my $lib_dir = ($ref_file =~ m,(.*)[/\\],s ? "$1/" : '' );
     my $exp_dir = ($near_obj =~ m,(.*)[/\\],s ? "$1/" : '' );
 
     $args{dl_file} = $1 if $near_obj =~ m,(.*)\.,s; # put ExportList near OBJ
-    $args{lib_file} = "$lib_dir$lib.$self->{config}{dlext}";	# DLL file
 
     # XXX _do_link does not have place to put libraries?
     push @$objs, $self->perl_inc() . "/libperl$self->{config}{lib_ext}";
@@ -57,9 +51,9 @@ sub extra_link_args_after_prelink {
   my ($self, %args) = @_;
 
   my @DEF = grep /\.def$/i, @{$args{prelink_res}};
-  die "More than one .def files created by `prelink' stage" if @DEF > 1;
+  die "More than one .def files created by 'prelink' stage" if @DEF > 1;
   # XXXX No "$how" argument here, so how to test for dynamic link?
-  die "No .def file created by `prelink' stage"
+  die "No .def file created by 'prelink' stage"
     unless @DEF or not @{$args{prelink_res}};
 
   my @after_libs = ($OS2::is_aout ? ()

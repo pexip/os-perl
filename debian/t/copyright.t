@@ -26,11 +26,20 @@ is($checked_version, $upstream_version,
     "debian/copyright last checked for the current upstream version");
 
 SKIP: {
-    system("which config-edit >/dev/null 2>&1");
-    skip("config-edit not available", 2) if $?;
-    diag("parsing debian/copyright with config-edit...");
-    is( qx/config-edit -application dpkg-copyright -ui none 2>&1/, "",
-        "no error messages from config-edit when parsing debian/copyright");
-    is($?, 0, "config-edit exited normally");
+    system('which cme >/dev/null 2>&1');
+    my $cmd;
+    if ($?) {
+        system('which config-edit >/dev/null 2>&1');
+        skip('no cme or config-edit or available', 2) if $?;
+        $cmd = 'config-edit -application dpkg-copyright -ui none';
+    } else {
+        skip('no cme dpkg-copyright application available (try installing libconfig-model-dpkg-perl)', 2)
+            if qx/cme list/ !~ /dpkg-copyright/;
+        $cmd = 'cme check dpkg-copyright';
+    }
+    diag("checking debian/copyright with copyright checker '$cmd'");
+    unlike( qx/$cmd 2>&1/, qr/error/,
+        'no error messages from copyright checker when parsing debian/copyright');
+    is($?, 0, 'copyright checker exited successfully');
 }
 

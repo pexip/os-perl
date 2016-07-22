@@ -94,18 +94,8 @@ the Git repository pointed by the Vcs-Git field in debian/control.  NMUers
 and the like can use the old way of standalone patch handling described
 above, or just hack the source and ignore debian/patches altogether.
 
-First, you need to have the 'git-dpm' package installed. The current version
-as of this writing is 0.7.1-1, and the minimum version required to handle
-the perl repository is 0.5.0-1.
-
-To avoid introducing noise in the form of wrapping/unwrapping of
-subject lines in patches, it is recommended that git >= 1:1.7.5.4-1
-be used with git-dpm in this repository.
-
-Until Debian bug #629242 is fixed, you should configure git to not add
-signatures to patches, to avoid unnecessary churn:
-
-    git config  --add format.signature '' 
+First, you need to be running wheezy or later, and have the 'git-dpm'
+package installed.
 
 Any upstream modifications need to be done on a special 'patched' branch
 that is created with 'git-dpm checkout-patched'. Every commit on this branch

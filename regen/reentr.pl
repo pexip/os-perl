@@ -50,13 +50,17 @@ my %map = (
 # Example #2: S_SBIE  means type func_r(type, char*, int, int*)
 # Example #3: S_CBI   means type func_r(const char*, char*, int)
 
+sub open_print_header {
+    my ($file, $quote) = @_;
+    return open_new($file, '>',
+		    { by => 'regen/reentr.pl',
+		      from => 'data in regen/reentr.pl',
+		      file => $file, style => '*',
+		      copyright => [2002, 2003, 2005 .. 2007],
+		      quote => $quote });
+}
 
-my $h = safer_open('reentr.h-new', 'reentr.h');
-print $h read_only_top(lang => 'C', by => 'regen/reentr.pl',
-		       from => 'data in regen/reentr.pl',
-		       file => 'reentr.h', style => '*',
-		       copyright => [2002, 2003, 2005 .. 2007]);
-
+my $h = open_print_header('reentr.h');
 print $h <<EOF;
 #ifndef REENTR_H
 #define REENTR_H
@@ -87,13 +91,11 @@ print $h <<EOF;
 
 #ifdef __hpux
 #   undef HAS_CRYPT_R
-#   undef HAS_DRAND48_R
 #   undef HAS_ENDGRENT_R
 #   undef HAS_ENDPWENT_R
 #   undef HAS_GETGRENT_R
 #   undef HAS_GETPWENT_R
 #   undef HAS_SETLOCALE_R
-#   undef HAS_SRAND48_R
 #   undef HAS_STRERROR_R
 #   define NETDB_R_OBSOLETE
 #endif
@@ -147,9 +149,6 @@ print $h <<EOF;
 #ifdef I_NETDB
 #   include <netdb.h>
 #endif
-#ifdef I_STDLIB
-#   include <stdlib.h>	/* drand48_data */
-#endif
 #ifdef I_CRYPT
 #   ifdef I_CRYPT
 #       include <crypt.h>
@@ -173,7 +172,7 @@ my %seend; # the type of this function's "D"
 my %seenm; # all the types
 my %seenu; # the length of the argument list of this function
 
-while (<DATA>) { # Read in the protypes.
+while (<DATA>) { # Read in the protoypes.
     next if /^\s+$/;
     chomp;
     my ($func, $hdr, $type, @p) = split(/\s*\|\s*/, $_, -1);
@@ -500,30 +499,6 @@ EOF
 EOF
 	    pushssif $endif;
 	}
-        elsif ($func =~ /^(drand48|random|srandom)$/) {
-	    pushssif $ifdef;
-	    push @struct, <<EOF;
-	$seent{$func} _${func}_struct;
-EOF
-	    if ($1 eq 'drand48') {
-	        push @struct, <<EOF;
-	double	_${func}_double;
-EOF
-	    } elsif ($1 eq 'random') {
-	    push @struct, <<EOF;
-#   if RANDOM_R_PROTO == REENTRANT_PROTO_I_iS
-	int	_${func}_retval;
-#   endif
-#   if RANDOM_R_PROTO == REENTRANT_PROTO_I_lS
-	long	_${func}_retval;
-#   endif
-#   if RANDOM_R_PROTO == REENTRANT_PROTO_I_St
-	int32_t	_${func}_retval;
-#   endif
-EOF
-	    }
-	    pushssif $endif;
-	}
         elsif ($func =~ /^(getgrnam|getpwnam|getspnam)$/) {
 	    pushssif $ifdef;
 	    # 'genfunc' can be read either as 'generic' or 'genre',
@@ -583,7 +558,7 @@ EOF
 	    my $GENFUNC = uc $genfunc;
 	    my $D = ifprotomatch($FUNC, grep {/D/} @p);
 	    my $d = $seend{$func};
-	    $d =~ s/\*$//; # snip: we need need the base type.
+	    $d =~ s/\*$//; # snip: we need the base type.
 	    push @struct, <<EOF;
 	$seent{$func}	_${genfunc}_struct;
 #   if $D
@@ -660,18 +635,12 @@ EOF
 	    my $genfunc = $func;
 	    if ($genfunc =~ /^(?:get|set|end)(pw|gr|host|net|proto|serv|sp)/) {
 		$genfunc = "${1}ent";
-	    } elsif ($genfunc eq 'srand48') {
-		$genfunc = "drand48";
 	    }
 	    my $b = $a;
 	    my $w = '';
 	    substr($b, 0, $seenu{$func}) = '';
-	    if ($func =~ /^random$/) {
-		$true = "PL_reentrant_buffer->_random_retval";
-	    } elsif ($b =~ /R/) {
+	    if ($b =~ /R/) {
 		$true = "PL_reentrant_buffer->_${genfunc}_ptr";
-	    } elsif ($b =~ /T/ && $func eq 'drand48') {
-		$true = "PL_reentrant_buffer->_${genfunc}_double";
 	    } elsif ($b =~ /S/) {
 		if ($func =~ /^readdir/) {
 		    $true = "PL_reentrant_buffer->_${genfunc}_struct";
@@ -702,10 +671,6 @@ EOF
 				  $func =~ /^crypt$/ ?
 				  "PL_reentrant_buffer->_${genfunc}_struct_buffer" :
 				  "&PL_reentrant_buffer->_${genfunc}_struct") :
-			     $_ eq 'T' && $func eq 'drand48' ?
-				 "&PL_reentrant_buffer->_${genfunc}_double" :
-			     $_ =~ /^[ilt]$/ && $func eq 'random' ?
-				 "&PL_reentrant_buffer->_random_retval" :
 				 $_
 			 } split '', $b;
 		$w = ", $w" if length $v;
@@ -782,15 +747,10 @@ read_only_bottom_close_and_rename($h);
 
 # Prepare to write the reentr.c.
 
-my $c = safer_open('reentr.c-new', 'reentr.c');
-my $top = read_only_top(lang => 'C', by => 'regen/reentr.pl',
-			from => 'data in regen/reentr.pl',
-			file => 'reentr.c', style => '*',
-			copyright => [2002, 2003, 2005 .. 2007]);
-
-$top =~ s! \*/\n! *
+my $c = open_print_header('reentr.c', <<'EOQ');
+ *
  * "Saruman," I said, standing away from him, "only one hand at a time can
- *  wield the One, and you know that well, so do not trouble to say we\!"
+ *  wield the One, and you know that well, so do not trouble to say we!"
  *
  * This file contains a collection of automatically created wrappers
  * (created by running reentr.pl) for reentrant (thread-safe) versions of
@@ -799,9 +759,9 @@ $top =~ s! \*/\n! *
  * care about the differences between various platforms' idiosyncrasies
  * regarding these reentrant interfaces.  
  */
-!s;
+EOQ
 
-print $c $top, <<"EOF";
+print $c <<"EOF";
 #include "EXTERN.h"
 #define PERL_IN_REENTR_C
 #include "perl.h"
@@ -836,10 +796,10 @@ Perl_reentrant_free(pTHX) {
 void*
 Perl_reentrant_retry(const char *f, ...)
 {
-    dTHX;
     void *retptr = NULL;
     va_list ap;
 #ifdef USE_REENTRANT_API
+    dTHX;
     /* Easier to special case this here than in embed.pl. (Look at what it
        generates for proto.h) */
     PERL_ARGS_ASSERT_REENTRANT_RETRY;
@@ -985,8 +945,10 @@ Perl_reentrant_retry(const char *f, ...)
 		    uid = va_arg(ap, Uid_t);
 #endif
 		    retptr = getpwuid(uid); break;
+#if defined(HAS_GETPWENT) || defined(HAS_GETPWENT_R)
 	        case OP_GPWENT:
 		    retptr = getpwent(); break;
+#endif
 	        default:
 		    SETERRNO(ERANGE, LIB_INVARG);
 		    break;
@@ -1077,7 +1039,6 @@ asctime S	|time	|const struct tm|B_SB|B_SBI|I_SB|I_SBI
 crypt CC	|crypt	|struct crypt_data|B_CCS|B_CCD|D=CRYPTD*
 ctermid	B	|stdio	|		|B_B
 ctime S		|time	|const time_t	|B_SB|B_SBI|I_SB|I_SBI
-drand48		|stdlib	|struct drand48_data	|I_ST|T=double*
 endgrent	|grp	|		|I_H|V_H
 endhostent	|netdb	|		|I_D|V_D|D=struct hostent_data*
 endnetent	|netdb	|		|I_D|V_D|D=struct netent_data*
@@ -1104,7 +1065,6 @@ getservbyname CC|netdb	|struct servent	|I_CCSBWR|S_CCSBI|I_CCSD|D=struct servent
 getservbyport IC|netdb	|struct servent	|I_ICSBWR|S_ICSBI|I_ICSD|D=struct servent_data*
 getservent	|netdb	|struct servent	|I_SBWR|I_SBI|S_SBI|I_SD|D=struct servent_data*
 getspnam C	|shadow	|struct spwd	|I_CSBWR|S_CSBI
-random		|stdlib	|struct random_data|I_iS|I_lS|I_St|i=int*|l=long*|t=int32_t*
 readdir T	|dirent	|struct dirent	|I_TSR|I_TS|T=DIR*
 readdir64 T	|dirent	|struct dirent64|I_TSR|I_TS|T=DIR*
 setgrent	|grp	|		|I_H|V_H
@@ -1114,8 +1074,6 @@ setnetent I	|netdb	|		|I_ID|V_ID|D=struct netent_data*
 setprotoent I	|netdb	|		|I_ID|V_ID|D=struct protoent_data*
 setpwent	|pwd	|		|I_H|V_H
 setservent I	|netdb	|		|I_ID|V_ID|D=struct servent_data*
-srand48 L	|stdlib	|struct drand48_data	|I_LS
-srandom	T	|stdlib	|struct random_data|I_TS|T=unsigned int
 strerror I	|string	|		|I_IBW|I_IBI|B_IBW
 tmpnam B	|stdio	|		|B_B
 ttyname	I	|unistd	|		|I_IBW|I_IBI|B_IBI

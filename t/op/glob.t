@@ -3,10 +3,10 @@
 BEGIN {
     chdir 't' if -d 't';
     @INC = qw(. ../lib);
+    require 'test.pl';
 }
 
-require 'test.pl';
-plan( tests => 13 );
+plan( tests => 18 );
 
 @oops = @ops = <op/*>;
 
@@ -20,7 +20,7 @@ elsif ($^O eq 'VMS') {
 }
 else {
   map { $files{$_}++ } <op/*>;
-  map { delete $files{$_} } split /[\s\n]/, `echo op/*`;
+  map { delete $files{$_} } split /\n/, `ls op/* | cat`;
 }
 ok( !(keys(%files)),'leftover op/* files' ) or diag(join(' ',sort keys %files));
 
@@ -48,17 +48,30 @@ my $i = 0;
 for (1..2) {
     eval "<.>";
     ok(!length($@),"eval'ed a glob $_");
-    undef %File::Glob::;
+    local %File::Glob::;
     ++$i;
 }
 cmp_ok($i,'==',2,'remove File::Glob stash');
 
 # a more sinister version of the same test (crashes from 5.8 to 5.13.1)
 {
-    undef %File::Glob::;
+    local %File::Glob::;
     local %CORE::GLOBAL::;
     eval "<.>";
     ok(!length($@),"remove File::Glob stash *and* CORE::GLOBAL::glob");
+}
+# Also try undeffing the typeglob itself, instead of hiding it
+{
+    local *CORE::GLOBAL::glob;
+    ok eval  { glob("0"); 1 },
+	'undefined *CORE::GLOBAL::glob{CODE} at run time';
+}
+# And hide the typeglob without hiding File::Glob (crashes from 5.8
+# to 5.15.4)
+{
+    local %CORE::GLOBAL::;
+    ok eval q{ glob("0"); 1 },
+	'undefined *CORE::GLOBAL::glob{CODE} at compile time';
 }
 
 # ... while ($var = glob(...)) should test definedness not truth
@@ -81,3 +94,53 @@ SKIP: {
 }
 
 cmp_ok(scalar(@oops),'>',0,'glob globbed something');
+
+SKIP: {
+    skip "~ globbing returns nothing on VMS", 1 if $^O eq 'VMS';
+    # This test exists mainly for miniperl, to test that external calls to
+    # csh, which clear %ENV first, leave $ENV{HOME}.
+    # On Windows, external glob uses File::DosGlob which returns "~", so
+    # this should pass anyway.
+    ok <~>, '~ works';
+}
+
+{
+    my $called;
+    local *CORE::GLOBAL::glob = sub { ++$called };
+    eval 'CORE::glob("0")';
+    ok !$called, 'CORE::glob bypasses overrides';
+}
+
+######## glob() bug Mon, 01 Sep 2003 02:25:41 -0700 <200309010925.h819Pf0X011457@smtp3.ActiveState.com>
+
+SKIP: {
+    use Config;
+    skip("glob() works when cross-compiling, but this test doesn't", 1)
+        if $Config{usecrosscompile};
+
+    my $switches = [qw(-lw)];
+    my $expected = "ok1\nok2\n";
+    my $name     = "Make sure the presence of the CORE::GLOBAL::glob typeglob does not affect whether File::Glob::csh_glob is called.";
+
+    fresh_perl_is(<<'EOP', $expected, { switches => $switches }, $name);
+    if ($^O eq 'VMS') {
+        # A pattern with a double quote in it is a syntax error to LIB$FIND_FILE
+        # Should we strip quotes in Perl_vms_start_glob the way csh_glob() does?
+        print "ok1\nok2\n";
+    }
+    else {
+        ++$INC{"File/Glob.pm"}; # prevent it from loading
+        my $called1 = 0;
+        my $called2 = 0;
+        *File::Glob::csh_glob = sub { ++$called1 };
+        my $output1 = eval q{ glob(q(./"TEST")) };
+        undef *CORE::GLOBAL::glob; # but leave the typeglob itself there
+        ++$CORE::GLOBAL::glob if 0; # "used only once"
+        undef *File::Glob::csh_glob; # avoid redefinition warnings
+        *File::Glob::csh_glob = sub { ++$called2 };
+        my $output2 = eval q{ glob(q(./"TEST")) };
+        print "ok1" if $called1 eq $called2;
+        print "ok2" if $output1 eq $output2;
+    }
+EOP
+}

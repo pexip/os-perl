@@ -127,7 +127,7 @@ my_find_image_symbol(struct dsc$descriptor_s *imgname,
                      struct dsc$descriptor_s *defspec)
 {
   unsigned long int retsts;
-  VAXC$ESTABLISH(lib$sig_to_ret);
+  VAXC$ESTABLISH((__vms_handler)lib$sig_to_ret);
   retsts = lib$find_image_symbol(imgname,symname,entry,defspec,DL_CASE_SENSITIVE);
   return retsts;
 }
@@ -303,12 +303,13 @@ void
 dl_find_symbol(librefptr,symname)
     void *	librefptr
     SV *	symname
-    CODE:
+    PREINIT:
     struct libref thislib = *((struct libref *)librefptr);
     struct dsc$descriptor_s
       symdsc = {SvCUR(symname),DSC$K_DTYPE_T,DSC$K_CLASS_S,SvPVX(symname)};
     void (*entry)();
     vmssts sts;
+    CODE:
 
     DLDEBUG(1,PerlIO_printf(Perl_debug_log, "dl_find_symbol(%.*s,%.*s):\n",
                       thislib.name.dsc$w_length, thislib.name.dsc$a_pointer,
@@ -360,6 +361,8 @@ void
 CLONE(...)
     CODE:
     MY_CXT_CLONE;
+
+    PERL_UNUSED_VAR(items);
 
     /* MY_CXT_CLONE just does a memcpy on the whole structure, so to avoid
      * using Perl variables that belong to another thread, we create our 

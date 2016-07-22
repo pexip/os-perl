@@ -1,27 +1,30 @@
 /* zutil.c -- target dependent utility functions for the compression library
- * Copyright (C) 1995-2005, 2010 Jean-loup Gailly.
+ * Copyright (C) 1995-2005, 2010, 2011, 2012 Jean-loup Gailly.
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
 /* @(#) $Id$ */
 
 #include "zutil.h"
+#ifndef Z_SOLO
+#  include "gzguts.h"
+#endif
 
 #ifndef NO_DUMMY_DECL
 struct internal_state      {int dummy;}; /* for buggy compilers */
 #endif
 
-const char * const z_errmsg[10] = {
-"need dictionary",     /* Z_NEED_DICT       2  */
-"stream end",          /* Z_STREAM_END      1  */
-"",                    /* Z_OK              0  */
-"file error",          /* Z_ERRNO         (-1) */
-"stream error",        /* Z_STREAM_ERROR  (-2) */
-"data error",          /* Z_DATA_ERROR    (-3) */
-"insufficient memory", /* Z_MEM_ERROR     (-4) */
-"buffer error",        /* Z_BUF_ERROR     (-5) */
-"incompatible version",/* Z_VERSION_ERROR (-6) */
-""};
+z_const char * const z_errmsg[10] = {
+(char*)"need dictionary",     /* Z_NEED_DICT       2  */
+(char*)"stream end",          /* Z_STREAM_END      1  */
+(char*)"",                    /* Z_OK              0  */
+(char*)"file error",          /* Z_ERRNO         (-1) */
+(char*)"stream error",        /* Z_STREAM_ERROR  (-2) */
+(char*)"data error",          /* Z_DATA_ERROR    (-3) */
+(char*)"insufficient memory", /* Z_MEM_ERROR     (-4) */
+(char*)"buffer error",        /* Z_BUF_ERROR     (-5) */
+(char*)"incompatible version",/* Z_VERSION_ERROR (-6) */
+(char*)""};
 
 
 const char * ZEXPORT zlibVersion()
@@ -85,27 +88,27 @@ uLong ZEXPORT zlibCompileFlags()
 #ifdef FASTEST
     flags += 1L << 21;
 #endif
-#ifdef STDC
+#if defined(STDC) || defined(Z_HAVE_STDARG_H)
 #  ifdef NO_vsnprintf
-        flags += 1L << 25;
+    flags += 1L << 25;
 #    ifdef HAS_vsprintf_void
-        flags += 1L << 26;
+    flags += 1L << 26;
 #    endif
 #  else
 #    ifdef HAS_vsnprintf_void
-        flags += 1L << 26;
+    flags += 1L << 26;
 #    endif
 #  endif
 #else
-        flags += 1L << 24;
+    flags += 1L << 24;
 #  ifdef NO_snprintf
-        flags += 1L << 25;
+    flags += 1L << 25;
 #    ifdef HAS_sprintf_void
-        flags += 1L << 26;
+    flags += 1L << 26;
 #    endif
 #  else
 #    ifdef HAS_snprintf_void
-        flags += 1L << 26;
+    flags += 1L << 26;
 #    endif
 #  endif
 #endif
@@ -181,6 +184,7 @@ void ZLIB_INTERNAL zmemzero(
 }
 #endif
 
+#ifndef Z_SOLO
 
 #ifdef SYS16BIT
 
@@ -316,3 +320,5 @@ void ZLIB_INTERNAL zcfree (
 }
 
 #endif /* MY_ZCALLOC */
+
+#endif /* !Z_SOLO */
