@@ -12,7 +12,7 @@ Build-Depends: file, cpio (>= 2.6-5), libdb-dev, libgdbm-dev, netbase [!hurd-any
 Build-Conflicts: libterm-readline-gnu-perl (<< 1.17), libfile-sharedir-perl
 Vcs-Git: git://anonscm.debian.org/perl/perl.git
 Vcs-Browser: http://anonscm.debian.org/gitweb/?p=perl/perl.git
-XS-Pexip-Upstream: http://archive.ubuntu.com/ubuntu/ precise
+XS-Pexip-Upstream: http://ftp.debian.org/debian/ jessie
 
 Package: perl-base
 Essential: yes
