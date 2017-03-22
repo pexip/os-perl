@@ -1,3 +1,15 @@
+/*
+ * sha64bit.c: routines to compute SHA-384/512 digests
+ *
+ * Ref: NIST FIPS PUB 180-4 Secure Hash Standard
+ *
+ * Copyright (C) 2003-2014 Mark Shelor, All Rights Reserved
+ *
+ * Version: 5.88
+ * Mon Mar 17 08:46:10 MST 2014
+ *
+ */
+
 #ifdef SHA_384_512
 
 #undef sha_384_512
@@ -95,7 +107,7 @@ static W64 strto64(char *s)
 static void sha512(SHA *s, unsigned char *block) /* SHA-384/512 transform */
 {
 	W64 a, b, c, d, e, f, g, h, T1, T2;
-	SHA_STO_CLASS W64 W[80];
+	W64 W[80];
 	W64 *H = (W64 *) s->H;
 	int t;
 

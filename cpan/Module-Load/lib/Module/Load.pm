@@ -1,19 +1,69 @@
 package Module::Load;
 
-$VERSION = '0.18';
+$VERSION = '0.32';
 
 use strict;
+use warnings;
 use File::Spec ();
 
 sub import {
     my $who = _who();
+    my $h; shift;
 
     {   no strict 'refs';
-        *{"${who}::load"} = *load;
+
+        @_ or (
+            *{"${who}::load"} = \&load, # compat to prev version
+            *{"${who}::autoload"} = \&autoload,
+            return
+        );
+
+        map { $h->{$_} = () if defined $_ } @_;
+
+        (exists $h->{none} or exists $h->{''})
+            and shift, last;
+
+        ((exists $h->{autoload} and shift,1) or (exists $h->{all} and shift))
+            and *{"${who}::autoload"} = \&autoload;
+
+        ((exists $h->{load} and shift,1) or exists $h->{all})
+            and *{"${who}::load"} = \&load;
+
+        ((exists $h->{load_remote} and shift,1) or exists $h->{all})
+            and *{"${who}::load_remote"} = \&load_remote;
+
+        ((exists $h->{autoload_remote} and shift,1) or exists $h->{all})
+            and *{"${who}::autoload_remote"} = \&autoload_remote;
+
     }
+
 }
 
-sub load (*;@)  {
+sub load(*;@){
+    goto &_load;
+}
+
+sub autoload(*;@){
+    unshift @_, 'autoimport';
+    goto &_load;
+}
+
+sub load_remote($$;@){
+    my ($dst, $src, @exp) = @_;
+
+    eval "package $dst;Module::Load::load('$src', qw/@exp/);";
+    $@ && die "$@";
+}
+
+sub autoload_remote($$;@){
+    my ($dst, $src, @exp) = @_;
+
+    eval "package $dst;Module::Load::autoload('$src', qw/@exp/);";
+    $@ && die "$@";
+}
+
+sub _load{
+    my $autoimport = $_[0] eq 'autoimport' and shift;
     my $mod = shift or return;
     my $who = _who();
 
@@ -30,24 +80,34 @@ sub load (*;@)  {
             die $err if $err;
         }
     }
-    
-    ### This addresses #41883: Module::Load cannot import 
+
+    ### This addresses #41883: Module::Load cannot import
     ### non-Exporter module. ->import() routines weren't
     ### properly called when load() was used.
+
     {   no strict 'refs';
         my $import;
-        if (@_ and $import = $mod->can('import')) {
-            unshift @_, $mod;
-            goto &$import;
-        }
+
+    ((@_ or $autoimport) and (
+        $import = $mod->can('import')
+        ) and (
+        unshift(@_, $mod),
+        goto &$import,
+        return
+        )
+    );
     }
+
 }
 
 sub _to_file{
     local $_    = shift;
     my $pm      = shift || '';
 
-    my @parts = split /::/;
+    ## trailing blanks ignored by default. [rt #69886]
+    my @parts = split /::|'/, $_, -1;
+    ## make sure that we can't hop out of @INC
+    shift @parts if @parts && !$parts[0];
 
     ### because of [perl #19213], see caveats ###
     my $file = $^O eq 'MSWin32'
@@ -55,7 +115,7 @@ sub _to_file{
                     : File::Spec->catfile( @parts );
 
     $file   .= '.pm' if $pm;
-    
+
     ### on perl's before 5.10 (5.9.5@31746) if you require
     ### a file in VMS format, it's stored in %INC in VMS
     ### format. Therefor, better unixify it first
@@ -89,26 +149,31 @@ Module::Load - runtime require of both modules and files
 
 =head1 SYNOPSIS
 
-	use Module::Load;
+  use Module::Load;
 
-    my $module = 'Data:Dumper';
-    load Data::Dumper;      # loads that module
-    load 'Data::Dumper';    # ditto
-    load $module            # tritto
-    
-    my $script = 'some/script.pl'
-    load $script;
-    load 'some/script.pl';	# use quotes because of punctuations
-    
-    load thing;             # try 'thing' first, then 'thing.pm'
+  my $module = 'Data::Dumper';
 
-    load CGI, ':standard'   # like 'use CGI qw[:standard]'
-    
+  load Data::Dumper;     # loads that module, but not import any functions
+                         # -> cannot use 'Dumper' function
+
+  load 'Data::Dumper';   # ditto
+  load $module           # tritto
+
+  autoload Data::Dumper; # loads that module and imports the default functions
+                         # -> can use 'Dumper' function
+
+  my $script = 'some/script.pl'
+  load $script;
+  load 'some/script.pl';  # use quotes because of punctuations
+
+  load thing;             # try 'thing' first, then 'thing.pm'
+
+  load CGI, ':all';       # like 'use CGI qw[:standard]'
 
 =head1 DESCRIPTION
 
-C<load> eliminates the need to know whether you are trying to require
-either a file or a module.
+C<Module::Load> eliminates the need to know whether you are trying
+to require either a file or a module.
 
 If you consult C<perldoc -f require> you will see that C<require> will
 behave differently when given a bareword or a string.
@@ -121,11 +186,80 @@ modules at runtime, since you will need to change the module notation
 (C<Acme::Comment>) to a file notation fitting the particular platform
 you are on.
 
-C<load> eliminates the need for this overhead and will just DWYM.
+C<Module::Load> eliminates the need for this overhead and will
+just DWYM.
+
+=head2 Difference between C<load> and C<autoload>
+
+C<Module::Load> imports the two functions - C<load> and C<autoload>
+
+C<autoload> imports the default functions automatically,
+but C<load> do not import any functions.
+
+C<autoload> is usable under C<BEGIN{};>.
+
+Both the functions can import the functions that are specified.
+
+Following codes are same.
+
+  load File::Spec::Functions, qw/splitpath/;
+
+  autoload File::Spec::Functions, qw/splitpath/;
+
+=head1 FUNCTIONS
+
+=over 4
+
+=item load
+
+Loads a specified module.
+
+See L</Rules> for detailed loading rule.
+
+=item autoload
+
+Loads a specified module and imports the default functions.
+
+Except importing the functions, 'autoload' is same as 'load'.
+
+=item load_remote
+
+Loads a specified module to the specified package.
+
+  use Module::Load 'load_remote';
+
+  my $pkg = 'Other::Package';
+
+  load_remote $pkg, 'Data::Dumper'; # load a module to 'Other::Package'
+                                    # but do not import 'Dumper' function
+
+A module for loading must be quoted.
+
+Except specifing the package and quoting module name,
+'load_remote' is same as 'load'.
+
+=item autoload_remote
+
+Loads a specified module and imports the default functions to the specified package.
+
+  use Module::Load 'autoload_remote';
+
+  my $pkg = 'Other::Package';
+
+  autoload_remote $pkg, 'Data::Dumper'; # load a module to 'Other::Package'
+                                        # and imports 'Dumper' function
+
+A module for loading must be quoted.
+
+Except specifing the package and quoting module name,
+'autoload_remote' is same as 'load_remote'.
+
+=back
 
 =head1 Rules
 
-C<load> has the following rules to decide what it thinks you want:
+All functions have the following rules to decide what it thinks
+you want:
 
 =over 4
 
@@ -144,6 +278,46 @@ If the argument matches only C<\w>, it could either be a module or a
 file. We will try to find C<file.pm> first in C<@INC> and if that
 fails, we will try to find C<file> in @INC.  If both fail, we die with
 the respective error messages.
+
+=back
+
+=head1 IMPORTS THE FUNCTIONS
+
+'load' and 'autoload' are imported by default, but 'load_remote' and
+'autoload_remote' are not imported.
+
+To use 'load_remote' or 'autoload_remote', specify at 'use'.
+
+=over 4
+
+=item "load","autoload","load_remote","autoload_remote"
+
+Imports the selected functions.
+
+  # imports 'load' and 'autoload' (default)
+  use Module::Load;
+
+  # imports 'autoload' only
+  use Module::Load 'autoload';
+
+  # imports 'autoload' and 'autoload_remote', but don't import 'load';
+  use Module::Load qw/autoload autoload_remote/;
+
+=item 'all'
+
+Imports all the functions.
+
+  use Module::Load 'all'; # imports load, autoload, load_remote, autoload_remote
+
+=item '','none',undef
+
+Not import any functions (C<load> and C<autoload> are not imported).
+
+  use Module::Load '';
+
+  use Module::Load 'none';
+
+  use Module::Load undef;
 
 =back
 
@@ -174,8 +348,7 @@ This module by Jos Boumans E<lt>kane@cpan.orgE<gt>.
 
 =head1 COPYRIGHT
 
-This library is free software; you may redistribute and/or modify it 
+This library is free software; you may redistribute and/or modify it
 under the same terms as Perl itself.
 
-
-=cut                               
+=cut

@@ -6,7 +6,7 @@
 
 #define OUR_DEFAULT_FB	"Encode::PERLQQ"
 
-#if defined(USE_PERLIO) && !defined(USE_SFIO)
+#if defined(USE_PERLIO)
 
 /* Define an encoding "layer" in the perliol.h sense.
 
@@ -60,7 +60,6 @@ PerlIOEncode_getarg(pTHX_ PerlIO * f, CLONE_PARAMS * param, int flags)
 	dSP;
 	/* Not 100% sure stack swap is right thing to do during dup ... */
 	PUSHSTACKi(PERLSI_MAGIC);
-	SPAGAIN;
 	ENTER;
 	SAVETMPS;
 	PUSHMARK(sp);
@@ -87,8 +86,6 @@ PerlIOEncode_pushed(pTHX_ PerlIO * f, const char *mode, SV * arg, PerlIO_funcs *
     SV *result = Nullsv;
 
     PUSHSTACKi(PERLSI_MAGIC);
-    SPAGAIN;
-
     ENTER;
     SAVETMPS;
 
@@ -239,7 +236,6 @@ PerlIOEncode_fill(pTHX_ PerlIO * f)
 	}
     }
     PUSHSTACKi(PERLSI_MAGIC);
-    SPAGAIN;
     ENTER;
     SAVETMPS;
   retry:
@@ -341,6 +337,8 @@ PerlIOEncode_fill(pTHX_ PerlIO * f)
 	SPAGAIN;
 	uni = POPs;
 	PUTBACK;
+	/* No cows allowed. */
+	if (SvTHINKFIRST(e->dataSV)) SvPV_force_nolen(e->dataSV);
 	/* Now get translated string (forced to UTF-8) and use as buffer */
 	if (SvPOK(uni)) {
 	    s = SvPVutf8(uni, len);
@@ -365,6 +363,7 @@ PerlIOEncode_fill(pTHX_ PerlIO * f)
 	    /* Adjust ptr/cnt not taking anything which
 	       did not translate - not clear this is a win */
 	    /* compute amount we took */
+	    if (!SvPOKp(e->dataSV)) (void)SvPV_force_nolen(e->dataSV);
 	    use -= SvCUR(e->dataSV);
 	    PerlIO_set_ptrcnt(n, ptr+use, (avail-use));
 	    /* and as we did not take it it isn't pending */
@@ -410,7 +409,6 @@ PerlIOEncode_flush(pTHX_ PerlIO * f)
 	    if (e->inEncodeCall) return 0;
 	    /* Write case - encode the buffer and write() to layer below */
 	    PUSHSTACKi(PERLSI_MAGIC);
-	    SPAGAIN;
 	    ENTER;
 	    SAVETMPS;
 	    PUSHMARK(sp);
@@ -440,6 +438,14 @@ PerlIOEncode_flush(pTHX_ PerlIO * f)
 	    if (PerlIO_flush(PerlIONext(f)) != 0) {
 		code = -1;
 	    }
+	    if (!SvPOKp(e->bufsv) || SvTHINKFIRST(e->bufsv))
+		(void)SvPV_force_nolen(e->bufsv);
+	    if ((STDCHAR *)SvPVX(e->bufsv) != e->base.buf) {
+		e->base.ptr = SvEND(e->bufsv);
+		e->base.end = SvPVX(e->bufsv) + (e->base.end-e->base.buf);
+		e->base.buf = (STDCHAR *)SvPVX(e->bufsv);
+	    }
+	    (void)PerlIOEncode_get_base(aTHX_ f);
 	    if (SvCUR(e->bufsv)) {
 		/* Did not all translate */
 		e->base.ptr = e->base.buf+SvCUR(e->bufsv);
@@ -465,7 +471,6 @@ PerlIOEncode_flush(pTHX_ PerlIO * f)
 		   re-encode and unread() to layer below
 		 */
 		PUSHSTACKi(PERLSI_MAGIC);
-		SPAGAIN;
 		ENTER;
 		SAVETMPS;
 		str = sv_newmortal();
@@ -538,8 +543,8 @@ Off_t
 PerlIOEncode_tell(pTHX_ PerlIO * f)
 {
     PerlIOBuf *b = PerlIOSelf(f, PerlIOBuf);
-    /* Unfortunately the only way to get a postion is to (re-)translate,
-       the UTF8 we have in bufefr and then ask layer below
+    /* Unfortunately the only way to get a position is to (re-)translate,
+       the UTF8 we have in buffer and then ask layer below
      */
     PerlIO_flush(f);
     if (b->buf && b->ptr > b->buf) {
@@ -639,19 +644,14 @@ BOOT:
      * is invoked without prior "use Encode". -- dankogai
      */
     PUSHSTACKi(PERLSI_MAGIC);
-    SPAGAIN;
     if (!get_cvs(OUR_DEFAULT_FB, 0)) {
 #if 0
 	/* This would just be an irritant now loading works */
 	Perl_warner(aTHX_ packWARN(WARN_IO), ":encoding without 'use Encode'");
 #endif
-	ENTER;
-	/* Encode needs a lot of stack - it is likely to move ... */
-	PUTBACK;
 	/* The SV is magically freed by load_module */
 	load_module(PERL_LOADMOD_NOIMPORT, newSVpvn("Encode", 6), Nullsv, Nullsv);
-	SPAGAIN;
-	LEAVE;
+	assert(sp == PL_stack_sp);
     }
     PUSHMARK(sp);
     PUTBACK;

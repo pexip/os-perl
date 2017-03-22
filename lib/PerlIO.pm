@@ -1,6 +1,6 @@
 package PerlIO;
 
-our $VERSION = '1.07';
+our $VERSION = '1.09';
 
 # Map layer name to package that defines it
 our %alias;
@@ -19,7 +19,7 @@ sub import
     {
      $layer = "${class}::$layer";
     }
-   eval "require $layer";
+   eval { require $layer =~ s{::}{/}gr . '.pm' };
    warn $@ if $@;
   }
 }
@@ -35,9 +35,10 @@ PerlIO - On demand loader for PerlIO layers and root of PerlIO::* name space
 
 =head1 SYNOPSIS
 
-  open($fh,"<:crlf", "my.txt"); # support platform-native and CRLF text files
+  open($fh, "<:crlf", "my.txt"); # support platform-native and 
+                                 # CRLF text files
 
-  open($fh,"<","his.jpg");      # portably open a binary file for reading
+  open($fh, "<", "his.jpg"); # portably open a binary file for reading
   binmode($fh);
 
   Shell:
@@ -93,20 +94,6 @@ as being an end-of-file marker.
 
 Based on the C<:perlio> layer.
 
-=item :mmap
-
-A layer which implements "reading" of files by using C<mmap()> to
-make a (whole) file appear in the process's address space, and then
-using that as PerlIO's "buffer". This I<may> be faster in certain
-circumstances for large files, and may result in less physical memory
-use when multiple processes are reading the same file.
-
-Files which are not C<mmap()>-able revert to behaving like the C<:perlio>
-layer. Writes also behave like the C<:perlio> layer, as C<mmap()> for write
-needs extra house-keeping (to extend the file) which negates any advantage.
-
-The C<:mmap> layer will not exist if the platform does not support C<mmap()>.
-
 =item :utf8
 
 Declares that the stream accepts perl's I<internal> encoding of
@@ -115,6 +102,9 @@ UTF-EBCDIC on EBCDIC machines.)  This allows any character perl can
 represent to be read from or written to the stream. The UTF-X encoding
 is chosen to render simple text parts (i.e.  non-accented letters,
 digits and common punctuation) human readable in the encoded file.
+
+(B<CAUTION>: This layer does not validate byte sequences.  For reading input,
+you should instead use C<:encoding(utf8)> instead of bare C<:utf8>.)
 
 Here is how to write your native data out using UTF-8 (or UTF-EBCDIC)
 and then read it back in.
@@ -127,9 +117,6 @@ and then read it back in.
 	$in = <F>;
 	close(F);
 
-Note that this layer does not validate byte sequences. For reading
-input, using C<:encoding(utf8)> instead of bare C<:utf8> is strongly
-recommended.
 
 =item :bytes
 
@@ -170,11 +157,10 @@ will construct a "binary" stream, but then enable UTF-8 translation.
 
 =item :pop
 
-A pseudo layer that removes the top-most layer. Gives perl code
-a way to manipulate the layer stack. Should be considered
-as experimental. Note that C<:pop> only works on real layers
-and will not undo the effects of pseudo layers like C<:utf8>.
-An example of a possible use might be:
+A pseudo layer that removes the top-most layer. Gives perl code a
+way to manipulate the layer stack.  Note that C<:pop> only works on
+real layers and will not undo the effects of pseudo layers like
+C<:utf8>.  An example of a possible use might be:
 
     open($fh,...)
     ...
@@ -207,6 +193,20 @@ a layer that transparently does character set and encoding transformations,
 for example from Shift-JIS to Unicode.  Note that under C<stdio>
 an C<:encoding> also enables C<:utf8>.  See L<PerlIO::encoding>
 for more information.
+
+=item :mmap
+
+A layer which implements "reading" of files by using C<mmap()> to
+make a (whole) file appear in the process's address space, and then
+using that as PerlIO's "buffer". This I<may> be faster in certain
+circumstances for large files, and may result in less physical memory
+use when multiple processes are reading the same file.
+
+Files which are not C<mmap()>-able revert to behaving like the C<:perlio>
+layer. Writes also behave like the C<:perlio> layer, as C<mmap()> for write
+needs extra house-keeping (to extend the file) which negates any advantage.
+
+The C<:mmap> layer will not exist if the platform does not support C<mmap()>.
 
 =item :via
 
@@ -284,7 +284,6 @@ DOS-like platforms and depending on the setting of C<$ENV{PERLIO}>:
  unset / "" unix perlio / stdio [1]     unix crlf
  stdio      unix perlio / stdio [1]     stdio
  perlio     unix perlio                 unix perlio
- mmap       unix mmap                   unix mmap
 
  # [1] "stdio" if Configure found out how to do "fast stdio" (depends
  # on the stdio implementation) and in Perl 5.8, otherwise "unix perlio"

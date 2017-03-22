@@ -19,7 +19,7 @@ $VERSION = 0.01;
 
 =head1 NAME
 
-Big::Dummy - Try "our" hot dog's
+Big::Dummy - Try "our" hot dog's, $andwiche$ and $(ub)$!
 
 =cut
 
@@ -97,8 +97,6 @@ END
 
 
 sub setup_recurs {
-    setup_mm_test_root();
-    chdir 'MM_TEST_ROOT:[t]' if $Is_VMS;
 
     while(my($file, $text) = each %Files) {
         # Convert to a relative, native file path.
@@ -119,7 +117,7 @@ sub setup_recurs {
     return 1;
 }
 
-sub teardown_recurs { 
+sub teardown_recurs {
     foreach my $file (keys %Files) {
         my $dir = dirname($file);
         if( -e $dir ) {

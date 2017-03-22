@@ -22,43 +22,35 @@ use lib "dist/Module-CoreList/lib";
 # See the the hashes below for hardcoded special cases that will probably
 # need to be updated in the future.
 
+# get the list of deprecated packages
+my %deprecated;
+require 'lib/deprecate.pm';
+{ 
+	no warnings 'once';
+	%deprecated = reverse %deprecate::DEBIAN_PACKAGES;
+}
 
 # list special cases of version numbers that are OK here
 # version numbering discontinuities (epochs, added digits) cause these
 my %ok = (
-	"libcgi-pm-perl" => {
-		"3.49" => "3.49-1squeeze1",
-	},
-	"libextutils-parsexs-perl" => {
-		"2.2002" => "2.2002",
-	},
-	"libextutils-cbuilder-perl" => {
-		"0.2602" => "0.2602",
-		"0.27"   => "0.2700",
-	},
-	"libparse-cpan-meta-perl" => {
-		"1.39" => "1.39",
-		"1.40" => "1.40",
-	},
-	"libmath-bigint-perl" => {
-		"1.89" => "1.89",
-	},
-	"libautodie-perl" => {
-		"2.1001" => "2.10.01",
-	},
+       "libtest-simple-perl" => {
+               "0.98" => "0.98",
+       },
+       "libmodule-corelist-perl" => {
+               "3.10" => "3.10",
+       },
+       "libfile-spec-perl" => {
+               "3.48_01" => "3.4801",
+       },
+       "libencode-perl" => {
+               "2.60" => "2.63-1+deb8u1",
+       },
 );
 
 # list special cases where a Breaks entry doesn't need to imply
 # Replaces+Provides
 my %triplet_check_skip = (
 	"perl-base" => [ "libfile-spec-perl" ],
-	"perl-modules" => [ qw(
-		libswitch-perl
-		libpod-plainer-perl
-		libclass-isa-perl
-		libshell-perl
-		libdevel-dprof-perl
-	)],
 );
 
 # list special cases where the name of the Debian package does not
@@ -72,6 +64,13 @@ my %special_modules = (
 	"libscalar-list-utils-perl" => "List::Util",
 );
 
+# list special cases where we're not providing a dual-lived module from
+# core even though Module::CoreList says we are. Arguably we should
+# patch our Module::CoreList, but that module probably works better as a
+# reference point than something which matches the Debian view of the world.
+my %not_in_debian_core = (
+    "libcgi-fast-perl" => 1,
+);
 
 use Test::More;
 use Module::CoreList;
@@ -180,9 +179,15 @@ for my $perl_package_name (keys %deps_found) {
 				if $triplet_check_skip{$perl_package_name} &&
 					grep { $_ eq $broken } @{$triplet_check_skip{$perl_package_name}};
 
-			for my $dep (qw(Replaces Provides)) {
-				ok(exists $dep_found->{$dep}{$broken},
-					"Breaks for $broken in $perl_package_name implies $dep");
+			ok(exists $dep_found->{Replaces}{$broken},
+				"Breaks for $broken in $perl_package_name implies Replaces");
+
+			if (exists $deprecated{$broken}) {
+				ok(!exists $dep_found->{Provides}{$broken},
+					"Breaks for deprecated package $broken in $perl_package_name does not imply Provides");
+			} else {
+				ok(exists $dep_found->{Provides}{$broken},
+					"Breaks for $broken in $perl_package_name implies Provides");
 			}
 		}
 	}
@@ -195,6 +200,7 @@ for my $module (keys %$corelist) {
 	my $package = $cpan_from_debian_guess{$module};
 	next if grep $deps_found{$_}{$breaksname}{$package}, keys %deps_found;
 	next if $is_perl_binary{$package};
+	next if $not_in_debian_core{$package};
 	push @found_in_archive, $package
 		if exists $apt->{$package}
 		&& exists $apt->{$package}{VersionList};
@@ -258,6 +264,7 @@ sub get_archive_info {
 	return (0, 0) if !exists $apt->{$p}{VersionList}; # virtual package
 	my $latest = (sort byversion @{$apt->{$p}{VersionList}})[-1];
 	my $v = $latest->{VerStr};
+	$v =~ s/\+dfsg//;
 	my ($epoch, $major, $prefix, $suffix, $revision) =
 		($v =~ /^(?:(\d+):)?((?:\d+\.))+(\d+)(?:_(\d+))?(-[^-]+)$/);
 	return ($epoch, length $prefix);

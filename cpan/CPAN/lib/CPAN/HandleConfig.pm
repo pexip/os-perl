@@ -6,7 +6,13 @@ use File::Spec ();
 use File::Basename ();
 use Carp ();
 
-$VERSION = "5.5003"; # see also CPAN::Config::VERSION at end of file
+=head1 NAME
+
+CPAN::HandleConfig - internal configuration handling for CPAN.pm
+
+=cut 
+
+$VERSION = "5.5005"; # see also CPAN::Config::VERSION at end of file
 
 %can = (
         commit   => "Commit changes to disk",
@@ -89,11 +95,13 @@ $VERSION = "5.5003"; # see also CPAN::Config::VERSION at end of file
      "proxy_pass",
      "proxy_user",
      "randomize_urllist",
+     "recommends_policy",
      "scan_cache",
      "shell",
      "show_unparsable_versions",
      "show_upload_date",
      "show_zero_versions",
+     "suggests_policy",
      "tar",
      "tar_verbosity",
      "term_is_latin",
@@ -102,6 +110,7 @@ $VERSION = "5.5003"; # see also CPAN::Config::VERSION at end of file
      "trust_test_report_history",
      "unzip",
      "urllist",
+     "use_prompt_default",
      "use_sqlite",
      "username",
      "version_timeout",
@@ -265,11 +274,11 @@ sub commit {
     my($self,@args) = @_;
     CPAN->debug("args[@args]") if $CPAN::DEBUG;
     if ($CPAN::RUN_DEGRADED) {
-                             $CPAN::Frontend->mydie(
-                                                    "'o conf commit' disabled in ".
-                                                    "degraded mode. Maybe try\n".
-                                                    " !undef \$CPAN::RUN_DEGRADED\n"
-                                                   );
+        $CPAN::Frontend->mydie(
+            "'o conf commit' disabled in ".
+            "degraded mode. Maybe try\n".
+            " !undef \$CPAN::RUN_DEGRADED\n"
+        );
     }
     my ($configpm, $must_reload);
 
@@ -474,13 +483,13 @@ sub init {
 sub require_myconfig_or_config () {
     if (   $INC{"CPAN/MyConfig.pm"} || _try_loading("CPAN::MyConfig", cpan_home())) {
         return $INC{"CPAN/MyConfig.pm"};
-            }
+    }
     elsif ( $INC{"CPAN/Config.pm"} || _try_loading("CPAN::Config") ) {
         return $INC{"CPAN/Config.pm"};
-        }
+    }
     else {
         return q{};
-        }
+    }
 }
 
 # Load a module, but ignore "can't locate..." errors
@@ -495,8 +504,8 @@ sub _try_loading {
         if ( -f File::Spec->catfile($dir, $file) ) {
             unshift @INC, $dir;
             last;
+        }
     }
-      }
 
     eval { require $file };
     my $err_myconfig = $@;
@@ -515,7 +524,7 @@ sub cpan_home_dir_candidates {
         if ($^O ne 'darwin') {
             push @dirs, File::HomeDir->my_data;
             # my_data is ~/Library/Application Support on darwin,
-                                            # which causes issues in the toolchain.
+            # which causes issues in the toolchain.
         }
         push @dirs, File::HomeDir->my_home;
     }
@@ -527,7 +536,8 @@ sub cpan_home_dir_candidates {
     push @dirs, $ENV{USERPROFILE} if $ENV{USERPROFILE};
 
     $CPAN::Config->{load_module_verbosity} = $old_v;
-    @dirs = map { "$_/.cpan" } grep { defined } @dirs;
+    my $dotcpan = $^O eq 'VMS' ? '_cpan' : '.cpan';
+    @dirs = map { File::Spec->catdir($_, $dotcpan) } grep { defined } @dirs;
     return wantarray ? @dirs : $dirs[0];
 }
 
@@ -592,7 +602,7 @@ sub make_new_config {
 Old configuration file $configpm
     moved to $configpm_bak
 END
-    }
+            }
         }
         my $fh = FileHandle->new;
         if ($fh->open(">$configpm")) {
@@ -758,7 +768,7 @@ sub prefs_lookup {
 
     use strict;
     use vars qw($AUTOLOAD $VERSION);
-    $VERSION = "5.5001";
+    $VERSION = "5.5005";
 
     # formerly CPAN::HandleConfig was known as CPAN::Config
     sub AUTOLOAD { ## no critic

@@ -1,4 +1,4 @@
-From 0d1ab4f799eb14d5488fcc959f4a6bdec548b370 Mon Sep 17 00:00:00 2001
+From a8c4ab6198aaf0b4d4c411aef2af43a480b64383 Mon Sep 17 00:00:00 2001
 From: Brendan O'Dea <bod@debian.org>
 Date: Tue, 8 Mar 2005 19:30:38 +1100
 Subject: Respect umask during installation
@@ -8,43 +8,43 @@ site directories.
 
 Patch-Name: fixes/respect_umask.diff
 ---
- cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm |   18 +++++++++---------
- dist/ExtUtils-Install/lib/ExtUtils/Install.pm   |   18 +++++++++---------
+ cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm | 18 +++++++++---------
+ dist/ExtUtils-Install/lib/ExtUtils/Install.pm   | 18 +++++++++---------
  2 files changed, 18 insertions(+), 18 deletions(-)
 
 diff --git a/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm b/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm
-index 6964eea..865d36d 100644
+index 4140432..8fdb67c 100644
 --- a/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm
 +++ b/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm
-@@ -2053,7 +2053,7 @@ doc__install : doc_site_install
+@@ -2075,7 +2075,7 @@ doc__install : doc_site_install
  	$(NOECHO) $(ECHO) INSTALLDIRS not defined, defaulting to INSTALLDIRS=site
  
  pure_perl_install :: all
 -	$(NOECHO) $(MOD_INSTALL) \
 +	$(NOECHO) umask 022; $(MOD_INSTALL) \
- 		read }.$self->catfile('$(PERL_ARCHLIB)','auto','$(FULLEXT)','.packlist').q{ \
- 		write }.$self->catfile('$(DESTINSTALLARCHLIB)','auto','$(FULLEXT)','.packlist').q{ \
- 		$(INST_LIB) $(DESTINSTALLPRIVLIB) \
-@@ -2067,7 +2067,7 @@ pure_perl_install :: all
+ };
+ 
+     push @m,
+@@ -2095,7 +2095,7 @@ q{		$(INST_LIB) $(DESTINSTALLPRIVLIB) \
  
  
  pure_site_install :: all
 -	$(NOECHO) $(MOD_INSTALL) \
 +	$(NOECHO) umask 022; $(MOD_INSTALL) \
- 		read }.$self->catfile('$(SITEARCHEXP)','auto','$(FULLEXT)','.packlist').q{ \
- 		write }.$self->catfile('$(DESTINSTALLSITEARCH)','auto','$(FULLEXT)','.packlist').q{ \
- 		$(INST_LIB) $(DESTINSTALLSITELIB) \
-@@ -2080,7 +2080,7 @@ pure_site_install :: all
+ };
+     push @m,
+ q{		read }.$self->catfile('$(SITEARCHEXP)','auto','$(FULLEXT)','.packlist').q{ \
+@@ -2113,7 +2113,7 @@ q{		$(INST_LIB) $(DESTINSTALLSITELIB) \
  		}.$self->catdir('$(PERL_ARCHLIB)','auto','$(FULLEXT)').q{
  
  pure_vendor_install :: all
 -	$(NOECHO) $(MOD_INSTALL) \
 +	$(NOECHO) umask 022; $(MOD_INSTALL) \
- 		read }.$self->catfile('$(VENDORARCHEXP)','auto','$(FULLEXT)','.packlist').q{ \
- 		write }.$self->catfile('$(DESTINSTALLVENDORARCH)','auto','$(FULLEXT)','.packlist').q{ \
- 		$(INST_LIB) $(DESTINSTALLVENDORLIB) \
-@@ -2092,8 +2092,8 @@ pure_vendor_install :: all
- 
+ };
+     push @m,
+ q{		read }.$self->catfile('$(VENDORARCHEXP)','auto','$(FULLEXT)','.packlist').q{ \
+@@ -2145,8 +2145,8 @@ doc_vendor_install :: all
+     push @m, q{
  doc_perl_install :: all
  	$(NOECHO) $(ECHO) Appending installation info to $(DESTINSTALLARCHLIB)/perllocal.pod
 -	-$(NOECHO) $(MKPATH) $(DESTINSTALLARCHLIB)
@@ -54,7 +54,7 @@ index 6964eea..865d36d 100644
  		"Module" "$(NAME)" \
  		"installed into" "$(INSTALLPRIVLIB)" \
  		LINKTYPE "$(LINKTYPE)" \
-@@ -2103,8 +2103,8 @@ doc_perl_install :: all
+@@ -2156,8 +2156,8 @@ doc_perl_install :: all
  
  doc_site_install :: all
  	$(NOECHO) $(ECHO) Appending installation info to $(DESTINSTALLARCHLIB)/perllocal.pod
@@ -65,7 +65,7 @@ index 6964eea..865d36d 100644
  		"Module" "$(NAME)" \
  		"installed into" "$(INSTALLSITELIB)" \
  		LINKTYPE "$(LINKTYPE)" \
-@@ -2114,8 +2114,8 @@ doc_site_install :: all
+@@ -2167,8 +2167,8 @@ doc_site_install :: all
  
  doc_vendor_install :: all
  	$(NOECHO) $(ECHO) Appending installation info to $(DESTINSTALLARCHLIB)/perllocal.pod
@@ -77,10 +77,10 @@ index 6964eea..865d36d 100644
  		"installed into" "$(INSTALLVENDORLIB)" \
  		LINKTYPE "$(LINKTYPE)" \
 diff --git a/dist/ExtUtils-Install/lib/ExtUtils/Install.pm b/dist/ExtUtils-Install/lib/ExtUtils/Install.pm
-index 3b030a5..cb0e9e0 100644
+index eec57aa..06cc530 100644
 --- a/dist/ExtUtils-Install/lib/ExtUtils/Install.pm
 +++ b/dist/ExtUtils-Install/lib/ExtUtils/Install.pm
-@@ -468,7 +468,7 @@ sub _can_write_dir {
+@@ -450,7 +450,7 @@ sub _can_write_dir {
  
  =pod
  
@@ -89,7 +89,7 @@ index 3b030a5..cb0e9e0 100644
  
  Wrapper around File::Path::mkpath() to handle errors.
  
-@@ -485,13 +485,13 @@ writable.
+@@ -467,13 +467,13 @@ writable.
  =cut
  
  sub _mkpath {
@@ -106,7 +106,7 @@ index 3b030a5..cb0e9e0 100644
              _choke("Can't create '$dir'","$@");
          }
  
-@@ -796,7 +796,7 @@ sub install { #XXX OS-SPECIFIC
+@@ -782,7 +782,7 @@ sub install { #XXX OS-SPECIFIC
          _chdir($cwd);
      }
      foreach my $targetdir (sort keys %check_dirs) {
@@ -115,7 +115,7 @@ index 3b030a5..cb0e9e0 100644
      }
      foreach my $found (@found_files) {
          my ($diff, $ffd, $origfile, $mode, $size, $atime, $mtime,
-@@ -810,7 +810,7 @@ sub install { #XXX OS-SPECIFIC
+@@ -796,7 +796,7 @@ sub install { #XXX OS-SPECIFIC
                      $targetfile= _unlink_or_rename( $targetfile, 'tryhard', 'install' )
                          unless $dry_run;
                  } elsif ( ! -d $targetdir ) {
@@ -124,7 +124,7 @@ index 3b030a5..cb0e9e0 100644
                  }
                  print "Installing $targetfile\n";
  
-@@ -850,7 +850,7 @@ sub install { #XXX OS-SPECIFIC
+@@ -836,7 +836,7 @@ sub install { #XXX OS-SPECIFIC
  
      if ($pack{'write'}) {
          $dir = install_rooted_dir(dirname($pack{'write'}));
@@ -133,7 +133,7 @@ index 3b030a5..cb0e9e0 100644
          print "Writing $pack{'write'}\n" if $verbose;
          $packlist->write(install_rooted_file($pack{'write'})) unless $dry_run;
      }
-@@ -1190,7 +1190,7 @@ be prepended as a directory to each installed file (and directory).
+@@ -1176,7 +1176,7 @@ be prepended as a directory to each installed file (and directory).
  sub pm_to_blib {
      my($fromto,$autodir,$pm_filter) = @_;
  
@@ -142,7 +142,7 @@ index 3b030a5..cb0e9e0 100644
      while(my($from, $to) = each %$fromto) {
          if( -f $to && -s $from == -s $to && -M $to < -M $from ) {
              print "Skip $to (unchanged)\n";
-@@ -1213,7 +1213,7 @@ sub pm_to_blib {
+@@ -1199,7 +1199,7 @@ sub pm_to_blib {
              # we wont try hard here. its too likely to mess things up.
              forceunlink($to);
          } else {

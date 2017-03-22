@@ -45,7 +45,8 @@ sub canonicalize {
 	# usr/*/perl/*/auto/File/Glob/Glob.so and the like should be ignored
 	return () if m|/| && !/\.p[hlm]$/;
 
-	s|usr/[^/]+/perl/[^/]+/||;
+	s|usr/share/perl/[^/]+/||;
+	s|usr/lib/[^/]+/perl/[^/]+/||;
 
 	s|/|::|g if s/\.pm$//;
 	return ($_);
@@ -65,6 +66,9 @@ sub check {
 	return if $_ eq 'IO' || $_ eq 're';
 	# "use feature" dies without an argument
 	return if $_ eq 'feature';
+	# this file does not return a true value, and is not to be used
+	# directly
+	return if $_ eq 'unicore/To/Isc.pl';
 	if (m|([^/]+)_heavy\.pl|) {
 		# bytes_heavy.pl needs bytes.pm loaded first
 		check($1);

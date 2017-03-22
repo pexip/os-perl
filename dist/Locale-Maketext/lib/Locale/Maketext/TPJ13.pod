@@ -715,7 +715,7 @@ right tool for the job.
 However, other accidents of history have made Perl a well-accepted
 language for design of server-side programs (generally in CGI form)
 for Web site interfaces.  Localization of static pages in Web sites is
-trivial, feasable either with simple language-negotiation features in
+trivial, feasible either with simple language-negotiation features in
 servers like Apache, or with some kind of server-side inclusions of
 language-appropriate text into layout templates.  However, I think
 that the localization of Perl-based search systems (or other kinds of
@@ -750,12 +750,12 @@ morphology and pedagogy of North American native languages.
 
 Alvestrand, Harald Tveit.  1995.  I<RFC 1766: Tags for the
 Identification of Languages.>
-C<ftp://ftp.isi.edu/in-notes/rfc1766.txt>
+C<http://www.ietf.org/rfc/rfc1766.txt>
 [Now see RFC 3066.]
 
 Callon, Ross, editor.  1996.  I<RFC 1925: The Twelve
 Networking Truths.>
-C<ftp://ftp.isi.edu/in-notes/rfc1925.txt>
+C<http://www.ietf.org/rfc/rfc1925.txt>
 
 Drepper, Ulrich, Peter Miller,
 and FranE<ccedil>ois Pinard.  1995-2001.  GNU

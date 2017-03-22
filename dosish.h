@@ -52,26 +52,11 @@
 #endif	/* DJGPP */
 
 #ifndef PERL_SYS_TERM_BODY
-#  define PERL_SYS_TERM_BODY() HINTS_REFCNT_TERM; OP_REFCNT_TERM; PERLIO_TERM; MALLOC_TERM
+#  define PERL_SYS_TERM_BODY() \
+    HINTS_REFCNT_TERM; OP_CHECK_MUTEX_TERM; \
+    OP_REFCNT_TERM; PERLIO_TERM; MALLOC_TERM
 #endif
 #define dXSUB_SYS
-
-/*
- * 5.003_07 and earlier keyed on #ifdef MSDOS for determining if we were 
- * running on DOS, *and* if we had to cope with 16 bit memory addressing 
- * constraints, *and* we need to have memory allocated as unsigned long.
- *
- * with the advent of *real* compilers for DOS, they are not locked together.
- * MSDOS means "I am running on MSDOS". HAS_64K_LIMIT means "I have 
- * 16 bit memory addressing constraints".
- *
- * if you need the last, try #DEFINE MEM_SIZE unsigned long.
- */
-#ifdef MSDOS
-#  ifndef DJGPP
-#    define HAS_64K_LIMIT
-#  endif
-#endif
 
 /* USEMYBINMODE
  *	This symbol, if defined, indicates that the program should
@@ -88,12 +73,7 @@
  *	information.
  */
 #if defined(WIN64) || defined(USE_LARGE_FILES)
-# if defined(__BORLANDC__) /* buk */
-#  include <sys\stat.h>
-#  define Stat_t struct stati64
-# else
 #define Stat_t struct _stati64
-# endif
 #else
 #if defined(UNDER_CE)
 #define Stat_t struct xcestat
@@ -207,8 +187,8 @@
  * Local variables:
  * c-indentation-style: bsd
  * c-basic-offset: 4
- * indent-tabs-mode: t
+ * indent-tabs-mode: nil
  * End:
  *
- * ex: set ts=8 sts=4 sw=4 noet:
+ * ex: set ts=8 sts=4 sw=4 et:
  */

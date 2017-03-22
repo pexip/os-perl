@@ -78,10 +78,12 @@ and return its status.
 =item kill()
 
 C<kill('KILL', ...)> can be used to terminate a pseudo-process by
-passing it the ID returned by fork().  This should not be used except
+passing it the ID returned by fork(). The outcome of kill on a pseudo-process
+is unpredictable and it should not be used except
 under dire circumstances, because the operating system may not
 guarantee integrity of the process resources when a running thread is
-terminated.  Note that using C<kill('KILL', ...)> on a
+terminated.  The process which implements the pseudo-processes can be blocked
+and the Perl interpreter hangs. Note that using C<kill('KILL', ...)> on a
 pseudo-process() may typically cause memory leaks, because the thread
 that implements the pseudo-process does not get a chance to clean up
 its resources.
@@ -150,7 +152,7 @@ pseudo-child created by it that is also a pseudo-parent will only exit
 after their pseudo-children have exited.
 
 Starting with Perl 5.14 a parent will not wait() automatically
-for any child that has been signalled with C<sig('TERM', ...)>
+for any child that has been signalled with C<kill('TERM', ...)>
 to avoid a deadlock in case the child is blocking on I/O and
 never receives the signal.
 
@@ -166,8 +168,8 @@ BEGIN block, but will not continue parsing the source stream after the
 BEGIN block.  For example, consider the following code:
 
     BEGIN {
-        fork and exit;		# fork child and exit the parent
-	print "inner\n";
+        fork and exit;          # fork child and exit the parent
+        print "inner\n";
     }
     print "outer\n";
 
@@ -196,7 +198,7 @@ separately in the child.
 On some operating systems, notably Solaris and Unixware, calling C<exit()>
 from a child process will flush and close open filehandles in the parent,
 thereby corrupting the filehandles.  On these systems, calling C<_exit()>
-is suggested instead.  C<_exit()> is available in Perl through the 
+is suggested instead.  C<_exit()> is available in Perl through the
 C<POSIX> module.  Please consult your system's manpages for more information
 on this.
 
@@ -222,63 +224,63 @@ write to a forked child:
 
     # simulate open(FOO, "|-")
     sub pipe_to_fork ($) {
-	my $parent = shift;
-	pipe my $child, $parent or die;
-	my $pid = fork();
-	die "fork() failed: $!" unless defined $pid;
-	if ($pid) {
-	    close $child;
-	}
-	else {
-	    close $parent;
-	    open(STDIN, "<&=" . fileno($child)) or die;
-	}
-	$pid;
+        my $parent = shift;
+        pipe my $child, $parent or die;
+        my $pid = fork();
+        die "fork() failed: $!" unless defined $pid;
+        if ($pid) {
+            close $child;
+        }
+        else {
+            close $parent;
+            open(STDIN, "<&=" . fileno($child)) or die;
+        }
+        $pid;
     }
 
     if (pipe_to_fork('FOO')) {
-	# parent
-	print FOO "pipe_to_fork\n";
-	close FOO;
+        # parent
+        print FOO "pipe_to_fork\n";
+        close FOO;
     }
     else {
-	# child
-	while (<STDIN>) { print; }
-	exit(0);
+        # child
+        while (<STDIN>) { print; }
+        exit(0);
     }
 
 And this one reads from the child:
 
     # simulate open(FOO, "-|")
     sub pipe_from_fork ($) {
-	my $parent = shift;
-	pipe $parent, my $child or die;
-	my $pid = fork();
-	die "fork() failed: $!" unless defined $pid;
-	if ($pid) {
-	    close $child;
-	}
-	else {
-	    close $parent;
-	    open(STDOUT, ">&=" . fileno($child)) or die;
-	}
-	$pid;
+        my $parent = shift;
+        pipe $parent, my $child or die;
+        my $pid = fork();
+        die "fork() failed: $!" unless defined $pid;
+        if ($pid) {
+            close $child;
+        }
+        else {
+            close $parent;
+            open(STDOUT, ">&=" . fileno($child)) or die;
+        }
+        $pid;
     }
 
     if (pipe_from_fork('BAR')) {
-	# parent
-	while (<BAR>) { print; }
-	close BAR;
+        # parent
+        while (<BAR>) { print; }
+        close BAR;
     }
     else {
-	# child
-	print "pipe_from_fork\n";
-	exit(0);
+        # child
+        print "pipe_from_fork\n";
+        exit(0);
     }
 
 Forking pipe open() constructs will be supported in future.
 
-=item Global state maintained by XSUBs 
+=item Global state maintained by XSUBs
 
 External subroutines (XSUBs) that maintain their own global state may
 not work correctly.  Such XSUBs will either need to maintain locks to
@@ -306,6 +308,12 @@ widely adopted even on platforms with a native fork(), such extensions
 are expected to be fixed for thread-safety.
 
 =back
+
+=head1 PORTABILITY CAVEATS
+
+In portable Perl code, C<kill(9, $child)> must not be used on forked processes.
+Killing a forked process is unsafe and has unpredictable results.
+See L</kill()>, above.
 
 =head1 BUGS
 

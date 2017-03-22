@@ -1,2 +1,2 @@
-# special case; perl-modules itself provides libperl4-corelibs-perl
-perl-module-uses-perl4-libs-without-dep usr/share/perl/5.14.2/CGI.pm:3535 shellwords.pl
+# This isn't a a script, so the interpreter will not be used
+wrong-path-for-interpreter usr/share/perl/5.20.1/Config/Perl/V.pm (#!/pro/bin/perl != /usr/bin/perl)

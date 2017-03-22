@@ -1,5 +1,6 @@
 package CGI;
-require 5.006;
+require 5.008001;
+use if $] >= 5.019, 'deprecate';
 use Carp 'croak';
 
 # See the bottom of this file for the POD documentation.  Search for the
@@ -18,9 +19,9 @@ use Carp 'croak';
 # The most recent version and complete docs are available at:
 #   http://search.cpan.org/dist/CGI.pm
 
-# The revision is no longer being updated since moving to git. 
+# The revision is no longer being updated since moving to git.
 $CGI::revision = '$Id: CGI.pm,v 1.266 2009/07/30 16:32:34 lstein Exp $';
-$CGI::VERSION='3.52';
+$CGI::VERSION='3.65';
 
 # HARD-CODED LOCATION FOR FILE UPLOAD TEMPORARY FILES.
 # UNCOMMENT THIS ONLY IF YOU KNOW WHAT YOU'RE DOING.
@@ -129,10 +130,6 @@ sub initialize_globals {
 
 # ------------------ START OF THE LIBRARY ------------
 
-#### Method: endform
-# This method is DEPRECATED
-*endform = \&end_form;
-
 # make mod_perlhappy
 initialize_globals();
 
@@ -175,7 +172,7 @@ $DefaultClass = 'CGI' unless defined $CGI::DefaultClass;
 $AutoloadClass = $DefaultClass unless defined $CGI::AutoloadClass;
 
 # The path separator is a slash, backslash or semicolon, depending
-# on the paltform.
+# on the platform.
 $SL = {
      UNIX    => '/',  OS2 => '\\', EPOC      => '/', CYGWIN => '/', NETWARE => '/',
      WINDOWS => '\\', DOS => '\\', MACINTOSH => ':', VMS    => '/'
@@ -386,7 +383,7 @@ sub new {
 # user is still holding any reference to them as well.
 sub DESTROY {
   my $self = shift;
-  if ($OS eq 'WINDOWS') {
+  if ($OS eq 'WINDOWS' || $OS eq 'VMS') {
     for my $href (values %{$self->{'.tmpfiles'}}) {
       $href->{hndl}->DESTROY if defined $href->{hndl};
       $href->{name}->DESTROY if defined $href->{name};
@@ -525,12 +522,12 @@ sub init {
     # if we get called more than once, we want to initialize
     # ourselves from the original query (which may be gone
     # if it was read from STDIN originally.)
-    if (defined(@QUERY_PARAM) && !defined($initializer)) {
+    if (@QUERY_PARAM && !defined($initializer)) {
         for my $name (@QUERY_PARAM) {
             my $val = $QUERY_PARAM{$name}; # always an arrayref;
             $self->param('-name'=>$name,'-value'=> $val);
             if (defined $val and ref $val eq 'ARRAY') {
-                for my $fh (grep {defined(fileno($_))} @$val) {
+                for my $fh (grep {defined($_) && ref($_) && defined(fileno($_))} @$val) {
                    seek($fh,0,0); # reset the filehandle.  
                 }
 
@@ -648,9 +645,9 @@ sub init {
 	  last METHOD;
       }
 
-      # If method is GET or HEAD, fetch the query from
+      # If method is GET, HEAD or DELETE, fetch the query from
       # the environment.
-      if ($is_xforms || $meth=~/^(GET|HEAD)$/) {
+      if ($is_xforms || $meth=~/^(GET|HEAD|DELETE)$/) {
 	  if ($MOD_PERL) {
 	    $query_string = $self->r->args;
 	  } else {
@@ -663,14 +660,6 @@ sub init {
       if ($meth eq 'POST' || $meth eq 'PUT') {
 	  if ( $content_length > 0 ) {
 	    $self->read_from_client(\$query_string,$content_length,0);
-	  }
-	  elsif (not defined $ENV{CONTENT_LENGTH}) {
-	    $self->read_from_stdin(\$query_string);
-	    # should this be PUTDATA in case of PUT ?
-	    my($param) = $meth . 'DATA' ;
-	    $self->add_parameter($param) ;
-	    push (@{$self->{param}{$param}},$query_string);
-	    undef $query_string ;
 	  }
 	  # Some people want to have their cake and eat it too!
 	  # Uncomment this line to have the contents of the query string
@@ -820,7 +809,7 @@ sub all_parameters {
 
 # put a filehandle into binary mode (DOS)
 sub binmode {
-    return unless defined($_[1]) && defined fileno($_[1]);
+    return unless defined($_[1]) && ref ($_[1]) && defined fileno($_[1]);
     CORE::binmode($_[1]);
 }
 
@@ -1021,47 +1010,6 @@ sub read_from_client {
     return $MOD_PERL
         ? $self->r->read($$buff, $len, $offset)
         : read(\*STDIN, $$buff, $len, $offset);
-}
-END_OF_FUNC
-
-'read_from_stdin' => <<'END_OF_FUNC',
-# Read data from stdin until all is read
-sub read_from_stdin {
-    my($self, $buff) = @_;
-    local $^W=0;                # prevent a warning
-
-    #
-    # TODO: loop over STDIN until all is read
-    #
-
-    my($eoffound) = 0;
-    my($localbuf) = '';
-    my($tempbuf) = '';
-    my($bufsiz) = 1024;
-    my($res);
-    while ($eoffound == 0) {
-	if ( $MOD_PERL ) {
-	    $res = $self->r->read($tempbuf, $bufsiz, 0)
-	}
-	else {
-	    $res = read(\*STDIN, $tempbuf, $bufsiz);
-	}
-
-	if ( !defined($res) ) {
-	    # TODO: how to do error reporting ?
-	    $eoffound = 1;
-	    last;
-	}
-	if ( $res == 0 ) {
-	    $eoffound = 1;
-	    last;
-	}
-	$localbuf .= $tempbuf;
-    }
-
-    $$buff = $localbuf;
-
-    return $res;
 }
 END_OF_FUNC
 
@@ -1550,8 +1498,17 @@ sub header {
                             'EXPIRES','NPH','CHARSET',
                             'ATTACHMENT','P3P'],@p);
 
+    # Since $cookie and $p3p may be array references,
+    # we must stringify them before CR escaping is done.
+    my @cookie;
+    for (ref($cookie) eq 'ARRAY' ? @{$cookie} : $cookie) {
+        my $cs = UNIVERSAL::isa($_,'CGI::Cookie') ? $_->as_string : $_;
+        push(@cookie,$cs) if defined $cs and $cs ne '';
+    }
+    $p3p = join ' ',@$p3p if ref($p3p) eq 'ARRAY';
+
     # CR escaping for values, per RFC 822
-    for my $header ($type,$status,$cookie,$target,$expires,$nph,$charset,$attachment,$p3p,@other) {
+    for my $header ($type,$status,@cookie,$target,$expires,$nph,$charset,$attachment,$p3p,@other) {
         if (defined $header) {
             # From RFC 822:
             # Unfolding  is  accomplished  by regarding   CRLF   immediately
@@ -1595,18 +1552,9 @@ sub header {
 
     push(@header,"Status: $status") if $status;
     push(@header,"Window-Target: $target") if $target;
-    if ($p3p) {
-       $p3p = join ' ',@$p3p if ref($p3p) eq 'ARRAY';
-       push(@header,qq(P3P: policyref="/w3c/p3p.xml", CP="$p3p"));
-    }
+    push(@header,"P3P: policyref=\"/w3c/p3p.xml\", CP=\"$p3p\"") if $p3p;
     # push all the cookies -- there may be several
-    if ($cookie) {
-	my(@cookie) = ref($cookie) && ref($cookie) eq 'ARRAY' ? @{$cookie} : $cookie;
-	for (@cookie) {
-            my $cs = UNIVERSAL::isa($_,'CGI::Cookie') ? $_->as_string : $_;
-	    push(@header,"Set-Cookie: $cs") if $cs ne '';
-	}
-    }
+    push(@header,map {"Set-Cookie: $_"} @cookie);
     # if the user indicates an expiration time, then we need
     # both an Expires and a Date header (so that the browser is
     # uses OUR clock)
@@ -1953,7 +1901,7 @@ sub startform {
     $action = qq(action="$action");
     my($other) = @other ? " @other" : '';
     $self->{'.parametersToAdd'}={};
-    return qq/<form method="$method" $action enctype="$enctype"$other>\n/;
+    return qq/<form method="$method" $action enctype="$enctype"$other>/;
 }
 END_OF_FUNC
 
@@ -1987,7 +1935,7 @@ sub start_form {
     $action = qq(action="$action");
     my($other) = @other ? " @other" : '';
     $self->{'.parametersToAdd'}={};
-    return qq/<form method="$method" $action enctype="$enctype"$other>\n/;
+    return qq/<form method="$method" $action enctype="$enctype"$other>/;
 }
 END_OF_FUNC
 
@@ -2009,8 +1957,25 @@ END_OF_FUNC
 
 #### Method: end_form
 # End a form
+# Note: This repeated below under the older name.
 'end_form' => <<'END_OF_FUNC',
 sub end_form {
+    my($self,@p) = self_or_default(@_);
+    if ( $NOSTICKY ) {
+        return wantarray ? ("</form>") : "\n</form>";
+    } else {
+        if (my @fields = $self->get_fields) {
+            return wantarray ? ("<div>",@fields,"</div>","</form>")
+                             : "<div>".(join '',@fields)."</div>\n</form>";
+        } else {
+            return "</form>";
+        }
+    }
+}
+END_OF_FUNC
+
+'endform' => <<'END_OF_FUNC',
+sub endform {
     my($self,@p) = self_or_default(@_);
     if ( $NOSTICKY ) {
         return wantarray ? ("</form>") : "\n</form>";
@@ -2360,7 +2325,7 @@ sub unescapeHTML {
     my $latin = defined $self->{'.charset'} ? $self->{'.charset'} =~ /^(ISO-8859-1|WINDOWS-1252)$/i
                                             : 1;
     # thanks to Randal Schwartz for the correct solution to this one
-    $string=~ s[&(\S*?);]{
+    $string=~ s[&([^\s&]*?);]{
 	local $_ = $1;
 	/^amp$/i	? "&" :
 	/^quot$/i	? '"' :
@@ -2368,7 +2333,7 @@ sub unescapeHTML {
 	/^lt$/i		? "<" :
 	/^#(\d+)$/ && $latin	     ? chr($1) :
 	/^#x([0-9a-f]+)$/i && $latin ? chr(hex($1)) :
-	$_
+	"&$_;"
 	}gex;
     return $string;
 }
@@ -2856,7 +2821,6 @@ sub url {
     my $query_str   =  $self->query_string;
 
     my $rewrite_in_use = $request_uri && $request_uri !~ /^\Q$script_name/;
-    undef $path if $rewrite_in_use && $rewrite;  # path not valid when rewriting active
 
     my $uri         =  $rewrite && $request_uri ? $request_uri : $script_name;
     $uri            =~ s/\?.*$//s;                                # remove query string
@@ -3168,7 +3132,7 @@ END_OF_FUNC
 sub user_agent {
     my($self,$match)=self_or_CGI(@_);
     my $user_agent = $self->http('user_agent');
-    return $user_agent unless $match && $user_agent;
+    return $user_agent unless defined $match && $match && $user_agent;
     return $user_agent =~ /$match/i;
 }
 END_OF_FUNC
@@ -3531,11 +3495,11 @@ sub read_from_cmdline {
     if ($DEBUG && @ARGV) {
 	@words = @ARGV;
     } elsif ($DEBUG > 1) {
-	require "shellwords.pl";
+	require Text::ParseWords;
 	print STDERR "(offline mode: enter name=value pairs on standard input; press ^D or ^Z when done)\n";
 	chomp(@lines = <STDIN>); # remove newlines
 	$input = join(" ",@lines);
-	@words = &shellwords($input);    
+	@words = &Text::ParseWords::old_shellwords($input);    
     }
     for (@words) {
 	s/\\=/%3D/g;
@@ -4357,7 +4321,7 @@ submissions, file uploads, reading and writing cookies, query string generation
 and manipulation, and processing and preparing HTTP headers. Some HTML
 generation utilities are included as well.
 
-CGI.pm performs very well in in a vanilla CGI.pm environment and also comes
+CGI.pm performs very well in a vanilla CGI.pm environment and also comes
 with built-in support for mod_perl and mod_perl2 as well as FastCGI.
 
 It has the benefit of having developed and refined over 10 years with input
@@ -4524,7 +4488,7 @@ HTML "standards".
 
      $query = CGI->new;
 
-This will parse the input (from both POST and GET methods) and store
+This will parse the input (from POST, GET and DELETE methods) and store
 it into a perl5 object called $query. 
 
 Any filehandles from file uploads will have their position reset to 
@@ -5234,7 +5198,8 @@ header() returns the Content-type: header.  You can provide your own
 MIME type if you choose, otherwise it defaults to text/html.  An
 optional second parameter specifies the status code and a human-readable
 message.  For example, you can specify 204, "No response" to create a
-script that tells the browser to do nothing at all.
+script that tells the browser to do nothing at all. Note that RFC 2616 expects
+the human-readable phase to be there as well as the numeric status code. 
 
 The last example shows the named argument style for passing arguments
 to the CGI methods using named parameters.  Recognized parameters are
@@ -5322,7 +5287,7 @@ You can also use named arguments:
     print $q->redirect(
         -uri=>'http://somewhere.else/in/movie/land',
 	    -nph=>1,
-         -status=>301);
+         -status=>'301 Moved Permanently');
 
 All names arguments recognized by header() are also recognized by
 redirect(). However, most HTTP headers, including those generated by
@@ -5344,6 +5309,9 @@ The default if not specified is 302, which means "moved temporarily."
 You may change the status to another status code if you wish.  Be
 advised that changing the status to anything other than 301, 302 or
 303 will probably break redirection.
+
+Note that the human-readable phrase is also expected to be present to conform
+with RFC 2616, section 6.1.
 
 =head2 CREATING THE HTML DOCUMENT HEADER
 
@@ -5539,9 +5507,9 @@ backwards compatibility.
 
 The old-style positional parameters are as follows:
 
-=over 4
+B<Parameters:>
 
-=item B<Parameters:>
+=over 4
 
 =item 1.
 
@@ -5557,22 +5525,21 @@ A 'true' flag if you want to include a <base> tag in the header.  This
 helps resolve relative addresses to absolute ones when the document is moved, 
 but makes the document hierarchy non-portable.  Use with care!
 
-=item 4, 5, 6...
-
-Any other parameters you want to include in the <body> tag.  This is a good
-place to put HTML extensions, such as colors and wallpaper patterns.
-
 =back
+
+Other parameters you want to include in the <body> tag may be appended
+to these.  This is a good place to put HTML extensions, such as colors and
+wallpaper patterns.
 
 =head2 ENDING THE HTML DOCUMENT:
 
-	print end_html
+	print $q->end_html;
 
 This ends an HTML document by printing the </body></html> tags.
 
 =head2 CREATING A SELF-REFERENCING URL THAT PRESERVES STATE INFORMATION:
 
-    $myself = self_url;
+    $myself = $q->self_url;
     print q(<a href="$myself">I'm talking to myself.</a>);
 
 self_url() will return a URL, that, when selected, will reinvoke
@@ -5581,7 +5548,7 @@ useful when you want to jump around within the document using
 internal anchors but you don't want to disrupt the current contents
 of the form(s).  Something like this will do the trick.
 
-     $myself = self_url;
+     $myself = $q->self_url;
      print "<a href=\"$myself#table1\">See table 1</a>";
      print "<a href=\"$myself#table2\">See table 2</a>";
      print "<a href=\"$myself#yourself\">See for yourself</a>";
@@ -5591,7 +5558,10 @@ method instead.
 
 You can also retrieve the unprocessed query string with query_string():
 
-    $the_string = query_string;
+    $the_string = $q->query_string();
+
+The behavior of calling query_string is currently undefined when the HTTP method is
+something other than GET.
 
 =head2 OBTAINING THE SCRIPT'S URL
 
@@ -5653,9 +5623,7 @@ If Apache's mod_rewrite is turned on, then the script name and path
 info probably won't match the request that the user sent. Set
 -rewrite=>1 (default) to return URLs that match what the user sent
 (the original request URI). Set -rewrite=>0 to return URLs that match
-the URL after mod_rewrite's rules have run. Because the additional
-path information only makes sense in the context of the rewritten URL,
--rewrite is set to false when you request path info in the URL.
+the URL after mod_rewrite's rules have run. 
 
 =back
 
@@ -6108,9 +6076,9 @@ supported.
 
 textfield() will return a text input field. 
 
-=over 4
+B<Parameters>
 
-=item B<Parameters>
+=over 4
 
 =item 1.
 
@@ -6191,9 +6159,9 @@ by calling B<start_form()> with an encoding type of B<&CGI::MULTIPART>,
 or by calling the new method B<start_multipart_form()> instead of
 vanilla B<start_form()>.
 
-=over 4
+B<Parameters>
 
-=item B<Parameters>
+=over 4
 
 =item 1.
 
@@ -6546,9 +6514,9 @@ attribute's value as the value.
 
 scrolling_list() creates a scrolling list.  
 
-=over 4
+B<Parameters:>
 
-=item B<Parameters:>
+=over 4
 
 =item 1.
 
@@ -6622,9 +6590,9 @@ selected items can be retrieved with:
 checkbox_group() creates a list of checkboxes that are related
 by the same name.
 
-=over 4
+B<Parameters:>
 
-=item B<Parameters:>
+=over 4
 
 =item 1.
 
@@ -6648,7 +6616,6 @@ line breaks between the checkboxes so that they appear as a vertical
 list.  Otherwise, they will be strung together on a horizontal line.
 
 =back
-
 
 The optional B<-labels> argument is a pointer to a hash
 relating the checkbox values to the user-visible labels that will be
@@ -6715,9 +6682,9 @@ or in other creative ways:
 checkbox() is used to create an isolated checkbox that isn't logically
 related to any others.
 
-=over 4
+B<Parameters:>
 
-=item B<Parameters:>
+=over 4
 
 =item 1.
 
@@ -6772,9 +6739,9 @@ The value of the checkbox can be retrieved using:
 radio_group() creates a set of logically-related radio buttons
 (turning one member of the group on turns the others off)
 
-=over 4
+B<Parameters:>
 
-=item B<Parameters:>
+=over 4
 
 =item 1.
 
@@ -6808,7 +6775,6 @@ used in the display.  If not provided, the values themselves are
 displayed.
 
 =back
-
 
 All modern browsers can take advantage of the optional parameters
 B<-rows>, and B<-columns>.  These parameters cause radio_group() to
@@ -6872,9 +6838,9 @@ or in other creative ways:
 submit() will create the query submission button.  Every form
 should have one of these.
 
-=over 4
+B<Parameters:>
 
-=item B<Parameters:>
+=over 4
 
 =item 1.
 
@@ -6933,9 +6899,9 @@ hidden() produces a text field that can't be seen by the user.  It
 is useful for passing state variable information from one invocation
 of the script to the next.
 
-=over 4
+B<Parameters:>
 
-=item B<Parameters:>
+=over 4
 
 =item 1.
 
@@ -6976,9 +6942,9 @@ position of the click is returned to your script as "button_name.x"
 and "button_name.y", where "button_name" is the name you've assigned
 to it.
 
-=over 4
+B<Parameters:>
 
-=item B<Parameters:>
+=over 4
 
 =item 1.
 
@@ -6990,6 +6956,7 @@ field.
 The second argument (-src) is also required and specifies the URL
 
 =item 3.
+
 The third option (-align, optional) is an alignment type, and may be
 TOP, BOTTOM or MIDDLE
 
@@ -7950,7 +7917,7 @@ C<:cgi-lib> and C<:standard> method:
 
 =head2 Cgi-lib functions that are available in CGI.pm
 
-In compatability mode, the following cgi-lib.pl functions are
+In compatibility mode, the following cgi-lib.pl functions are
 available for your use:
 
  ReadParse()
@@ -7991,15 +7958,15 @@ available for your use:
 
 =head1 AUTHOR INFORMATION
 
-The CGI.pm distribution is copyright 1995-2007, Lincoln D. Stein.  It is
-distributed under GPL and the Artistic License 2.0.
+The CGI.pm distribution is copyright 1995-2007, Lincoln D. Stein. It is
+distributed under GPL and the Artistic License 2.0. It is currently
+maintained by Mark Stosberg with help from many contributors.
 
-Address bug reports and comments to: lstein@cshl.org.  When sending
-bug reports, please provide the version of CGI.pm, the version of
-Perl, the name and version of your Web server, and the name and
-version of the operating system you are using.  If the problem is even
-remotely browser dependent, please provide information about the
-affected browsers as well.
+Address bug reports and comments to: https://rt.cpan.org/Public/Dist/Display.html?Queue=CGI.pm
+When sending bug reports, please provide the version of CGI.pm, the version of
+Perl, the name and version of your Web server, and the name and version of the
+operating system you are using.  If the problem is even remotely browser
+dependent, please provide information about the affected browsers as well.
 
 =head1 CREDITS
 

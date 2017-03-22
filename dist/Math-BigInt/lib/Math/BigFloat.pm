@@ -12,7 +12,7 @@ package Math::BigFloat;
 #   _a	: accuracy
 #   _p	: precision
 
-$VERSION = '1.993';
+$VERSION = '1.9991';
 require 5.006002;
 
 require Exporter;
@@ -437,10 +437,10 @@ sub bsstr
     
 sub numify 
   {
-  # Make a number from a BigFloat object
-  # simple return a string and let Perl's atoi()/atof() handle the rest
+  # Convert a Perl scalar number from a BigFloat object.
+  # Create a string and let Perl's atoi()/atof() handle the rest.
   my ($self,$x) = ref($_[0]) ? (undef,$_[0]) : objectify(1,@_);
-  $x->bsstr(); 
+  return 0 + $x->bsstr(); 
   }
 
 ##############################################################################
@@ -454,7 +454,7 @@ sub bneg
 
   return $x if $x->modify('bneg');
 
-  # for +0 dont negate (to have always normalized +0). Does nothing for 'NaN'
+  # for +0 do not negate (to have always normalized +0). Does nothing for 'NaN'
   $x->{sign} =~ tr/+-/-+/ unless ($x->{sign} eq '+' && $MBI->_is_zero($x->{_m}));
   $x;
   }
@@ -1872,7 +1872,7 @@ sub bdiv
       ($x->{_e},$x->{_es}) = _e_sub($x->{_e}, $MBI->_new($scale), $x->{_es}, '+');
       $x->bnorm();		# remove trailing 0's
       }
-    } # ende else $x != $y
+    } # end else $x != $y
 
   # shortcut to not run through _find_round_parameters again
   if (defined $params[0])
@@ -2037,7 +2037,7 @@ sub broot
     # simulate old behaviour
     $params[0] = $self->div_scale();	# and round to it as accuracy
     $scale = $params[0]+4; 		# at least four more for proper round
-    $params[2] = $r;			# iound mode by caller or undef
+    $params[2] = $r;			# round mode by caller or undef
     $fallback = 1;			# to clear a/p afterwards
     }
   else
@@ -3289,7 +3289,7 @@ sub bfround
     my $zad = 0;				# zeros after dot
     $zad = $dad - $len if (-$dad < -$len);	# for 0.00..00xxx style
    
-    # p rint "scale $scale dad $dad zad $zad len $len\n";
+    # print "scale $scale dad $dad zad $zad len $len\n";
     # number  bsstr   len zad dad	
     # 0.123   123e-3	3   0 3
     # 0.0123  123e-4	3   1 4
@@ -3403,7 +3403,7 @@ sub bround
 
 sub bfloor
   {
-  # return integer less or equal then $x
+  # round towards minus infinity
   my ($self,$x,$a,$p,$r) = ref($_[0]) ? (ref($_[0]),@_) : objectify(1,@_);
 
   return $x if $x->modify('bfloor');
@@ -3423,7 +3423,7 @@ sub bfloor
 
 sub bceil
   {
-  # return integer greater or equal then $x
+  # round towards plus infinity
   my ($self,$x,$a,$p,$r) = ref($_[0]) ? (ref($_[0]),@_) : objectify(1,@_);
 
   return $x if $x->modify('bceil');
@@ -3436,6 +3436,24 @@ sub bceil
     $x->{_e} = $MBI->_zero();			# trunc/norm	
     $x->{_es} = '+';				# abs e
     $MBI->_inc($x->{_m}) if $x->{sign} eq '+';	# increment if positive
+    }
+  $x->round($a,$p,$r);
+  }
+
+sub bint
+  {
+  # round towards zero
+  my ($self,$x,$a,$p,$r) = ref($_[0]) ? (ref($_[0]),@_) : objectify(1,@_);
+
+  return $x if $x->modify('bint');
+  return $x if $x->{sign} !~ /^[+-]$/;  # nan, +inf, -inf
+
+  # if $x has digits after the decimal point
+  if ($x->{_es} eq '-')
+    {
+    $x->{_m} = $MBI->_rsft($x->{_m},$x->{_e},10); # cut off digits after dot
+    $x->{_e} = $MBI->_zero();                     # truncate/normalize
+    $x->{_es} = '+';                              # abs e
     }
   $x->round($a,$p,$r);
   }
@@ -3695,7 +3713,7 @@ sub bnorm
      if $MBI->_is_zero($x->{_m});
     }
 
-  $x;					# MBI bnorm is no-op, so dont call it
+  $x;					# MBI bnorm is no-op, so do not call it
   } 
  
 ##############################################################################
@@ -3808,6 +3826,7 @@ sub length
   }
 
 1;
+
 __END__
 
 =head1 NAME
@@ -3816,122 +3835,123 @@ Math::BigFloat - Arbitrary size floating point math package
 
 =head1 SYNOPSIS
 
-  use Math::BigFloat;
+ use Math::BigFloat;
 
-  # Number creation
-  my $x = Math::BigFloat->new($str);	# defaults to 0
-  my $y = $x->copy();			# make a true copy
-  my $nan  = Math::BigFloat->bnan();	# create a NotANumber
-  my $zero = Math::BigFloat->bzero();	# create a +0
-  my $inf = Math::BigFloat->binf();	# create a +inf
-  my $inf = Math::BigFloat->binf('-');	# create a -inf
-  my $one = Math::BigFloat->bone();	# create a +1
-  my $mone = Math::BigFloat->bone('-');	# create a -1
+ # Number creation
+ my $x = Math::BigFloat->new($str);	# defaults to 0
+ my $y = $x->copy();			# make a true copy
+ my $nan  = Math::BigFloat->bnan();	# create a NotANumber
+ my $zero = Math::BigFloat->bzero();	# create a +0
+ my $inf = Math::BigFloat->binf();	# create a +inf
+ my $inf = Math::BigFloat->binf('-');	# create a -inf
+ my $one = Math::BigFloat->bone();	# create a +1
+ my $mone = Math::BigFloat->bone('-');	# create a -1
 
-  my $pi = Math::BigFloat->bpi(100);	# PI to 100 digits
+ my $pi = Math::BigFloat->bpi(100);	# PI to 100 digits
 
-  # the following examples compute their result to 100 digits accuracy:
-  my $cos  = Math::BigFloat->new(1)->bcos(100);		# cosinus(1)
-  my $sin  = Math::BigFloat->new(1)->bsin(100);		# sinus(1)
-  my $atan = Math::BigFloat->new(1)->batan(100);	# arcus tangens(1)
+ # the following examples compute their result to 100 digits accuracy:
+ my $cos  = Math::BigFloat->new(1)->bcos(100);	      # cosinus(1)
+ my $sin  = Math::BigFloat->new(1)->bsin(100);	      # sinus(1)
+ my $atan = Math::BigFloat->new(1)->batan(100);	      # arcus tangens(1)
 
-  my $atan2 = Math::BigFloat->new(  1 )->batan2( 1 ,100); # batan(1)
-  my $atan2 = Math::BigFloat->new(  1 )->batan2( 8 ,100); # batan(1/8)
-  my $atan2 = Math::BigFloat->new( -2 )->batan2( 1 ,100); # batan(-2)
+ my $atan2 = Math::BigFloat->new(  1 )->batan2( 1 ,100); # batan(1)
+ my $atan2 = Math::BigFloat->new(  1 )->batan2( 8 ,100); # batan(1/8)
+ my $atan2 = Math::BigFloat->new( -2 )->batan2( 1 ,100); # batan(-2)
 
-  # Testing
-  $x->is_zero();		# true if arg is +0
-  $x->is_nan();			# true if arg is NaN
-  $x->is_one();			# true if arg is +1
-  $x->is_one('-');		# true if arg is -1
-  $x->is_odd();			# true if odd, false for even
-  $x->is_even();		# true if even, false for odd
-  $x->is_pos();			# true if >= 0
-  $x->is_neg();			# true if <  0
-  $x->is_inf(sign);		# true if +inf, or -inf (default is '+')
+ # Testing
+ $x->is_zero();		 # true if arg is +0
+ $x->is_nan();		 # true if arg is NaN
+ $x->is_one();		 # true if arg is +1
+ $x->is_one('-');	 # true if arg is -1
+ $x->is_odd();		 # true if odd, false for even
+ $x->is_even();		 # true if even, false for odd
+ $x->is_pos();		 # true if >= 0
+ $x->is_neg();		 # true if <  0
+ $x->is_inf(sign);	 # true if +inf, or -inf (default is '+')
 
-  $x->bcmp($y);			# compare numbers (undef,<0,=0,>0)
-  $x->bacmp($y);		# compare absolutely (undef,<0,=0,>0)
-  $x->sign();			# return the sign, either +,- or NaN
-  $x->digit($n);		# return the nth digit, counting from right
-  $x->digit(-$n);		# return the nth digit, counting from left 
+ $x->bcmp($y);		 # compare numbers (undef,<0,=0,>0)
+ $x->bacmp($y);		 # compare absolutely (undef,<0,=0,>0)
+ $x->sign();		 # return the sign, either +,- or NaN
+ $x->digit($n);		 # return the nth digit, counting from right
+ $x->digit(-$n);	 # return the nth digit, counting from left 
 
-  # The following all modify their first argument. If you want to preserve
-  # $x, use $z = $x->copy()->bXXX($y); See under L<CAVEATS> for why this is
-  # necessary when mixing $a = $b assignments with non-overloaded math.
+ # The following all modify their first argument. If you want to pre-
+ # serve $x, use $z = $x->copy()->bXXX($y); See under L</CAVEATS> for
+ # necessary when mixing $a = $b assignments with non-overloaded math.
 
-  # set 
-  $x->bzero();			# set $i to 0
-  $x->bnan();			# set $i to NaN
-  $x->bone();                   # set $x to +1
-  $x->bone('-');                # set $x to -1
-  $x->binf();                   # set $x to inf
-  $x->binf('-');                # set $x to -inf
+ # set 
+ $x->bzero();		 # set $i to 0
+ $x->bnan();		 # set $i to NaN
+ $x->bone();		 # set $x to +1
+ $x->bone('-');		 # set $x to -1
+ $x->binf();		 # set $x to inf
+ $x->binf('-');		 # set $x to -inf
 
-  $x->bneg();			# negation
-  $x->babs();			# absolute value
-  $x->bnorm();			# normalize (no-op)
-  $x->bnot();			# two's complement (bit wise not)
-  $x->binc();			# increment x by 1
-  $x->bdec();			# decrement x by 1
+ $x->bneg();		 # negation
+ $x->babs();		 # absolute value
+ $x->bnorm();		 # normalize (no-op)
+ $x->bnot();		 # two's complement (bit wise not)
+ $x->binc();		 # increment x by 1
+ $x->bdec();		 # decrement x by 1
 
-  $x->badd($y);			# addition (add $y to $x)
-  $x->bsub($y);			# subtraction (subtract $y from $x)
-  $x->bmul($y);			# multiplication (multiply $x by $y)
-  $x->bdiv($y);			# divide, set $x to quotient
-				# return (quo,rem) or quo if scalar
+ $x->badd($y);		 # addition (add $y to $x)
+ $x->bsub($y);		 # subtraction (subtract $y from $x)
+ $x->bmul($y);		 # multiplication (multiply $x by $y)
+ $x->bdiv($y);		 # divide, set $x to quotient
+			 # return (quo,rem) or quo if scalar
 
-  $x->bmod($y);			# modulus ($x % $y)
-  $x->bpow($y);			# power of arguments ($x ** $y)
-  $x->bmodpow($exp,$mod);	# modular exponentiation (($num**$exp) % $mod))
-  $x->blsft($y, $n);		# left shift by $y places in base $n
-  $x->brsft($y, $n);		# right shift by $y places in base $n
-				# returns (quo,rem) or quo if in scalar context
+ $x->bmod($y);		 # modulus ($x % $y)
+ $x->bpow($y);		 # power of arguments ($x ** $y)
+ $x->bmodpow($exp,$mod); # modular exponentiation (($num**$exp) % $mod))
+ $x->blsft($y, $n);	 # left shift by $y places in base $n
+ $x->brsft($y, $n);	 # right shift by $y places in base $n
+			 # returns (quo,rem) or quo if in scalar context
 
-  $x->blog();			# logarithm of $x to base e (Euler's number)
-  $x->blog($base);		# logarithm of $x to base $base (f.i. 2)
-  $x->bexp();			# calculate e ** $x where e is Euler's number
+ $x->blog();		 # logarithm of $x to base e (Euler's number)
+ $x->blog($base);	 # logarithm of $x to base $base (f.i. 2)
+ $x->bexp();		 # calculate e ** $x where e is Euler's number
 
-  $x->band($y);			# bit-wise and
-  $x->bior($y);			# bit-wise inclusive or
-  $x->bxor($y);			# bit-wise exclusive or
-  $x->bnot();			# bit-wise not (two's complement)
+ $x->band($y);		 # bit-wise and
+ $x->bior($y);		 # bit-wise inclusive or
+ $x->bxor($y);		 # bit-wise exclusive or
+ $x->bnot();		 # bit-wise not (two's complement)
 
-  $x->bsqrt();			# calculate square-root
-  $x->broot($y);		# $y'th root of $x (e.g. $y == 3 => cubic root)
-  $x->bfac();			# factorial of $x (1*2*3*4*..$x)
+ $x->bsqrt();		 # calculate square-root
+ $x->broot($y);		 # $y'th root of $x (e.g. $y == 3 => cubic root)
+ $x->bfac();		 # factorial of $x (1*2*3*4*..$x)
 
-  $x->bround($N); 		# accuracy: preserve $N digits
-  $x->bfround($N);		# precision: round to the $Nth digit
+ $x->bround($N); 	 # accuracy: preserve $N digits
+ $x->bfround($N);	 # precision: round to the $Nth digit
 
-  $x->bfloor();			# return integer less or equal than $x
-  $x->bceil();			# return integer greater or equal than $x
+ $x->bfloor();		 # return integer less or equal than $x
+ $x->bceil();		 # return integer greater or equal than $x
+ $x->bint();             # round towards zero
 
   # The following do not modify their arguments:
 
-  bgcd(@values);		# greatest common divisor
-  blcm(@values);		# lowest common multiplicator
+ bgcd(@values);		 # greatest common divisor
+ blcm(@values);		 # lowest common multiplicator
 
-  $x->bstr();			# return string
-  $x->bsstr();			# return string in scientific notation
+ $x->bstr();		 # return string
+ $x->bsstr();		 # return string in scientific notation
 
-  $x->as_int();			# return $x as BigInt 
-  $x->exponent();		# return exponent as BigInt
-  $x->mantissa();		# return mantissa as BigInt
-  $x->parts();			# return (mantissa,exponent) as BigInt
+ $x->as_int();		 # return $x as BigInt 
+ $x->exponent();	 # return exponent as BigInt
+ $x->mantissa();	 # return mantissa as BigInt
+ $x->parts();		 # return (mantissa,exponent) as BigInt
 
-  $x->length();			# number of digits (w/o sign and '.')
-  ($l,$f) = $x->length();	# number of digits, and length of fraction
+ $x->length();		 # number of digits (w/o sign and '.')
+ ($l,$f) = $x->length(); # number of digits, and length of fraction
 
-  $x->precision();		# return P of $x (or global, if P of $x undef)
-  $x->precision($n);		# set P of $x to $n
-  $x->accuracy();		# return A of $x (or global, if A of $x undef)
-  $x->accuracy($n);		# set A $x to $n
+ $x->precision();	 # return P of $x (or global, if P of $x undef)
+ $x->precision($n);	 # set P of $x to $n
+ $x->accuracy();	 # return A of $x (or global, if A of $x undef)
+ $x->accuracy($n);	 # set A $x to $n
 
-  # these get/set the appropriate global value for all BigFloat objects
-  Math::BigFloat->precision();	# Precision
-  Math::BigFloat->accuracy();	# Accuracy
-  Math::BigFloat->round_mode();	# rounding mode
+ # these get/set the appropriate global value for all BigFloat objects
+ Math::BigFloat->precision();	# Precision
+ Math::BigFloat->accuracy();	# Accuracy
+ Math::BigFloat->round_mode();	# rounding mode
 
 =head1 DESCRIPTION
 
@@ -3943,12 +3963,12 @@ declare your big floating point numbers as
 Operations with overloaded operators preserve the arguments, which is
 exactly what you expect.
 
-=head2 Canonical notation
+=head2 Input
 
 Input to these routines are either BigFloat objects, or strings of the
 following four forms:
 
-=over 2
+=over
 
 =item *
 
@@ -3996,16 +4016,16 @@ Some routines (C<is_odd()>, C<is_even()>, C<is_zero()>, C<is_one()>,
 C<is_nan()>) return true or false, while others (C<bcmp()>, C<bacmp()>)
 return either undef, <0, 0 or >0 and are suited for sort.
 
-Actual math is done by using the class defined with C<< with => Class; >> (which
-defaults to BigInts) to represent the mantissa and exponent.
+Actual math is done by using the class defined with C<< with => Class; >>
+(which defaults to BigInts) to represent the mantissa and exponent.
 
 The sign C</^[+-]$/> is stored separately. The string 'NaN' is used to 
 represent the result when input arguments are not numbers, as well as 
 the result of dividing by zero.
 
-=head2 C<mantissa()>, C<exponent()> and C<parts()>
+=head2 mantissa(), exponent() and parts()
 
-C<mantissa()> and C<exponent()> return the said parts of the BigFloat 
+mantissa() and exponent() return the said parts of the BigFloat
 as BigInts such that:
 
 	$m = $x->mantissa();
@@ -4023,7 +4043,7 @@ This might change in the future, so do not depend on it.
 
 =head2 Accuracy vs. Precision
 
-See also: L<Rounding|Rounding>.
+See also: L<Rounding|/Rounding>.
 
 Math::BigFloat supports both precision (rounding to a certain place before or
 after the dot) and accuracy (rounding to a certain number of digits). For a
@@ -4040,8 +4060,8 @@ input $x has no accuracy or precision set, then a fallback parameter will
 be used. For historical reasons, it is called C<div_scale> and can be accessed
 via:
 
-	$d = Math::BigFloat->div_scale();		# query
-	Math::BigFloat->div_scale($n);			# set to $n digits
+	$d = Math::BigFloat->div_scale();	# query
+	Math::BigFloat->div_scale($n);		# set to $n digits
 
 The default value for C<div_scale> is 40.
 
@@ -4049,13 +4069,13 @@ In case the result of one operation has more digits than specified,
 it is rounded. The rounding mode taken is either the default mode, or the one
 supplied to the operation after the I<scale>:
 
-	$x = Math::BigFloat->new(2);
-	Math::BigFloat->accuracy(5);		# 5 digits max
-	$y = $x->copy()->bdiv(3);		# will give 0.66667
-	$y = $x->copy()->bdiv(3,6);		# will give 0.666667
-	$y = $x->copy()->bdiv(3,6,undef,'odd');	# will give 0.666667
-	Math::BigFloat->round_mode('zero');
-	$y = $x->copy()->bdiv(3,6);		# will also give 0.666667
+    $x = Math::BigFloat->new(2);
+    Math::BigFloat->accuracy(5);	      # 5 digits max
+    $y = $x->copy()->bdiv(3);		      # will give 0.66667
+    $y = $x->copy()->bdiv(3,6);		      # will give 0.666667
+    $y = $x->copy()->bdiv(3,6,undef,'odd');   # will give 0.666667
+    Math::BigFloat->round_mode('zero');
+    $y = $x->copy()->bdiv(3,6);		      # will also give 0.666667
 
 Note that C<< Math::BigFloat->accuracy() >> and C<< Math::BigFloat->precision() >>
 set the global variables, and thus B<any> newly created number will be subject
@@ -4080,7 +4100,7 @@ functions like so:
 
 =head2 Rounding
 
-=over 2
+=over
 
 =item ffround ( +$scale )
 
@@ -4136,14 +4156,16 @@ calculates non-integer results when possible. Please see L<Math::BigInt>
 for a full description of each method. Below are just the most important
 differences:
 
-=head2 accuracy
+=over
 
-        $x->accuracy(5);                # local for $x
-        CLASS->accuracy(5);             # global for all members of CLASS
-                                        # Note: This also applies to new()!
+=item accuracy()
 
-        $A = $x->accuracy();            # read out accuracy that affects $x
-        $A = CLASS->accuracy();         # read out global accuracy
+      $x->accuracy(5);           # local for $x
+      CLASS->accuracy(5);        # global for all members of CLASS
+                                 # Note: This also applies to new()!
+
+      $A = $x->accuracy();       # read out accuracy that affects $x
+      $A = CLASS->accuracy();    # read out global accuracy
 
 Set or get the global or local accuracy, aka how many significant digits the
 results have. If you set a global accuracy, then this also applies to new()!
@@ -4153,7 +4175,7 @@ influence of C<< CLASS->accuracy($A) >>, all results from math operations with
 that number will also be rounded.
 
 In most cases, you should probably round the results explicitly using one of
-L<round()>, L<bround()> or L<bfround()> or by passing the desired accuracy
+L<Math::BigInt/round()>, L<Math::BigInt/bround()> or L<Math::BigInt/bfround()> or by passing the desired accuracy
 to the math operation as additional parameter:
 
         my $x = Math::BigInt->new(30000);
@@ -4161,23 +4183,25 @@ to the math operation as additional parameter:
         print scalar $x->copy()->bdiv($y, 2);           # print 4300
         print scalar $x->copy()->bdiv($y)->bround(2);   # print 4300
 
-=head2 precision()
+=item precision()
 
-        $x->precision(-2);      # local for $x, round at the second digit right of the dot
-        $x->precision(2);       # ditto, round at the second digit left of the dot
+      $x->precision(-2);      # local for $x, round at the second
+                              # digit right of the dot
+      $x->precision(2);       # ditto, round at the second digit
+                              # left of the dot
 
-        CLASS->precision(5);    # Global for all members of CLASS
-                                # This also applies to new()!
-        CLASS->precision(-5);   # ditto
+      CLASS->precision(5);    # Global for all members of CLASS
+                              # This also applies to new()!
+      CLASS->precision(-5);   # ditto
 
-        $P = CLASS->precision();        # read out global precision
-        $P = $x->precision();           # read out precision that affects $x
+      $P = CLASS->precision();  # read out global precision
+      $P = $x->precision();     # read out precision that affects $x
 
-Note: You probably want to use L<accuracy()> instead. With L<accuracy> you
-set the number of digits each result should have, with L<precision> you
+Note: You probably want to use L</accuracy()> instead. With L</accuracy()> you
+set the number of digits each result should have, with L</precision()> you
 set the place where to round!
 
-=head2 bexp()
+=item bexp()
 
 	$x->bexp($accuracy);		# calculate e ** X
 
@@ -4185,9 +4209,9 @@ Calculates the expression C<e ** $x> where C<e> is Euler's number.
 
 This method was added in v1.82 of Math::BigInt (April 2007).
 
-=head2 bnok()
+=item bnok()
 
-	$x->bnok($y);		   # x over y (binomial coefficient n over k)
+	$x->bnok($y);	# x over y (binomial coefficient n over k)
 
 Calculates the binomial coefficient n over k, also called the "choose"
 function. The result is equivalent to:
@@ -4198,7 +4222,7 @@ function. The result is equivalent to:
 
 This method was added in v1.84 of Math::BigInt (April 2007).
 
-=head2 bpi()
+=item bpi()
 
 	print Math::BigFloat->bpi(100), "\n";
 
@@ -4207,7 +4231,7 @@ rounded according to the current rounding mode, which defaults to "even".
 
 This method was added in v1.87 of Math::BigInt (June 2007).
 
-=head2 bcos()
+=item bcos()
 
 	my $x = Math::BigFloat->new(1);
 	print $x->bcos(100), "\n";
@@ -4216,7 +4240,7 @@ Calculate the cosinus of $x, modifying $x in place.
 
 This method was added in v1.87 of Math::BigInt (June 2007).
 
-=head2 bsin()
+=item bsin()
 
 	my $x = Math::BigFloat->new(1);
 	print $x->bsin(100), "\n";
@@ -4225,33 +4249,35 @@ Calculate the sinus of $x, modifying $x in place.
 
 This method was added in v1.87 of Math::BigInt (June 2007).
 
-=head2 batan2()
+=item batan2()
 
 	my $y = Math::BigFloat->new(2);
 	my $x = Math::BigFloat->new(3);
 	print $y->batan2($x), "\n";
 
 Calculate the arcus tanges of C<$y> divided by C<$x>, modifying $y in place.
-See also L<batan()>.
+See also L</batan()>.
 
 This method was added in v1.87 of Math::BigInt (June 2007).
 
-=head2 batan()
+=item batan()
 
 	my $x = Math::BigFloat->new(1);
 	print $x->batan(100), "\n";
 
-Calculate the arcus tanges of $x, modifying $x in place. See also L<batan2()>.
+Calculate the arcus tanges of $x, modifying $x in place. See also L</batan2()>.
 
 This method was added in v1.87 of Math::BigInt (June 2007).
 
-=head2 bmuladd()
+=item bmuladd()
 
 	$x->bmuladd($y,$z);
 
 Multiply $x by $y, and then add $z to the result.
 
 This method was added in v1.87 of Math::BigInt (June 2007).
+
+=back
 
 =head1 Autocreating constants
 
@@ -4351,17 +4377,17 @@ Please see the file BUGS in the CPAN distribution Math::BigInt for known bugs.
 Do not try to be clever to insert some operations in between switching
 libraries:
 
-	require Math::BigFloat;
-	my $matter = Math::BigFloat->bone() + 4;	# load BigInt and Calc
-	Math::BigFloat->import( lib => 'Pari' );	# load Pari, too
-	my $anti_matter = Math::BigFloat->bone()+4;	# now use Pari
+    require Math::BigFloat;
+    my $matter = Math::BigFloat->bone() + 4;	# load BigInt and Calc
+    Math::BigFloat->import( lib => 'Pari' );	# load Pari, too
+    my $anti_matter = Math::BigFloat->bone()+4;	# now use Pari
 
 This will create objects with numbers stored in two different backend libraries,
 and B<VERY BAD THINGS> will happen when you use these together:
 
 	my $flash_and_bang = $matter + $anti_matter;	# Don't do this!
 
-=over 1
+=over
 
 =item stringify, bstr()
 
@@ -4369,7 +4395,7 @@ Both stringify and bstr() now drop the leading '+'. The old code would return
 '+1.23', the new returns '1.23'. See the documentation in L<Math::BigInt> for
 reasoning and details.
 
-=item bdiv
+=item bdiv()
 
 The following will probably not print what you expect:
 
@@ -4378,12 +4404,13 @@ The following will probably not print what you expect:
 It prints both quotient and remainder since print works in list context. Also,
 bdiv() will modify $c, so be careful. You probably want to use
 
-	print $c / 123.456,"\n";
-	print scalar $c->bdiv(123.456),"\n";  # or if you want to modify $c
+    print $c / 123.456,"\n";
+    # or if you want to modify $c:
+    print scalar $c->bdiv(123.456),"\n";
 
 instead.
 
-=item brsft
+=item brsft()
 
 The following will probably not print what you expect:
 
@@ -4412,7 +4439,7 @@ a second reference to the B<same> object and stores it in $y. Thus anything
 that modifies $x will modify $y (except overloaded math operators), and vice
 versa. See L<Math::BigInt> for details and how to avoid that.
 
-=item bpow
+=item bpow()
 
 C<bpow()> now modifies the first argument, unlike the old code which left
 it alone and only returned the result. This is to be consistent with
@@ -4424,42 +4451,44 @@ C<badd()> etc. The first will modify $x, the second one won't:
 
 =item precision() vs. accuracy()
 
-A common pitfall is to use L<precision()> when you want to round a result to
+A common pitfall is to use L</precision()> when you want to round a result to
 a certain number of digits:
 
-	use Math::BigFloat;
+    use Math::BigFloat;
 
-	Math::BigFloat->precision(4);		# does not do what you think it does
-	my $x = Math::BigFloat->new(12345);	# rounds $x to "12000"!
-	print "$x\n";				# print "12000"
-	my $y = Math::BigFloat->new(3);		# rounds $y to "0"!
-	print "$y\n";				# print "0"
-	$z = $x / $y;				# 12000 / 0 => NaN!
-	print "$z\n";
-	print $z->precision(),"\n";		# 4
+    Math::BigFloat->precision(4);	    # does not do what you
+					    # think it does
+    my $x = Math::BigFloat->new(12345);	    # rounds $x to "12000"!
+    print "$x\n";			    # print "12000"
+    my $y = Math::BigFloat->new(3);	    # rounds $y to "0"!
+    print "$y\n";			    # print "0"
+    $z = $x / $y;			    # 12000 / 0 => NaN!
+    print "$z\n";
+    print $z->precision(),"\n";		    # 4
 
-Replacing L<precision> with L<accuracy> is probably not what you want, either:
+Replacing L</precision()> with L</accuracy()> is probably not what you want, either:
 
-	use Math::BigFloat;
+    use Math::BigFloat;
 
-	Math::BigFloat->accuracy(4);		# enables global rounding:
-	my $x = Math::BigFloat->new(123456);	# rounded immediately to "12350"
-	print "$x\n";				# print "123500"
-	my $y = Math::BigFloat->new(3);		# rounded to "3
-	print "$y\n";				# print "3"
-	print $z = $x->copy()->bdiv($y),"\n";	# 41170
-	print $z->accuracy(),"\n";		# 4
+    Math::BigFloat->accuracy(4);	  # enables global rounding:
+    my $x = Math::BigFloat->new(123456);  # rounded immediately
+                                          #   to "12350"
+    print "$x\n";			  # print "123500"
+    my $y = Math::BigFloat->new(3);	  # rounded to "3
+    print "$y\n";			  # print "3"
+    print $z = $x->copy()->bdiv($y),"\n"; # 41170
+    print $z->accuracy(),"\n";		  # 4
 
 What you want to use instead is:
 
-	use Math::BigFloat;
+    use Math::BigFloat;
 
-	my $x = Math::BigFloat->new(123456);	# no rounding
-	print "$x\n";				# print "123456"
-	my $y = Math::BigFloat->new(3);		# no rounding
-	print "$y\n";				# print "3"
-	print $z = $x->copy()->bdiv($y,4),"\n";	# 41150
-	print $z->accuracy(),"\n";		# undef
+    my $x = Math::BigFloat->new(123456);    # no rounding
+    print "$x\n";			    # print "123456"
+    my $y = Math::BigFloat->new(3);	    # no rounding
+    print "$y\n";			    # print "3"
+    print $z = $x->copy()->bdiv($y,4),"\n"; # 41150
+    print $z->accuracy(),"\n";		    # undef
 
 In addition to computing what you expected, the last example also does B<not>
 "taint" the result with an accuracy or precision setting, which would
@@ -4470,7 +4499,7 @@ influence any further operation.
 =head1 SEE ALSO
 
 L<Math::BigInt>, L<Math::BigRat> and L<Math::Big> as well as
-L<Math::BigInt::BitVect>, L<Math::BigInt::Pari> and  L<Math::BigInt::GMP>.
+L<Math::BigInt::Pari> and  L<Math::BigInt::GMP>.
 
 The pragmas L<bignum>, L<bigint> and L<bigrat> might also be of interest
 because they solve the autoupgrading/downgrading issue, at least partly.

@@ -1,3 +1,4 @@
+#!perl
 # A simple listing of core files that have specific maintainers,
 # or at least someone that can be called an "interested party".
 # Also, a "module" does not necessarily mean a CPAN module, it
@@ -7,89 +8,8 @@
 
 package Maintainers;
 
+use utf8;
 use File::Glob qw(:case);
-
-%Maintainers =
-    (
-    'abergman'	=> 'Arthur Bergman <abergman@cpan.org>',
-    'abigail'	=> 'Abigail <abigail@abigail.be>',
-    'ams'	=> 'Abhijit Menon-Sen <ams@cpan.org>',
-    'andk'	=> 'Andreas J. Koenig <andk@cpan.org>',
-    'andya'	=> 'Andy Armstrong <andy@hexten.net>',
-    'arandal'	=> 'Allison Randal <allison@perl.org>',
-    'audreyt'	=> 'Audrey Tang <cpan@audreyt.org>',
-    'avar'	=> 'Ævar Arnfjörð Bjarmason <avar@cpan.org>',
-    'bingos'	=> 'Chris Williams <chris@bingosnet.co.uk>',
-    'chorny'	=> 'Alexandr Ciornii <alexchorny@gmail.com>',
-    'corion'	=> 'Max Maischein <corion@corion.net>',
-    'craig'	=> 'Craig Berry <craigberry@mac.com>',
-    'dankogai'	=> 'Dan Kogai <dankogai@cpan.org>',
-    'dconway'	=> 'Damian Conway <dconway@cpan.org>',
-    'dland'	=> 'David Landgren <dland@cpan.org>',
-    'dmanura'	=> 'David Manura <dmanura@cpan.org>',
-    'drolsky'	=> 'Dave Rolsky <drolsky@cpan.org>',
-    'elizabeth'	=> 'Elizabeth Mattijsen <liz@dijkmat.nl>',
-    'ferreira'	=> 'Adriano Ferreira <ferreira@cpan.org>',
-    'gbarr'	=> 'Graham Barr <gbarr@cpan.org>',
-    'gaas'	=> 'Gisle Aas <gaas@cpan.org>',
-    'gsar'	=> 'Gurusamy Sarathy <gsar@activestate.com>',
-    'ilyam'	=> 'Ilya Martynov <ilyam@cpan.org>',
-    'ilyaz'	=> 'Ilya Zakharevich <ilyaz@cpan.org>',
-    'jand'	=> 'Jan Dubois <jand@activestate.com>',
-    'jdhedden'	=> 'Jerry D. Hedden <jdhedden@cpan.org>',
-    'jesse'   	=> 'Jesse Vincent <jesse@bestpractical.com>',
-    'jhi'	=> 'Jarkko Hietaniemi <jhi@cpan.org>',
-    'jjore'	=> 'Joshua ben Jore <jjore@cpan.org>',
-    'jpeacock'	=> 'John Peacock <jpeacock@cpan.org>',
-    'jstowe'	=> 'Jonathan Stowe <jstowe@cpan.org>',
-    'jv'	=> 'Johan Vromans <jv@cpan.org>',
-    'kane'	=> 'Jos Boumans <kane@cpan.org>',
-    'kwilliams'	=> 'Ken Williams <kwilliams@cpan.org>',
-    'laun'	=> 'Wolfgang Laun <Wolfgang.Laun@alcatel.at>',
-    'lstein'	=> 'Lincoln D. Stein <lds@cpan.org>',
-    'lwall'	=> 'Larry Wall <lwall@cpan.org>',
-    'makamaka'	=> 'Makamaka Hannyaharamitu <makamaka@cpan.org>',
-    'marekr'	=> 'Marek Rouchal <marekr@cpan.org>',
-    'markm'	=> 'Mark Mielke <markm@cpan.org>',
-    'mhx'	=> 'Marcus Holland-Moritz <mhx@cpan.org>',
-    'mjd'	=> 'Mark-Jason Dominus <mjd@plover.com>',
-    'msergeant'	=> 'Matt Sergeant <msergeant@cpan.org>',
-    'mshelor'	=> 'Mark Shelor <mshelor@cpan.org>',
-    'muir'	=> 'David Muir Sharnoff <muir@cpan.org>',
-    'neilb'	=> 'Neil Bowers <neilb@cpan.org>',
-    'nuffin'	=> 'Yuval Kogman <nothingmuch@woobling.org>',
-    'nwclark'	=> 'Nicholas Clark <nwclark@cpan.org>',
-    'osfameron'	=> 'Hakim Cassimally <osfameron@perl.org>',
-    'p5p'	=> 'perl5-porters <perl5-porters@perl.org>',
-    'perlfaq'	=> 'perlfaq-workers <perlfaq-workers@perl.org>',
-    'petdance'	=> 'Andy Lester <andy@petdance.com>',
-    'pjf'	=> 'Paul Fenwick <pjf@cpan.org>',
-    'pmqs'	=> 'Paul Marquess <pmqs@cpan.org>',
-    'pvhp'	=> 'Peter Prymmer <pvhp@best.com>',
-    'rafl'	=> 'Florian Ragwitz <flora@cpan.org>',
-    'rclamp'	=> 'Richard Clamp <rclamp@cpan.org>',
-    'rgarcia'	=> 'Rafael Garcia-Suarez <rgarcia@cpan.org>',
-    'rkobes'	=> 'Randy Kobes <rkobes@cpan.org>',
-    'rmbarker'	=> 'Robin Barker <rmbarker@cpan.org>',
-    'rra'	=> 'Russ Allbery <rra@cpan.org>',
-    'rurban'	=> 'Reini Urban <rurban@cpan.org>',
-    'sadahiro'	=> 'SADAHIRO Tomoyuki <SADAHIRO@cpan.org>',
-    'salva'	=> 'Salvador Fandiño García <salva@cpan.org>',
-    'saper'	=> 'Sébastien Aperghis-Tramoni <saper@cpan.org>',
-    'sbeck'     => 'Sullivan Beck <sbeck@cpan.org>',
-    'sburke'	=> 'Sean Burke <sburke@cpan.org>',
-    'mschwern'	=> 'Michael Schwern <mschwern@cpan.org>',
-    'simonw'	=> 'Simon Wistow <simonw@cpan.org>',
-    'smccam'	=> 'Stephen McCamant <smccam@cpan.org>',
-    'smpeters'	=> 'Steve Peters <steve@fisharerojo.org>',
-    'smueller'	=> 'Steffen Mueller <smueller@cpan.org>',
-    'tomhughes'	=> 'Tom Hughes <tomhughes@cpan.org>',
-    'tjenness'	=> 'Tim Jenness <tjenness@cpan.org>',
-    'tyemq'	=> 'Tye McQueen <tyemq@cpan.org>',
-    'yves'	=> 'Yves Orton <yves@cpan.org>',
-    'zefram'	=> 'Andrew Main <zefram@cpan.org>',
-    );
-
 
 # IGNORABLE: files which, if they appear in the root of a CPAN
 # distribution, need not appear in core (i.e. core-cpan-diff won't
@@ -98,12 +18,12 @@ use File::Glob qw(:case);
 @IGNORABLE = qw(
     .cvsignore .dualLivedDiffConfig .gitignore
     ANNOUNCE Announce Artistic AUTHORS BENCHMARK BUGS Build.PL
-    CHANGELOG ChangeLog CHANGES Changes COPYING Copying CREDITS dist.ini
-    GOALS HISTORY INSTALL INSTALL.SKIP LICENSE Makefile.PL
-    MANIFEST MANIFEST.SKIP META.yml MYMETA.yml META.json MYMETA.json
-    NEW NOTES ppport.h README SIGNATURE THANKS TODO Todo VERSION WHATSNEW
+    CHANGELOG ChangeLog Changelog CHANGES Changes CONTRIBUTING COPYING Copying
+    cpanfile CREDITS dist.ini GOALS HISTORY INSTALL INSTALL.SKIP LICENSE
+    Makefile.PL MANIFEST MANIFEST.SKIP META.json META.yml MYMETA.json
+    MYMETA.yml NEW NOTES perlcritic.rc ppport.h README README.PATCHING
+    SIGNATURE THANKS TODO Todo VERSION WHATSNEW .perlcriticrc.perltidyrc
 );
-
 
 # Each entry in the  %Modules hash roughly represents a distribution,
 # except when DISTRIBUTION is set, where it *exactly* represents a single
@@ -116,18 +36,25 @@ use File::Glob qw(:case);
 # Archive-Extract-N.NN.tar.gz; the remaining keys are likely to be based
 # on the name of the distribution, e.g. 'Locale-Codes' for
 # Locale-Codes-N.NN.tar.gz'.
-#
+
+# UPSTREAM indicates where patches should go.  This is generally now
+# inferred from the FILES: modules with files in dist/, ext/ and lib/
+# are understood to have UPSTREAM 'blead', meaning that the copy of the
+# module in the blead sources is to be considered canonical, while
+# modules with files in cpan/ are understood to have UPSTREAM 'cpan',
+# meaning that the module on CPAN is to be patched first.
+
+# MAINTAINER has previously been used to indicate who the current maintainer
+# of the module is, but this is no longer stated explicitly. It is now
+# understood to be either the Perl 5 Porters if UPSTREAM is 'blead', or else
+# the CPAN author whose PAUSE user ID forms the first part of the DISTRIBUTION
+# value, e.g. 'BINGOS' in the case of 'BINGOS/Archive-Tar-1.96.tar.gz'.
+# (PAUSE's View Permissions page may be consulted to find other authors who
+# have owner or co-maint permissions for the module in question.)
+
 # FILES is a list of filenames, glob patterns, and directory
 # names to be recursed down, which collectively generate a complete list
 # of the files associated with the distribution.
-
-# UPSTREAM indicates where patches should go. undef implies
-# that this hasn't been discussed for the module at hand.
-# "blead" indicates that the copy of the module in the blead
-# sources is to be considered canonical, "cpan" means that the
-# module on CPAN is to be patched first. "first-come" means
-# that blead can be patched freely if it is in sync with the
-# latest release on CPAN.
 
 # BUGS is an email or url to post bug reports.  For modules with
 # UPSTREAM => 'blead', use perl5-porters@perl.org.  rt.cpan.org
@@ -145,9 +72,15 @@ use File::Glob qw(:case);
 # It defaults to the empty list.
 
 # CUSTOMIZED is a list of files that have been customized within the
-# Perl core.  They should also be listed in EXCLUDED, but this will
-# additionally suppress core-cpan-diff warnings that they differ from
-# the CPAN tarballs
+# Perl core.  Use this whenever patching a cpan upstream distribution
+# or whenever we expect to have a file that differs from the tarball.
+# If the file in blead matches the file in the tarball from CPAN,
+# Porting/core-cpan-diff will warn about it, as it indicates an expected
+# customization might have been lost when updating from upstream.  The
+# path should be relative to the distribution directory.  If the upstream
+# distribution should be modified to incorporate the change then be sure
+# to raise a ticket for it on rt.cpan.org and add a comment alongside the
+# list of CUSTOMIZED files noting the ticket number.
 
 # DEPRECATED contains the *first* version of Perl in which the module
 # was considered deprecated.  It should only be present if the module is
@@ -162,8 +95,8 @@ use File::Glob qw(:case);
 # first. The first match causes that prefix to be replaced with the
 # corresponding key. For example, with the following MAP:
 #   {
-#     'lib/'	 => 'lib/',
-#     ''	 => 'lib/Foo/',
+#     'lib/'     => 'lib/',
+#     ''     => 'lib/Foo/',
 #   },
 #
 # these files are mapped as shown:
@@ -179,1906 +112,1264 @@ use File::Glob qw(:case);
 # otherwise, it's
 #
 #   {
-#     'lib/'	 => 'lib/',
-#     ''	 => 'lib/Foo/Bar/',
+#     'lib/'     => 'lib/',
+#     ''     => 'lib/Foo/Bar/',
 #   }
 
 %Modules = (
 
-    'AnyDBM_File' =>
-	{
-	'MAINTAINERS'	=> 'p5p',
-	'FILES'		=> q[lib/AnyDBM_File.{pm,t}],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'Archive::Extract' =>
-	{
-	'MAINTAINER'	=> 'kane',
-	'DISTRIBUTION'	=> 'BINGOS/Archive-Extract-0.48.tar.gz',
-	'FILES'		=> q[cpan/Archive-Extract],
-	'UPSTREAM'	=> 'cpan',
-	'BUGS'		=> 'bug-archive-extract@rt.cpan.org',
-	},
-
-    'Archive::Tar' =>
-	{
-	'MAINTAINER'	=> 'kane',
-	'DISTRIBUTION'	=> 'BINGOS/Archive-Tar-1.76.tar.gz',
-	'FILES'		=> q[cpan/Archive-Tar],
-	'EXCLUDED'	=> [ qw(Makefile.PL) ],
-	'UPSTREAM'	=> 'cpan',
-	'BUGS'		=> 'bug-archive-tar@rt.cpan.org',
-	},
-
-    'Attribute::Handlers' =>
-	{
-	'MAINTAINER'	=> 'rgarcia',
-	'DISTRIBUTION'	=> 'SMUELLER/Attribute-Handlers-0.88.tar.gz',
-	'FILES'		=> q[dist/Attribute-Handlers],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'attributes' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'FILES'		=> q[ext/attributes],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'autodie' =>
-	{
-	'MAINTAINER'	=> 'pjf',
-	'DISTRIBUTION'	=> 'PJF/autodie-2.10.tar.gz',
-	'FILES' 	=> q[cpan/autodie],
-	'EXCLUDED'	=> [ qr{^inc/Module/},
-
-                             # All these tests depend upon external
-                             # modules that don't exist when we're
-                             # building the core.  Hence, they can
-                             # never run, and should not be merged.
-
-			     qw(
-				t/boilerplate.t
-				t/critic.t
-				t/fork.t
-				t/kwalitee.t
-				t/lex58.t
-				t/pod-coverage.t
-				t/pod.t
-				t/socket.t
-				t/system.t
-			      )
-			   ],
-	'UPSTREAM'	=> 'cpan',
-	},
-
-    'AutoLoader' =>
-	{
-	'MAINTAINER'	=> 'smueller',
-	'DISTRIBUTION'	=> 'SMUELLER/AutoLoader-5.71.tar.gz',
-	'FILES'		=> q[cpan/AutoLoader],
-	'EXCLUDED'	=> [ qw( t/00pod.t ) ],
-	'UPSTREAM'	=> 'cpan',
-	},
-
-    'autouse' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'DISTRIBUTION'	=> 'FLORA/autouse-1.06.tar.gz',
-	'FILES'		=> q[dist/autouse],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'B' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'FILES'		=> q[ext/B],
-	'EXCLUDED'	=> [ qw[B/Concise.pm
-				t/concise.t]
-			   ],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'B::Concise' =>
-	{
-	'MAINTAINER'	=> 'smccam',
-	'FILES'		=> q[ext/B/B/Concise.pm ext/B/t/concise.t],
-	'UPSTREAM'	=> undef,
-	},
-
-    'B::Debug' =>
-	{
-	'MAINTAINER'	=> 'rurban',
-	'DISTRIBUTION'	=> 'RURBAN/B-Debug-1.16.tar.gz',
-	'FILES'		=> q[cpan/B-Debug],
-	'EXCLUDED'	=> [ qw( t/pod.t ) ],
-	'UPSTREAM'	=> 'cpan',
-	},
-
-    'B::Deparse' =>
-	{
-	'MAINTAINER'	=> 'smccam',
-	'FILES'		=> q[dist/B-Deparse],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'B::Lint' =>
-	{
-	'MAINTAINER'	=> 'jjore',
-	'DISTRIBUTION'	=> 'FLORA/B-Lint-1.12.tar.gz',
-	'FILES'		=> q[dist/B-Lint],
-	'EXCLUDED'	=> [ qw( t/test.pl ) ],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'base' =>
-	{
-	'MAINTAINER'	=> 'rgarcia',
-	'DISTRIBUTION'	=> 'RGARCIA/base-2.15.tar.gz',
-	'FILES'		=> q[dist/base],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'Benchmark' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'FILES'		=> q[lib/Benchmark.{pm,t}],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'bignum' =>
-	{
-	'MAINTAINER'	=> 'rafl',
-	'DISTRIBUTION'	=> 'FLORA/bignum-0.25.tar.gz',
-	'FILES'		=> q[dist/bignum],
-	'EXCLUDED'	=> [ qr{^inc/Module/}, qw(t/pod.t t/pod_cov.t) ],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'Carp' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'FILES'		=> q[lib/Carp.{pm,t} lib/Carp/Heavy.pm],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'CGI' =>
-	{
-	'MAINTAINER'	=> 'lstein',
-	'DISTRIBUTION'	=> 'MARKSTOS/CGI.pm-3.52.tar.gz',
-	'FILES'		=> q[cpan/CGI],
-	'EXCLUDED'	=> [ qr{^t/lib/Test},
-				qw( cgi-lib_porting.html
-				    cgi_docs.html
-				    examples/WORLD_WRITABLE/18.157.1.253.sav
-				    t/gen-tests/gen-start-end-tags.pl
-				    t/fast.t
-				)
-			   ],
-	'UPSTREAM'	=> 'cpan',
-	},
-
-        'Class::Struct' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'FILES'		=> q[lib/Class/Struct.{pm,t}],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'Compress::Raw::Bzip2' =>
-	{
-	'MAINTAINER'	=> 'pmqs',
-	'DISTRIBUTION'	=> 'PMQS/Compress-Raw-Bzip2-2.033.tar.gz',
-	'FILES'		=> q[cpan/Compress-Raw-Bzip2],
-	'EXCLUDED'	=> [ qr{^t/Test/},
-			     qw( bzip2-src/bzip2-cpp.patch
-			     )
-			   ],
-	'UPSTREAM'	=> 'cpan',
-	},
-
-    'Compress::Raw::Zlib' =>
-	{
-	'MAINTAINER'	=> 'pmqs',
-	'DISTRIBUTION'	=> 'PMQS/Compress-Raw-Zlib-2.033.tar.gz',
-
-	'FILES'		=> q[cpan/Compress-Raw-Zlib],
-	'EXCLUDED'	=> [ qr{^t/Test/},
-			     qw( t/000prereq.t
-				 t/99pod.t
-			       )
-			   ],
-	'UPSTREAM'	=> 'cpan',
-	},
-
-    'constant' =>
-	{
-	'MAINTAINER'	=> 'saper',
-	'DISTRIBUTION'	=> 'SAPER/constant-1.19.tar.gz',
-	'FILES'		=> q[dist/constant],
-	'EXCLUDED'	=> [ qw( t/00-load.t
-				 t/more-tests.t
-				 t/pod-coverage.t
-				 t/pod.t
-				 eg/synopsis.pl
-			       )
-			   ],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'CPAN' =>
-	{
-	'MAINTAINER'	=> 'andk',
-	'DISTRIBUTION'	=> 'ANDK/CPAN-1.9600.tar.gz',
-	'FILES'		=> q[cpan/CPAN],
-	'EXCLUDED'	=> [ qr{^distroprefs/},
-			     qr{^inc/Test/},
-			     qr{^t/CPAN/authors/},
-			     qw{
-				lib/CPAN/Admin.pm
-				Makefile.PL
-				SlayMakefile
-				t/00signature.t
-				t/04clean_load.t
-				t/12cpan.t
-				t/13tarzip.t
-				t/14forkbomb.t
-				t/30shell.coverage
-				t/30shell.t
-				t/31sessions.t
-				t/41distribution.t
-				t/42distroprefs.t
-				t/43distroprefspref.t
-				t/50pod.t
-				t/51pod.t
-				t/52podcover.t
-				t/60credentials.t
-				t/70_critic.t
-				t/CPAN/CpanTestDummies-1.55.pm
-				t/CPAN/TestConfig.pm
-				t/CPAN/TestMirroredBy
-				t/CPAN/TestPatch.txt
-				t/CPAN/modules/02packages.details.txt
-				t/CPAN/modules/03modlist.data
-				t/data/META-dynamic.yml
-				t/data/META-static.yml
-				t/local_utils.pm
-				t/perlcriticrc
-				t/yaml_code.yml
-			       },
-			   ],
-	'UPSTREAM'	=> 'cpan',
-	},
-
-    'CPANPLUS' =>
-	{
-	'MAINTAINER'	=> 'kane',
-	'DISTRIBUTION'	=> 'BINGOS/CPANPLUS-0.9103.tar.gz',
-	'FILES'		=> q[cpan/CPANPLUS],
-	'EXCLUDED'	=> [ qr{^inc/},
-			     qr{^t/dummy-.*\.hidden$},
-			     qw{ bin/cpanp-boxed },
-			     # SQLite tests would be skipped in core, and
-			     # the filenames are too long for VMS!
-			     qw{
-				 t/031_CPANPLUS-Internals-Source-SQLite.t
-				 t/032_CPANPLUS-Internals-Source-via-sqlite.t
-			       },
-                             qw{ Makefile.PL },
-			   ],
-	'CUSTOMIZED'	=> [ qw{ Makefile.PL } ],
-	'UPSTREAM'	=> 'cpan',
-	'BUGS'		=> 'bug-cpanplus@rt.cpan.org',
-	},
-
-    'CPANPLUS::Dist::Build' =>
-	{
-	'MAINTAINER'	=> 'bingos',
-	'DISTRIBUTION'	=> 'BINGOS/CPANPLUS-Dist-Build-0.54.tar.gz',
-	'FILES'		=> q[cpan/CPANPLUS-Dist-Build],
-	'EXCLUDED'	=> [ qr{^inc/},
-			     qw{ t/99_pod.t
-			         t/99_pod_coverage.t
-			       },
-			   ],
-	'UPSTREAM'	=> 'cpan',
-	},
-
-    'CPAN::Meta' =>
-	{
-	'MAINTAINER'	=> 'dagolden',
-	'DISTRIBUTION'	=> 'DAGOLDEN/CPAN-Meta-2.110440.tar.gz',
-	'FILES'		=> q[cpan/CPAN-Meta],
-	'EXCLUDED'	=> [
-				qr/^xt/,
-				qr/^history/,
-			   ],
-	'UPSTREAM'	=> 'cpan',
-	},
-
-    'CPAN::Meta::YAML' =>
-	{
-	'MAINTAINER'	=> 'dagolden',
-	'DISTRIBUTION'	=> 'DAGOLDEN/CPAN-Meta-YAML-0.003.tar.gz',
-	'FILES'		=> q[cpan/CPAN-Meta-YAML],
-	'EXCLUDED'	=> [
-		't/04_scalar.t',    # requires YAML.pm
-	],
-	'UPSTREAM'	=> 'cpan',
-	},
-
-    'Data::Dumper' =>
-	{
-	'MAINTAINER'	=> 'p5p', # Not gsar. Not ilyam. Not really smueller
-	'DISTRIBUTION'	=> 'SMUELLER/Data-Dumper-2.128.tar.gz',
-	'FILES'		=> q[dist/Data-Dumper],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'DB_File' =>
-	{
-	'MAINTAINER'	=> 'pmqs',
-	'DISTRIBUTION'	=> 'PMQS/DB_File-1.821.tar.gz',
-	'FILES'		=> q[cpan/DB_File],
-	'EXCLUDED'	=> [ qr{^patches/},
-			     qw{ t/pod.t
-			         fallback.h
-				 fallback.xs
-			       },
-			   ],
-	'UPSTREAM'	=> undef,
-	},
-
-    'DBM_Filter' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'FILES'		=> q[lib/DBM_Filter.pm lib/DBM_Filter],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'Devel::DProf' =>
-	{
-	'MAINTAINER'	=> 'rafl',
-	'DISTRIBUTION'	=> 'FLORA/Devel-DProf-20110228.00.tar.gz',
-	'FILES'		=> q[cpan/Devel-DProf],
-	'EXCLUDED'	=> [ qr{^t/release-} ],
-	'UPSTREAM'	=> 'cpan',
-	},
-
-    'Devel::SelfStubber' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'DISTRIBUTION'	=> 'FLORA/Devel-SelfStubber-1.05.tar.gz',
-	'FILES'		=> q[dist/Devel-SelfStubber],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'Devel::Peek' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'FILES'		=> q[ext/Devel-Peek],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'Devel::PPPort' =>
-	{
-	'MAINTAINER'	=> 'mhx',
-	'DISTRIBUTION'	=> 'MHX/Devel-PPPort-3.19.tar.gz',
-	'FILES'		=> q[cpan/Devel-PPPort],
-	'EXCLUDED'	=> [ qw{PPPort.pm} ], # we use PPPort_pm.PL instead
-	'UPSTREAM'	=> 'cpan',
-	},
-
-    'diagnostics' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'FILES'		=> q[lib/diagnostics.{pm,t}],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'Digest' =>
-	{
-	'MAINTAINER'	=> 'gaas',
-	'DISTRIBUTION'	=> 'GAAS/Digest-1.16.tar.gz',
-	'FILES'		=> q[cpan/Digest],
-	'EXCLUDED'	=> [ qw{digest-bench} ],
-	'UPSTREAM'	=> "cpan",
-	},
-
-    'Digest::MD5' =>
-	{
-	'MAINTAINER'	=> 'gaas',
-	'DISTRIBUTION'	=> 'GAAS/Digest-MD5-2.51.tar.gz',
-	'FILES'		=> q[cpan/Digest-MD5],
-	'EXCLUDED'	=> [ qw{rfc1321.txt} ],
-	'UPSTREAM'	=> "cpan",
-	},
-
-    'Digest::SHA' =>
-	{
-	'MAINTAINER'	=> 'mshelor',
-	'DISTRIBUTION'	=> 'MSHELOR/Digest-SHA-5.61.tar.gz',
-	'FILES' 	=> q[cpan/Digest-SHA],
-	'EXCLUDED'	=> [ qw{t/pod.t t/podcover.t examples/dups} ],
-	'UPSTREAM'	=> 'cpan',
-	},
-
-    'DirHandle' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'FILES'		=> q[lib/DirHandle.{pm,t}],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'Dumpvalue' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'DISTRIBUTION'	=> 'FLORA/Dumpvalue-1.15.tar.gz',
-	'FILES'		=> q[dist/Dumpvalue],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'DynaLoader' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'FILES'		=> q[ext/DynaLoader],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'Encode' =>
-	{
-	'MAINTAINER'	=> 'dankogai',
-	'DISTRIBUTION'	=> 'DANKOGAI/Encode-2.42.tar.gz',
-	'FILES'		=> q[cpan/Encode],
-	'UPSTREAM'	=> 'cpan',
-	},
-
-    'encoding::warnings' =>
-	{
-	'MAINTAINER'	=> 'audreyt',
-	'DISTRIBUTION'	=> 'AUDREYT/encoding-warnings-0.11.tar.gz',
-	'FILES'		=> q[cpan/encoding-warnings],
-	'EXCLUDED'	=> [ qr{^inc/Module/},
-			     qw{t/0-signature.t Makefile.PL MANIFEST META.yml
-			     README SIGNATURE},
-			   ],
-	'UPSTREAM'	=> undef,
-	},
-
-    'English' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'FILES'		=> q[lib/English.{pm,t}],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'Env' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'DISTRIBUTION'	=> 'FLORA/Env-1.02.tar.gz',
-	'FILES'		=> q[dist/Env],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'Errno' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'FILES'		=> q[ext/Errno],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'Exporter' =>
-	{
-	'MAINTAINER'	=> 'ferreira',
-	'DISTRIBUTION'	=> 'FERREIRA/Exporter-5.63.tar.gz',
-	'FILES'		=> q[lib/Exporter.pm
-			     lib/Exporter.t
-			     lib/Exporter/Heavy.pm
-			    ],
-	'EXCLUDED'	=> [ qw{t/pod.t t/use.t}, ],
-	'MAP'		=> { 't/'	=> 'lib/',
-			     'lib/'	=> 'lib/',
-			   },
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'ExtUtils::CBuilder' =>
-	{
-	'MAINTAINER'	=> 'dagolden',
-	'DISTRIBUTION'	=> 'DAGOLDEN/ExtUtils-CBuilder-0.280202.tar.gz',
-	'FILES'		=> q[dist/ExtUtils-CBuilder],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'ExtUtils::Command' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'DISTRIBUTION'	=> 'FLORA/ExtUtils-Command-1.17.tar.gz',
-	'FILES'		=> q[dist/ExtUtils-Command],
-	'EXCLUDED'	=> [ qr{^t/release-} ],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'ExtUtils::Constant' =>
-	{
-	'MAINTAINER'	=> 'nwclark',
-	 # Nick has confirmed that while we have diverged from CPAN,
-	 # this package isn't primarily maintained in core
-	 # Another release wll happen "Sometime"
-	 'DISTRIBUTION'	=> '',#'NWCLARK/ExtUtils-Constant-0.16.tar.gz',
-	'FILES'		=> q[cpan/ExtUtils-Constant],
-	'EXCLUDED'	=> [ qw{ lib/ExtUtils/Constant/Aaargh56Hash.pm
-				 examples/perl_keyword.pl
-				 examples/perl_regcomp_posix_keyword.pl
-			       },
-			   ],
-	'UPSTREAM'	=> undef,
-	},
-
-    'ExtUtils::Install' =>
-	{
-	'MAINTAINER'	=> 'yves',
-	'DISTRIBUTION'	=> 'YVES/ExtUtils-Install-1.54.tar.gz',
-	'FILES' 	=> q[dist/ExtUtils-Install],
-	'EXCLUDED'	=> [ qw{ t/lib/Test/Builder.pm
-				 t/lib/Test/Builder/Module.pm
-				 t/lib/Test/More.pm
-				 t/lib/Test/Simple.pm
-				 t/pod-coverage.t
-				 t/pod.t
-			       },
-			   ],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'ExtUtils::MakeMaker' =>
-	{
-	'MAINTAINER'	=> 'mschwern',
-	'DISTRIBUTION'	=> 'CHORNY/ExtUtils-MakeMaker-6.57_05.tar.gz',
-	'FILES'		=> q[cpan/ExtUtils-MakeMaker],
-	'EXCLUDED'	=> [ qr{^t/lib/Test/},
-			     qr{^inc/ExtUtils/},
-			   ],
-	'UPSTREAM'	=> 'first-come',
-	},
-
-    'ExtUtils::Manifest' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'DISTRIBUTION'	=> 'RKOBES/ExtUtils-Manifest-1.58.tar.gz',
-	'FILES'		=> q[dist/ExtUtils-Manifest],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'ExtUtils::ParseXS' =>
-	{
-	'MAINTAINER'	=> 'kwilliams',
-    'DISTRIBUTION' => 'DAGOLDEN/ExtUtils-ParseXS-2.2206.tar.gz',
-    'EXCLUDED'  => [ qw{
-	                t/bugs/RT48104.xs
-				    t/bugs/typemap
-					t/include/nsUniversalDetector.h
-					t/include/nscore.h
-				   }],
-	'FILES'		=> q[dist/ExtUtils-ParseXS],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'faq' =>
-	{
-	'MAINTAINER'	=> 'perlfaq',
-	'FILES'		=> q[pod/perlfaq*],
-	'UPSTREAM'	=> undef,
-	},
-
-    'File::Basename' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'FILES'		=> q[lib/File/Basename.{pm,t}],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'File::Compare' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'FILES'		=> q[lib/File/Compare.{pm,t}],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'File::Copy' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'FILES'		=> q[lib/File/Copy.{pm,t}],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'File::CheckTree' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'DISTRIBUTION'	=> 'FLORA/File-CheckTree-4.4.tar.gz',
-	'FILES'		=> q[dist/File-CheckTree],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'File::DosGlob' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'FILES'		=> q[lib/File/DosGlob.{pm,t}],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'File::Fetch' =>
-	{
-	'MAINTAINER'	=> 'kane',
-	'DISTRIBUTION'	=> 'BINGOS/File-Fetch-0.32.tar.gz',
-	'FILES'		=> q[cpan/File-Fetch],
-	'UPSTREAM'	=> 'cpan',
-	},
-
-    'File::Find' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'FILES'		=> q[lib/File/Find.pm lib/File/Find],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'File::Glob' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'FILES'		=> q[ext/File-Glob],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'File::Path' =>
-	{
-	'MAINTAINER'	=> 'dland',
-	'DISTRIBUTION'	=> 'DLAND/File-Path-2.08.tar.gz',
-	'FILES'		=> q[cpan/File-Path],
-	'EXCLUDED'	=> [ qw{eg/setup-extra-tests
-				t/pod.t
-			       }
-			   ],
-	'MAP'		=> { ''		=> 'cpan/File-Path/lib/File/',
-			     't/'	=> 'cpan/File-Path/t/',
-			   },
-	'UPSTREAM'	=> undef,
-	},
-
-    'File::stat' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'FILES'		=> q[lib/File/stat.{pm,t}],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'File::Temp' =>
-	{
-	'MAINTAINER'	=> 'tjenness',
-	'DISTRIBUTION'	=> 'TJENNESS/File-Temp-0.22.tar.gz',
-	'FILES'		=> q[cpan/File-Temp],
-	'EXCLUDED'	=> [ qw{misc/benchmark.pl
-				misc/results.txt
-			       }
-			   ],
-	'UPSTREAM'	=> undef,
-	},
-
-    'FileCache' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'FILES'		=> q[ext/FileCache],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'FileHandle' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'FILES'		=> q[lib/FileHandle.{pm,t}],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'Filter::Simple' =>
-	{
-	'MAINTAINER'	=> 'smueller',
-	'DISTRIBUTION'	=> 'SMUELLER/Filter-Simple-0.85.tar.gz',
-	'FILES'		=> q[dist/Filter-Simple],
-	'EXCLUDED'	=> [ qw(Makefile.PL),
-			     qr{^demo/}
-			   ],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'Filter::Util::Call' =>
-	{
-	'MAINTAINER'	=> 'pmqs',
-	'DISTRIBUTION'	=> 'PMQS/Filter-1.37.tar.gz',
-	'FILES'		=> q[cpan/Filter-Util-Call
-			     t/lib/filter-util.pl
-			     pod/perlfilter.pod
-			    ],
-	'EXCLUDED'	=> [ qr{^decrypt/},
-			     qr{^examples/},
-			     qr{^Exec/},
-			     qr{^lib/Filter/},
-			     qr{^tee/},
-			     qw{ Call/Makefile.PL
-				 Call/ppport.h
-				 Call/typemap
-				 mytest
-				 t/cpp.t
-				 t/decrypt.t
-				 t/exec.t
-				 t/order.t
-				 t/pod.t
-				 t/sh.t
-				 t/tee.t
-			       }
-			   ],
-	'MAP'		=> { 'Call/'	      => 'cpan/Filter-Util-Call/',
-			     'filter-util.pl' => 'cpan/Filter-Util-Call/filter-util.pl',
-			     'perlfilter.pod' => 'pod/perlfilter.pod',
-			     ''		      => 'cpan/Filter-Util-Call/',
-			   },
-	'UPSTREAM'	=> undef,
-	},
-
-    'FindBin' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'FILES'		=> q[lib/FindBin.{pm,t}],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'GDBM_File' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'FILES'		=> q[ext/GDBM_File],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'Fcntl' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'FILES'		=> q[ext/Fcntl],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'Getopt::Long' =>
-	{
-	'MAINTAINER'	=> 'jv',
-	'DISTRIBUTION'	=> 'JV/Getopt-Long-2.38.tar.gz',
-	'FILES'		=> q[cpan/Getopt-Long
-			     lib/newgetopt.pl
-			    ],
-	'EXCLUDED'	=> [ qr{^examples/},
-			     qw{perl-Getopt-Long.spec},
-			   ],
-	'MAP'		=> { ''		       => 'cpan/Getopt-Long/',
-			     'lib/newgetopt.pl' => 'lib/newgetopt.pl',
-			   },
-	'UPSTREAM'	=> 'cpan',
-	},
-
-    'Getopt::Std' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'FILES'		=> q[lib/Getopt/Std.{pm,t}],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'Hash::Util::FieldHash' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'FILES'		=> q[ext/Hash-Util-FieldHash],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'Hash::Util' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'FILES'		=> q[ext/Hash-Util],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'HTTP::Tiny' =>
-	{
-	'MAINTAINER'	=> 'dagolden',
-	'DISTRIBUTION'	=> 'DAGOLDEN/HTTP-Tiny-0.012.tar.gz',
-	'FILES'		=> q[cpan/HTTP-Tiny],
-	'EXCLUDED'	=> [
-				't/200_live.t',
-				qr/^eg/,
-				qr/^xt/
-			   ],
-	'UPSTREAM'	=> 'cpan',
-	},
-
-    'I18N::Collate' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'DISTRIBUTION'	=> 'FLORA/I18N-Collate-1.01.tar.gz',
-	'FILES'		=> q[dist/I18N-Collate],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'I18N::Langinfo' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'FILES'		=> q[ext/I18N-Langinfo],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    # Sean has donated it to us.
-    # Nothing has changed since his last CPAN release.
-    # (not strictly true: there have been some trivial typo fixes; DAPM 6/2009)
-    'I18N::LangTags' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'DISTRIBUTION'	=> 'SBURKE/I18N-LangTags-0.35.tar.gz',
-	'FILES'		=> q[dist/I18N-LangTags],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'if' =>
-	{
-	'MAINTAINER'	=> 'ilyaz',
-	'DISTRIBUTION'	=> 'ILYAZ/modules/if-0.0601.tar.gz',
-	'FILES'		=> q[dist/if],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'IO' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'DISTRIBUTION'	=> 'GBARR/IO-1.25.tar.gz',
-	'FILES'		=> q[dist/IO/],
-	'EXCLUDED'	=> [ qw{t/test.pl}, ],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'IO-Compress' =>
-	{
-	'MAINTAINER'	=> 'pmqs',
-	'DISTRIBUTION'	=> 'PMQS/IO-Compress-2.033.tar.gz',
-	'FILES'		=> q[cpan/IO-Compress],
-	'EXCLUDED'	=> [ qr{t/Test/} ],
-	'UPSTREAM'	=> 'cpan',
-	},
-
-    'IO::Zlib' =>
-	{
-	'MAINTAINER'	=> 'tomhughes',
-	'DISTRIBUTION'	=> 'TOMHUGHES/IO-Zlib-1.10.tar.gz',
-	'FILES'		=> q[cpan/IO-Zlib],
-	'UPSTREAM'	=> undef,
-	},
-
-    'IPC::Cmd' =>
-	{
-	'MAINTAINER'	=> 'kane',
-	'DISTRIBUTION'	=> 'BINGOS/IPC-Cmd-0.70.tar.gz',
-	'FILES'		=> q[cpan/IPC-Cmd],
-	'UPSTREAM'	=> 'cpan',
-	},
-
-    'IPC::Open2' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'FILES'		=> q[ext/IPC-Open2],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'IPC::Open3' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'FILES'		=> q[ext/IPC-Open3],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'IPC::SysV' =>
-	{
-	'MAINTAINER'	=> 'mhx',
-	'DISTRIBUTION'	=> 'MHX/IPC-SysV-2.03.tar.gz',
-	'FILES'		=> q[cpan/IPC-SysV],
-	'EXCLUDED'	=> [ qw{const-c.inc const-xs.inc} ],
-	'UPSTREAM'	=> 'cpan',
-	},
-
-    'JSON::PP' =>
-	{
-	'MAINTAINER'	=> 'makamaka',
-	'DISTRIBUTION'	=> 'MAKAMAKA/JSON-PP-2.27105.tar.gz',
-	'FILES'		=> q[cpan/JSON-PP],
-	'EXCLUDED'	=> [
-		't/900_pod.t',    # Pod testing
-	],
-	'UPSTREAM'	=> 'cpan',
-	},
-
-    'lib' =>
-	{
-	'MAINTAINER'	=> 'smueller',
-	'DISTRIBUTION'	=> 'SMUELLER/lib-0.63.tar.gz',
-	'FILES'		=> q[dist/lib/],
-	'EXCLUDED'	=> [ qw{forPAUSE/lib.pm t/00pod.t} ],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'libnet' =>
-	{
-	'MAINTAINER'	=> 'gbarr',
-	'DISTRIBUTION'	=> 'GBARR/libnet-1.22.tar.gz',
-	'FILES'		=> q[cpan/libnet],
-	'EXCLUDED'	=> [ qw{Configure install-nomake Makefile.PL} ],
-	'CUSTOMIZED'	=> [ qw{Makefile.PL} ],
-	'UPSTREAM'	=> undef,
-	},
-
-    'Locale-Codes' =>
-	{
-	'MAINTAINER'	=> 'sbeck',
-	'DISTRIBUTION'	=> 'SBECK/Locale-Codes-3.16.tar.gz',
-	'FILES'		=> q[cpan/Locale-Codes],
-	'EXCLUDED'	=> [ qw{t/pod_coverage.t t/pod.t}, qr{^t/runtests},
-			     qr{^internal/}, qr{^examples/} ],
-	'UPSTREAM'	=> 'cpan',
-	},
-
-    'Locale::Maketext' =>
-	{
-	'MAINTAINER'	=> 'ferreira',
-	'DISTRIBUTION'	=> 'TODDR/Locale-Maketext-1.17.tar.gz',
-	'FILES'		=> q[dist/Locale-Maketext],
-	'EXCLUDED'	=> [ qw{perlcriticrc t/00_load.t t/pod.t} ],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'Locale::Maketext::Simple' =>
-	{
-	'MAINTAINER'	=> 'audreyt',
-	'DISTRIBUTION'	=> 'JESSE/Locale-Maketext-Simple-0.21.tar.gz',
-	'FILES'		=> q[cpan/Locale-Maketext-Simple],
-	'EXCLUDED'	=> [ qr{^inc/} ],
-	'UPSTREAM'	=> 'cpan',
-	},
-
-    'Log::Message' =>
-	{
-	'MAINTAINER'	=> 'kane',
-	'DISTRIBUTION'	=> 'BINGOS/Log-Message-0.04.tar.gz',
-	'FILES'		=> q[cpan/Log-Message],
-	'UPSTREAM'	=> 'cpan',
-	},
-
-    'Log::Message::Simple' =>
-	{
-	'MAINTAINER'	=> 'kane',
-	'DISTRIBUTION'	=> 'BINGOS/Log-Message-Simple-0.08.tar.gz',
-	'FILES'		=> q[cpan/Log-Message-Simple],
-	'UPSTREAM'	=> 'cpan',
-	},
-
-    'mad' =>
-	{
-	'MAINTAINER'	=> 'lwall',
-	'FILES'		=> q[mad],
-	'UPSTREAM'	=> undef,
-	},
-
-    'Math::BigInt' =>
-	{
-	'MAINTAINER'	=> 'rafl',
-	'DISTRIBUTION'	=> 'PJACKLAM/Math-BigInt-1.993.tar.gz',
-	'FILES'		=> q[dist/Math-BigInt],
-	'EXCLUDED'	=> [ qr{^inc/},
-			     qr{^examples/},
-			     qw{t/pod.t
-				t/pod_cov.t
-			       }
-			   ],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'Math::BigInt::FastCalc' =>
-	{
-	'MAINTAINER'	=> 'rafl',
-	'DISTRIBUTION'	=> 'PJACKLAM/Math-BigInt-FastCalc-0.28.tar.gz',
-	'FILES'		=> q[dist/Math-BigInt-FastCalc],
-	'EXCLUDED'	=> [ qr{^inc/},
-			     qw{
-				t/pod.t
-				t/pod_cov.t
-			       },
-			     # instead we use the versions of these test
-			     # files that come with Math::BigInt:
-			     qw{t/bigfltpm.inc
-				t/bigfltpm.t
-				t/bigintpm.inc
-				t/bigintpm.t
-				t/mbimbf.inc
-				t/mbimbf.t
-			       },
-			   ],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'Math::BigRat' =>
-	{
-	'MAINTAINER'	=> 'rafl',
-	'DISTRIBUTION'	=> 'FLORA/Math-BigRat-0.26.tar.gz',
-	'FILES'		=> q[dist/Math-BigRat],
-	'EXCLUDED'	=> [ qr{^inc/},
-			     qw{
-				t/pod.t
-				t/pod_cov.t
-			       },
-			   ],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'Math::Complex' =>
-	{
-	'MAINTAINER'	=> 'zefram',
-	'DISTRIBUTION'	=> 'JHI/Math-Complex-1.56.tar.gz',
-	'FILES'		=> q[cpan/Math-Complex],
-	'EXCLUDED'	=> [
-			     qw{
-				t/pod.t
-				t/pod-coverage.t
-			       },
-			   ],
-	'UPSTREAM'	=> 'cpan',
-	},
-
-    'Memoize' =>
-	{
-	'MAINTAINER'	=> 'mjd',
-	'DISTRIBUTION'	=> 'FLORA/Memoize-1.02.tar.gz',
-	'FILES'		=> q[cpan/Memoize],
-	'EXCLUDED'	=> [ qw{ article.html } ],
-	'UPSTREAM'	=> 'cpan',
-	},
-
-    'MIME::Base64' =>
-	{
-	'MAINTAINER'	=> 'gaas',
-	'DISTRIBUTION'	=> 'GAAS/MIME-Base64-3.13.tar.gz',
-	'FILES'		=> q[cpan/MIME-Base64],
-	'EXCLUDED'	=> [ qw{ t/bad-sv.t }, ],
-	'UPSTREAM'	=> 'cpan',
-	},
-
-  #
-  # To update Module-Build in blead see
-  # http://github.com/dagolden/module-build/blob/master/devtools/patching_blead.pod
-  #
-
-    'Module::Build' =>
-	{
-	'MAINTAINER'	=> 'kwilliams',
-	'DISTRIBUTION'	=> 'DAGOLDEN/Module-Build-0.3800.tar.gz',
-	'FILES'		=> q[cpan/Module-Build],
-	'EXCLUDED'	=> [
-		qw{ t/par.t t/signature.t },
-		qr!^contrib/!,
-		qr!^devtools!,
-		qr!^inc!,
-	],
-	'CUSTOMIZED'	=> [ 'lib/Module/Build/ConfigData.pm' ],
-	'UPSTREAM'	=> 'cpan',
-	},
-
-    'Module::CoreList' =>
-	{
-	'MAINTAINER'	=> 'rgarcia',
-	'DISTRIBUTION'	=> 'BINGOS/Module-CoreList-2.41.tar.gz',
-	'FILES'		=> q[dist/Module-CoreList],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'Module::Load' =>
-	{
-	'MAINTAINER'	=> 'kane',
-	'DISTRIBUTION'	=> 'BINGOS/Module-Load-0.18.tar.gz',
-	'FILES'		=> q[cpan/Module-Load],
-	'UPSTREAM'	=> 'cpan',
-	},
-
-    'Module::Load::Conditional' =>
-	{
-	'MAINTAINER'	=> 'kane',
-	'DISTRIBUTION'	=> 'BINGOS/Module-Load-Conditional-0.44.tar.gz',
-	'FILES'		=> q[cpan/Module-Load-Conditional],
-	'UPSTREAM'	=> 'cpan',
-	},
-
-    'Module::Loaded' =>
-	{
-	'MAINTAINER'	=> 'kane',
-	'DISTRIBUTION'	=> 'BINGOS/Module-Loaded-0.06.tar.gz',
-	'FILES'		=> q[cpan/Module-Loaded],
-	'UPSTREAM'	=> 'cpan',
-	},
-
-    'Module::Metadata' =>
-	{
-	'MAINTAINER'	=> 'dagolden',
-	'DISTRIBUTION'	=> 'DAGOLDEN/Module-Metadata-1.000004.tar.gz',
-	'FILES'		=> q[cpan/Module-Metadata],
-	'EXCLUDED'	=> [ ],
-	'UPSTREAM'	=> 'cpan',
-	},
-
-    'Module::Pluggable' =>
-	{
-	'MAINTAINER'	=> 'simonw',
-	'DISTRIBUTION'	=> 'SIMONW/Module-Pluggable-3.9.tar.gz',
-	'FILES'		=> q[cpan/Module-Pluggable],
-	'UPSTREAM'	=> 'cpan',
-	},
-
-    'mro' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'FILES'		=> q[ext/mro],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'NDBM_File' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'FILES'		=> q[ext/NDBM_File],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'Net::Ping' =>
-	{
-	'MAINTAINER'	=> 'smpeters',
-	'DISTRIBUTION'	=> 'SMPETERS/Net-Ping-2.36.tar.gz',
-	'FILES'		=> q[dist/Net-Ping],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'NEXT' =>
-	{
-	'MAINTAINER'	=> 'rafl',
-	'DISTRIBUTION'	=> 'FLORA/NEXT-0.65.tar.gz',
-	'FILES'		=> q[cpan/NEXT],
-	'EXCLUDED'	=> [ qr{^demo/} ],
-	'UPSTREAM'	=> 'cpan',
-	},
-
-    'Object::Accessor' =>
-	{
-	'MAINTAINER'	=> 'kane',
-	'DISTRIBUTION'	=> 'BINGOS/Object-Accessor-0.38.tar.gz',
-	'FILES'		=> q[cpan/Object-Accessor],
-	'UPSTREAM'	=> 'cpan',
-	},
-
-    'ODBM_File' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'FILES'		=> q[ext/ODBM_File],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'Opcode' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'FILES'		=> q[ext/Opcode],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'overload' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'FILES'		=> q[lib/overload{.pm,.t,64.t}],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'Package::Constants' =>
-	{
-	'MAINTAINER'	=> 'kane',
-	'DISTRIBUTION'	=> 'KANE/Package-Constants-0.02.tar.gz',
-	'FILES'		=> q[cpan/Package-Constants],
-	'UPSTREAM'	=> 'cpan',
-	},
-
-    'Params::Check' =>
-	{
-	'MAINTAINER'	=> 'kane',
-	'DISTRIBUTION'	=> 'BINGOS/Params-Check-0.28.tar.gz',
-	'EXCLUDED'	=> [ qw( Params-Check-0.26.tar.gz ) ],
-	'FILES'		=> q[cpan/Params-Check],
-	'UPSTREAM'	=> 'cpan',
-	},
-
-    'parent' =>
-	{
-	'MAINTAINER'	=> 'corion',
-	'DISTRIBUTION'	=> 'CORION/parent-0.225.tar.gz',
-	'FILES'		=> q[cpan/parent],
-	'UPSTREAM'	=> undef,
-	},
-
-    'Parse::CPAN::Meta' =>
-	{
-	'MAINTAINER'	=> 'dagolden',
-	'DISTRIBUTION'	=> 'DAGOLDEN/Parse-CPAN-Meta-1.4401.tar.gz',
-	'FILES'		=> q[cpan/Parse-CPAN-Meta],
-	'EXCLUDED'	=> [ ],
-	'UPSTREAM'	=> 'cpan',
-	},
-
-    'PathTools' =>
-	{
-	'MAINTAINER'	=> 'kwilliams',
-	'DISTRIBUTION'	=> 'SMUELLER/PathTools-3.33.tar.gz',
-	'FILES'		=> q[dist/Cwd],
-	'EXCLUDED'	=> [ qr{^t/lib/Test/} ],
-	'UPSTREAM'	=> "blead",
-	# NOTE: PathTools is in dist/Cwd/ instead of dist/PathTools because it
-	# contains Cwd.xs and something, possibly Makefile.SH, makes an assumption
-	# that the leafname of some file corresponds with the pathname of the
-	# directory.
-	},
-
-    'perlebcdic' =>
-	{
-	'MAINTAINER'	=> 'pvhp',
-	'FILES'		=> q[pod/perlebcdic.pod],
-	'UPSTREAM'	=> undef,
-	},
-
-    'PerlIO' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'FILES'		=> q[lib/PerlIO.pm],
-	'UPSTREAM'	=> undef,
-	},
-
-    'PerlIO::encoding' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'FILES'		=> q[ext/PerlIO-encoding],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'PerlIO::scalar' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'FILES'		=> q[ext/PerlIO-scalar],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'PerlIO::via' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'FILES'		=> q[ext/PerlIO-via],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'PerlIO::via::QuotedPrint' =>
-	{
-	'MAINTAINER'	=> 'elizabeth',
-	'DISTRIBUTION'	=> 'ELIZABETH/PerlIO-via-QuotedPrint-0.06.tar.gz',
-	'FILES'		=> q[cpan/PerlIO-via-QuotedPrint],
-	'UPSTREAM'	=> undef,
-	},
-
-    'Perl::OSType' =>
-	{
-	'MAINTAINER'	=> 'dagolden',
-	'DISTRIBUTION'	=> 'DAGOLDEN/Perl-OSType-1.002.tar.gz',
-	'FILES'		=> q[cpan/Perl-OSType],
-	'EXCLUDED'	=> [ ],
-	'UPSTREAM'	=> 'cpan',
-	},
-
-    'perlpacktut' =>
-	{
-	'MAINTAINER'	=> 'laun',
-	'FILES'		=> q[pod/perlpacktut.pod],
-	'UPSTREAM'	=> undef,
-	},
-
-    'perlpodspec' =>
-	{
-	'MAINTAINER'	=> 'sburke',
-	'FILES'		=> q[pod/perlpodspec.pod],
-	'UPSTREAM'	=> undef,
-	},
-
-    'perlre' =>
-	{
-	'MAINTAINER'	=> 'abigail',
-	'FILES'		=> q[pod/perlrecharclass.pod
-			     pod/perlrebackslash.pod],
-	'UPSTREAM'	=> undef,
-	},
-
-
-    'perlreapi' =>
-	{
-	MAINTAINER	=> 'avar',
-	FILES		=> q[pod/perlreapi.pod],
-	'UPSTREAM'	=> undef,
-	},
-
-    'perlreftut' =>
-	{
-	'MAINTAINER'	=> 'mjd',
-	'FILES'		=> q[pod/perlreftut.pod],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'perlthrtut' =>
-	{
-	'MAINTAINER'	=> 'elizabeth',
-	'FILES'		=> q[pod/perlthrtut.pod],
-	'UPSTREAM'	=> undef,
-	},
-
-    'Pod::Escapes' =>
-	{
-	'MAINTAINER'	=> 'arandal',
-	'DISTRIBUTION'	=> 'SBURKE/Pod-Escapes-1.04.tar.gz',
-	'FILES'		=> q[cpan/Pod-Escapes],
-	'UPSTREAM'	=> undef,
-	},
-
-    'Pod::Html' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'FILES'		=> q[ext/Pod-Html],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'Pod::LaTeX' =>
-	{
-	'MAINTAINER'	=> 'tjenness',
-	'DISTRIBUTION'	=> 'TJENNESS/Pod-LaTeX-0.59.tar.gz',
-	'FILES'		=> q[cpan/Pod-LaTeX],
-	'EXCLUDED'	=> [ qw( t/require.t ) ],
-	'UPSTREAM'	=> undef,
-	},
-
-    'Pod::Parser'	=> {
-	'MAINTAINER'	=> 'marekr',
-
-	# XXX Parser.pm in the 1.38 distribution identifies itself as
-	# version 1.37!
-
-	'DISTRIBUTION'	=> 'MAREKR/Pod-Parser-1.38.tar.gz',
-	'FILES'		=> q[cpan/Pod-Parser],
-	'UPSTREAM'	=> undef,
-	},
-
-    'Pod::Perldoc' =>
-	{
-	'MAINTAINER'	=> 'ferreira',
-	'DISTRIBUTION'	=> 'FERREIRA/Pod-Perldoc-3.15_01.tar.gz',
-	# I don't know whether it's conceptually cleaner to a rule to copy
-	# ext/Pod-Perldoc/pod/perldoc.pod to pod/perldoc.pod at make time
-	# (in 4 places), or leave it as 1 mapping here.
-	'FILES'		=> q[dist/Pod-Perldoc
-			     pod/perldoc.pod
-			    ],
-	# in blead, the perldoc executable is generated by perldoc.PL
-	# instead
-	# XXX We can and should fix this, but clean up the DRY-failure in utils
-	# first
-	'EXCLUDED'	=> [ qw( perldoc ) ],
-	'MAP'		=> { '' => 'dist/Pod-Perldoc/',
-			     'lib/perldoc.pod' => 'pod/perldoc.pod',
-			   },
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'Pod::Simple' =>
-	{
-	'MAINTAINER'	=> 'arandal',
-	'DISTRIBUTION'	=> 'DWHEELER/Pod-Simple-3.16.tar.gz',
-	'FILES'		=> q[cpan/Pod-Simple],
-	# XXX these two files correspond to similar ones in blead under
-	# pod/, but the blead ones have newer changes, and also seem to
-	# have been in blead a long time. I'm going to assume then that
-	# the blead versions of these two files are authoritative - DAPM
-  # Now been removed from Pod-Simple-3.15 commenting this out - bingos
-	#'EXCLUDED'	=> [ qw( lib/perlpod.pod lib/perlpodspec.pod ) ],
-	'UPSTREAM'	=> 'cpan',
-	},
-
-    'podlators' =>
-	{
-	'MAINTAINER'	=> 'rra',
-	'DISTRIBUTION'	=> 'RRA/podlators-2.4.0.tar.gz',
-	'FILES'		=> q[cpan/podlators],
-	'MAP'		=> { 'pod/perlpodstyle.pod'	=> 'pod/perlpodstyle.pod', },
-	'UPSTREAM'	=> 'cpan',
-	},
-
-    'POSIX' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'FILES'		=> q[ext/POSIX],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    're' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'FILES'		=> q[ext/re],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'Safe' =>
-	{
-	'MAINTAINER'	=> 'rgarcia',
-	'DISTRIBUTION'	=> 'RGARCIA/Safe-2.29.tar.gz',
-	'FILES'		=> q[dist/Safe],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'Scalar-List-Utils' =>
-	{
-	'MAINTAINER'	=> 'gbarr',
-	'DISTRIBUTION'	=> 'GBARR/Scalar-List-Utils-1.23.tar.gz',
-	# Note that perl uses its own version of Makefile.PL
-	'FILES'		=> q[cpan/List-Util],
-	'EXCLUDED'	=> [ qr{^inc/Module/},
-			     qr{^inc/Test/},
-			     qw{ mytypemap },
-			   ],
-	'UPSTREAM'	=> 'cpan',
-	},
-
-    'SDBM_File' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'FILES'		=> q[ext/SDBM_File],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'SelfLoader' =>
-	{
-	'MAINTAINER'	=> 'smueller',
-	'DISTRIBUTION'	=> 'SMUELLER/SelfLoader-1.18.tar.gz',
-	'FILES'		=> q[dist/SelfLoader],
-	'EXCLUDED'	=> [ qw{ t/00pod.t } ],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'Shell' =>
-	{
-	'MAINTAINER'	=> 'ferreira',
-	'DISTRIBUTION'	=> 'FERREIRA/Shell-0.72_01.tar.gz',
-	'FILES'		=> q[cpan/Shell],
-	'EXCLUDED'	=> [ qw{ t/01_use.t t/99_pod.t } ],
-	'CPAN'		=> 1,
-	'UPSTREAM'	=> undef,
-	'DEPRECATED'	=> 5.011,
-	},
-
-    'sigtrap' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'FILES'		=> q[lib/sigtrap.{pm,t}],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'Socket' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'FILES'		=> q[ext/Socket],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'Storable' =>
-	{
-	'MAINTAINER'	=> 'ams',
-	'DISTRIBUTION'	=> 'AMS/Storable-2.24.tar.gz',
-	'FILES'		=> q[dist/Storable],
-	'EXCLUDED'	=> [ qr{^t/Test/} ],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'Sys::Hostname' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'FILES'		=> q[ext/Sys-Hostname],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'Sys::Syslog' =>
-	{
-	'MAINTAINER'	=> 'saper',
-	'DISTRIBUTION'	=> 'SAPER/Sys-Syslog-0.27.tar.gz',
-	'FILES'		=> q[cpan/Sys-Syslog],
-	'EXCLUDED'	=> [ qr{^eg/},
-			     qw{t/data-validation.t
-			        t/distchk.t
-				t/pod.t
-				t/podcover.t
-				t/podspell.t
-				t/portfs.t
-				win32/PerlLog.RES
-			       },
-			   ],
-	'UPSTREAM'	=> 'cpan',
-	},
-
-    'Term::ANSIColor' =>
-	{
-	'MAINTAINER'	=> 'rra',
-	'DISTRIBUTION'	=> 'RRA/ANSIColor-3.00.tar.gz',
-	'FILES'		=> q[cpan/Term-ANSIColor],
-	'EXCLUDED'	=> [ qr{^tests/}, qw(t/pod-spelling.t t/pod.t) ],
-	'UPSTREAM'	=> 'cpan',
-	},
-
-    'Term::Cap' =>
-	{
-	'MAINTAINER'	=> 'jstowe',
-	'DISTRIBUTION'	=> 'JSTOWE/Term-Cap-1.12.tar.gz',
-	'FILES'		=> q[cpan/Term-Cap],
-	'UPSTREAM'	=> undef,
-	},
-
-    'Term::UI' =>
-	{
-	'MAINTAINER'	=> 'kane',
-	'DISTRIBUTION'	=> 'BINGOS/Term-UI-0.26.tar.gz',
-	'FILES'		=> q[cpan/Term-UI],
-	'UPSTREAM'	=> 'cpan',
-	},
-
-    'Test' =>
-	{
-	'MAINTAINER'	=> 'jesse',
-	'DISTRIBUTION'	=> 'JESSE/Test-1.25_02.tar.gz',
-	'FILES'		=> q[cpan/Test],
-	'UPSTREAM'	=> 'cpan',
-	},
-
-    'Test::Harness' =>
-	{
-	'MAINTAINER'	=> 'andya',
-	'DISTRIBUTION'	=> 'ANDYA/Test-Harness-3.23.tar.gz',
-	'FILES'		=> q[cpan/Test-Harness],
-	'EXCLUDED'	=> [ qr{^examples/},
-			     qr{^inc/},
-			     qr{^t/lib/Test/},
-			     qr{^xt/},
-			     qw{Changes-2.64
-				HACKING.pod
-				perlcriticrc
-				t/lib/if.pm
-			       }
-			   ],
-	'UPSTREAM'	=> 'cpan',
-	},
-
-    'Test::Simple' =>
-	{
-	'MAINTAINER'	=> 'mschwern',
-	'DISTRIBUTION'	=> 'MSCHWERN/Test-Simple-0.98.tar.gz',
-	'FILES'		=> q[cpan/Test-Simple],
-	'EXCLUDED'	=> [
-			     qw{.perlcriticrc
-				.perltidyrc
-				t/00compile.t
-				t/pod.t
-				t/pod-coverage.t
-				t/Builder/reset_outputs.t
-				lib/Test/Builder/IO/Scalar.pm
-			       }
-			   ],
-	'UPSTREAM'	=> 'cpan',
-	},
-
-    'Text::Balanced' =>
-	{
-	'MAINTAINER'	=> 'dmanura',
-	'DISTRIBUTION'	=> 'ADAMK/Text-Balanced-2.02.tar.gz',
-	'FILES'		=> q[cpan/Text-Balanced],
-	'EXCLUDED'	=> [ qw( t/97_meta.t t/98_pod.t t/99_pmv.t ) ],
-	'UPSTREAM'	=> undef,
-	},
-
-    'Text::ParseWords' =>
-	{
-	'MAINTAINER'	=> 'chorny',
-	'DISTRIBUTION'	=> 'CHORNY/Text-ParseWords-3.27.zip',
-	'FILES'		=> q[cpan/Text-ParseWords],
-	'EXCLUDED'	=> [ qw( t/pod.t ) ],
-	# For the benefit of make_ext.pl, we have to have this accessible:
-	'MAP'		=> {
-			     'ParseWords.pm' => 'cpan/Text-ParseWords/lib/Text/ParseWords.pm',
-			     ''              => 'cpan/Text-ParseWords/',
-			   },
-	'UPSTREAM'	=> undef,
-	},
-
-    'Text::Soundex' =>
-	{
-	'MAINTAINER'	=> 'markm',
-	'DISTRIBUTION'	=> 'MARKM/Text-Soundex-3.03.tar.gz',
-	'FILES'		=> q[cpan/Text-Soundex],
-	'MAP'		=> { ''               => 'cpan/Text-Soundex/',
-			     # XXX these two files are clearly related,
-			     # but they appear to have diverged
-			     # considerably over the years
-	                     'test.pl'        => 'cpan/Text-Soundex/t/Soundex.t',
-			   },
-	'UPSTREAM'	=> undef,
-	},
-
-    'Text-Tabs+Wrap' =>
-	{
-	'MAINTAINER'	=> 'muir',
-	'DISTRIBUTION'	=> 'MUIR/modules/Text-Tabs+Wrap-2009.0305.tar.gz',
-	'FILES'		=> q[cpan/Text-Tabs],
-	'EXCLUDED'	=> [ qw( t/dnsparks.t ) ], # see af6492bf9e
-	'UPSTREAM'	=> 'cpan',
-	},
-
-    'Thread::Queue' =>
-	{
-	'MAINTAINER'	=> 'jdhedden',
-	'DISTRIBUTION'	=> 'JDHEDDEN/Thread-Queue-2.12.tar.gz',
-	'FILES'		=> q[dist/Thread-Queue],
-	'EXCLUDED'	=> [ qw(examples/queue.pl
-				t/00_load.t
-				t/99_pod.t
-				t/test.pl
-			       ) ],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'Thread::Semaphore' =>
-	{
-	'MAINTAINER'	=> 'jdhedden',
-	'DISTRIBUTION'	=> 'JDHEDDEN/Thread-Semaphore-2.12.tar.gz',
-	'FILES'		=> q[dist/Thread-Semaphore],
-	'EXCLUDED'	=> [ qw(examples/semaphore.pl
-				t/00_load.t
-				t/99_pod.t
-				t/test.pl
-			       ) ],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'threads' =>
-	{
-	'MAINTAINER'	=> 'jdhedden',
-	'DISTRIBUTION'	=> 'JDHEDDEN/threads-1.83.tar.gz',
-	'FILES'		=> q[dist/threads],
-	'EXCLUDED'	=> [ qr{^examples/},
-			     qw(t/pod.t
-				t/test.pl
-				threads.h
-			       ) ],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'threads::shared' =>
-	{
-	'MAINTAINER'	=> 'jdhedden',
-	'DISTRIBUTION'	=> 'JDHEDDEN/threads-shared-1.37.tar.gz',
-	'FILES'		=> q[dist/threads-shared],
-	'EXCLUDED'	=> [ qw(examples/class.pl
-				shared.h
-				t/pod.t
-				t/test.pl
-			       ) ],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'Tie::File' =>
-	{
-	'MAINTAINER'	=> 'mjd',
-	'DISTRIBUTION'	=> 'MJD/Tie-File-0.96.tar.gz',
-	'FILES'		=> q[cpan/Tie-File],
-	'UPSTREAM'	=> 'first-come',
-	},
-
-    'Tie::Hash' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'FILES'		=> q[lib/Tie/Hash.{pm,t}],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'Tie::Hash::NamedCapture' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'FILES'		=> q[ext/Tie-Hash-NamedCapture],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'Tie::Memoize' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'FILES'		=> q[ext/Tie-Memoize],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'Tie::RefHash' =>
-	{
-	'MAINTAINER'	=> 'nuffin',
-	'DISTRIBUTION'	=> 'FLORA/Tie-RefHash-1.39.tar.gz',
-	'FILES'		=> q[cpan/Tie-RefHash],
-	'UPSTREAM'	=> 'cpan',
-	},
-
-    'Time::HiRes' =>
-	{
-	'MAINTAINER'	=> 'zefram',
-	'DISTRIBUTION'	=> 'JHI/Time-HiRes-1.9721.tar.gz',
-	'FILES'		=> q[cpan/Time-HiRes],
-	'UPSTREAM'	=> undef,
-	},
-
-    'Time::Local' =>
-	{
-	'MAINTAINER'	=> 'drolsky',
-	'DISTRIBUTION'	=> 'FLORA/Time-Local-1.2000.tar.gz',
-	'FILES'		=> q[cpan/Time-Local],
-	'EXCLUDED'	=> [ qw(t/pod-coverage.t t/pod.t) ],
-	'UPSTREAM'	=> 'cpan',
-	},
-
-    'Time::Piece' =>
-	{
-	'MAINTAINER'	=> 'msergeant',
-	'DISTRIBUTION'	=> 'MSERGEANT/Time-Piece-1.20.tar.gz',
-	'FILES'		=> q[cpan/Time-Piece],
-	'UPSTREAM'	=> undef,
-	},
-
-    'Unicode::Collate' =>
-	{
-	'MAINTAINER'	=> 'sadahiro',
-	'DISTRIBUTION'	=> 'SADAHIRO/Unicode-Collate-0.73-withoutworldwriteables.tar.gz',
-	'FILES'		=> q[cpan/Unicode-Collate],
-	'EXCLUDED'	=> [ qr{N$},
-                   qr{^data/},
-                   qr{^gendata/},
-			             qw{disableXS enableXS mklocale},
-			   ],
-	'UPSTREAM'	=> 'first-come',
-	},
-
-    'Unicode::Normalize' =>
-	{
-	'MAINTAINER'	=> 'sadahiro',
-	'DISTRIBUTION'	=> 'SADAHIRO/Unicode-Normalize-1.10-withoutworldwriteables.tar.gz',
-	'FILES'		=> q[cpan/Unicode-Normalize],
-	'EXCLUDED'	=> [ qw{MANIFEST.N Normalize.pmN disableXS enableXS }],
-	'UPSTREAM'	=> 'first-come',
-	},
-
-    'Unicode::UCD' =>
-	{
-	'MAINTAINER'	=> 'blead',
-	'FILES'		=> q[lib/Unicode/UCD.{pm,t}],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'Version::Requirements' =>
-	{
-	'MAINTAINER'	=> 'rjbs',
-	'DISTRIBUTION'	=> 'RJBS/Version-Requirements-0.101020.tar.gz',
-	'FILES'		=> q[cpan/Version-Requirements],
-	'EXCLUDED'	=> [ qw(t/release-pod-syntax.t) ],
-	'UPSTREAM'	=> 'cpan',
-	},
-
-    'version' =>
-	{
-	'MAINTAINER'	=> 'jpeacock',
-	'DISTRIBUTION'	=> 'JPEACOCK/version-0.88.tar.gz',
-	'FILES'		=> q[lib/version.pm lib/version.pod lib/version.t
-			     lib/version],
-	'EXCLUDED'	=> [ qr{^t/.*\.t$}, qw{t/survey_locales}, qr{^vutil/},
-			     qw{lib/version/typemap},
-			     qw{vperl/vpp.pm},
-			   ],
-	'MAP'		=> { 'lib/'	      => 'lib/',
-			     't/coretests.pm' => 'lib/version.t',
-			   },
-	'UPSTREAM'	=> undef,
-	},
-
-    'vms' =>
-	{
-	'MAINTAINER'	=> 'craig',
-	'FILES'		=> q[vms configure.com README.vms],
-	'UPSTREAM'	=> undef,
-	},
-
-    'VMS::DCLsym' =>
-	{
-	'MAINTAINER'	=> 'craig',
-	'FILES'		=> q[ext/VMS-DCLsym],
-	'UPSTREAM'	=> undef,
-	},
-
-    'VMS::Stdio' =>
-	{
-	'MAINTAINER'	=> 'craig',
-	'FILES'		=> q[ext/VMS-Stdio],
-	'UPSTREAM'	=> undef,
-	},
-
-    'warnings' =>
-	{
-	'MAINTAINER'	=> 'pmqs',
-	'FILES'		=> q[regen/warnings.pl
-			     lib/warnings.{pm,t}
-			     lib/warnings
-			     t/lib/warnings
-			    ],
-	'UPSTREAM'	=> undef,
-	},
-
-    'win32' =>
-	{
-	'MAINTAINER'	=> 'jand',
-	'FILES'		=> q[win32 t/win32 README.win32 ext/Win32CORE],
-	'UPSTREAM'	=> undef,
-	},
-
-    'Win32' =>
-	{
-	'MAINTAINER'	=> 'jand',
-	'DISTRIBUTION'	=> "JDB/Win32-0.44.tar.gz",
-	'FILES'		=> q[cpan/Win32],
-	'UPSTREAM'	=> 'cpan',
-	},
-
-    'Win32API::File' =>
-	{
-	'MAINTAINER'	=> 'chorny',
-	'DISTRIBUTION'	=> 'CHORNY/Win32API-File-0.1101.zip',
-	'FILES'		=> q[cpan/Win32API-File],
-	'EXCLUDED'	=> [ qr{^ex/},
-			     qw{t/pod.t},
-			   ],
-	'UPSTREAM'	=> 'cpan',
-	},
-
-    'XS::Typemap' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'FILES'		=> q[ext/XS-Typemap],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    'XSLoader' =>
-	{
-	'MAINTAINER'	=> 'saper',
-	'DISTRIBUTION'	=> 'SAPER/XSLoader-0.10.tar.gz',
-	'FILES'		=> q[dist/XSLoader],
-	'EXCLUDED'	=> [ qr{^eg/},
-			     qw{t/pod.t
-			        t/podcover.t
-				t/portfs.t
-				XSLoader.pm}, # we use XSLoader_pm.PL
-			   ],
-	'UPSTREAM'	=> 'blead',
-	},
-
-    's2p' =>
-	{
-	'MAINTAINER'	=> 'laun',
-	'FILES'		=> q[x2p/s2p.PL],
-	'UPSTREAM'	=> undef,
-	},
-
+    'Archive::Tar' => {
+        'DISTRIBUTION' => 'BINGOS/Archive-Tar-1.96.tar.gz',
+        'FILES'        => q[cpan/Archive-Tar],
+        'BUGS'         => 'bug-archive-tar@rt.cpan.org',
+    },
+
+    'Attribute::Handlers' => {
+        'DISTRIBUTION' => 'SMUELLER/Attribute-Handlers-0.96.tar.gz',
+        'FILES'        => q[dist/Attribute-Handlers],
+    },
+
+    'autodie' => {
+        'DISTRIBUTION' => 'PJF/autodie-2.23.tar.gz',
+        'FILES'        => q[cpan/autodie],
+        'EXCLUDED'     => [
+            qr{benchmarks},
+            # All these tests depend upon external
+            # modules that don't exist when we're
+            # building the core.  Hence, they can
+            # never run, and should not be merged.
+            qw( t/author-critic.t
+                t/boilerplate.t
+                t/critic.t
+                t/fork.t
+                t/kwalitee.t
+                t/lex58.t
+                t/pod-coverage.t
+                t/pod.t
+                t/release-pod-coverage.t
+                t/release-pod-syntax.t
+                t/socket.t
+                t/system.t
+                )
+        ],
+        'CUSTOMIZED'   => [
+            # Waiting to be merged upstream: see CPAN RT#87237
+            qw(	t/utf8_open.t ),
+        ],
+    },
+
+    'AutoLoader' => {
+        'DISTRIBUTION' => 'SMUELLER/AutoLoader-5.74.tar.gz',
+        'FILES'        => q[cpan/AutoLoader],
+        'EXCLUDED'     => ['t/00pod.t'],
+    },
+
+    'autouse' => {
+        'DISTRIBUTION' => 'FLORA/autouse-1.07.tar.gz',
+        'FILES'        => q[dist/autouse],
+        'EXCLUDED'     => [qr{^t/release-.*\.t}],
+    },
+
+    'B::Debug' => {
+        'DISTRIBUTION' => 'RURBAN/B-Debug-1.19.tar.gz',
+        'FILES'        => q[cpan/B-Debug],
+        'EXCLUDED'     => ['t/pod.t'],
+    },
+
+    'base' => {
+        'DISTRIBUTION' => 'RGARCIA/base-2.18.tar.gz',
+        'FILES'        => q[dist/base],
+    },
+
+    'bignum' => {
+        'DISTRIBUTION' => 'FLORA/bignum-0.32.tar.gz',
+        'FILES'        => q[dist/bignum],
+        'EXCLUDED'     => [
+            qr{^inc/Module/},
+            qw( t/pod.t
+                t/pod_cov.t
+                ),
+        ],
+    },
+
+    'Carp' => {
+        'DISTRIBUTION' => 'ZEFRAM/Carp-1.3301.tar.gz',
+        'FILES'        => q[dist/Carp],
+    },
+
+    'CGI' => {
+        'DISTRIBUTION' => 'MARKSTOS/CGI.pm-3.65.tar.gz',
+        'FILES'        => q[cpan/CGI],
+        'EXCLUDED'     => [
+            qr{^examples/},
+            qw( cgi_docs.html
+                t/gen-tests/gen-start-end-tags.pl
+                t/fast.t
+                ),
+        ],
+        'DEPRECATED' => '5.019007',
+    },
+
+    'Compress::Raw::Bzip2' => {
+        'DISTRIBUTION' => 'PMQS/Compress-Raw-Bzip2-2.064.tar.gz',
+        'FILES'        => q[cpan/Compress-Raw-Bzip2],
+        'EXCLUDED'     => [
+            qr{^t/Test/},
+            'bzip2-src/bzip2-cpp.patch',
+        ],
+    },
+
+    'Compress::Raw::Zlib' => {
+        'DISTRIBUTION' => 'PMQS/Compress-Raw-Zlib-2.065.tar.gz',
+
+        'FILES'    => q[cpan/Compress-Raw-Zlib],
+        'EXCLUDED' => [
+            qr{^examples/},
+            qr{^t/Test/},
+            qw( t/000prereq.t
+                t/99pod.t
+                ),
+        ],
+    },
+
+    'Config::Perl::V' => {
+        'DISTRIBUTION' => 'HMBRAND/Config-Perl-V-0.22.tgz',
+        'FILES'        => q[cpan/Config-Perl-V],
+        'EXCLUDED'     => [qw(
+		examples/show-v.pl
+		t/00_pod.t
+		t/01_pod.t
+		)],
+    },
+
+    'constant' => {
+        'DISTRIBUTION' => 'SAPER/constant-1.27.tar.gz',
+        'FILES'        => q[dist/constant],
+        'EXCLUDED'     => [
+            qw( t/00-load.t
+                t/more-tests.t
+                t/pod-coverage.t
+                t/pod.t
+                eg/synopsis.pl
+                ),
+        ],
+    },
+
+    'CPAN' => {
+        'DISTRIBUTION' => 'ANDK/CPAN-2.05.tar.gz',
+        'FILES'        => q[cpan/CPAN],
+        'EXCLUDED'     => [
+            qr{^distroprefs/},
+            qr{^inc/Test/},
+            qr{^t/CPAN/},
+            qr{^t/data/},
+            qw( lib/CPAN/Admin.pm
+                scripts/cpan-mirrors
+                PAUSE2015.pub
+                SlayMakefile
+                t/00signature.t
+                t/04clean_load.t
+                t/12cpan.t
+                t/13tarzip.t
+                t/14forkbomb.t
+                t/30shell.coverage
+                t/30shell.t
+                t/31sessions.t
+                t/41distribution.t
+                t/42distroprefs.t
+                t/43distroprefspref.t
+                t/44cpanmeta.t
+                t/50pod.t
+                t/51pod.t
+                t/52podcover.t
+                t/60credentials.t
+                t/70_critic.t
+                t/71_minimumversion.t
+                t/local_utils.pm
+                t/perlcriticrc
+                t/yaml_code.yml
+                ),
+        ],
+        # Waiting to be merged upstream: see pull request #83
+        'CUSTOMIZED'   => [
+            qw( lib/CPAN/Author.pm
+                lib/CPAN/CacheMgr.pm
+                lib/CPAN/FTP.pm
+                lib/CPAN/HTTP/Client.pm
+                lib/CPAN/HandleConfig.pm
+                lib/CPAN/Index.pm
+                lib/CPAN/LWP/UserAgent.pm
+                lib/CPAN/Mirrors.pm
+                ),
+        ],
+    },
+
+    # Note: When updating CPAN-Meta the META.* files will need to be regenerated
+    # perl -Icpan/CPAN-Meta/lib Porting/makemeta
+    'CPAN::Meta' => {
+        'DISTRIBUTION' => 'DAGOLDEN/CPAN-Meta-2.140640.tar.gz',
+        'FILES'        => q[cpan/CPAN-Meta],
+        'EXCLUDED'     => [
+            qw[t/00-report-prereqs.t],
+            qr{t/README-data.txt},
+            qr{^xt},
+            qr{^history},
+        ],
+    },
+
+    'CPAN::Meta::Requirements' => {
+        'DISTRIBUTION' => 'DAGOLDEN/CPAN-Meta-Requirements-2.125.tar.gz',
+        'FILES'        => q[cpan/CPAN-Meta-Requirements],
+        'EXCLUDED'     => [
+            qw(t/00-compile.t),
+            qw(t/00-report-prereqs.t),
+            qr{^xt},
+        ],
+    },
+
+    'CPAN::Meta::YAML' => {
+        'DISTRIBUTION' => 'DAGOLDEN/CPAN-Meta-YAML-0.012.tar.gz',
+        'FILES'        => q[cpan/CPAN-Meta-YAML],
+        'EXCLUDED'     => [
+            't/00-compile.t',
+            't/00-report-prereqs.t',
+            't/04_scalar.t',    # requires YAML.pm
+            qr{^xt},
+        ],
+    },
+
+    'Data::Dumper' => {
+        'DISTRIBUTION' => 'SMUELLER/Data-Dumper-2.151.tar.gz',
+        'FILES'        => q[dist/Data-Dumper],
+    },
+
+    'DB_File' => {
+        'DISTRIBUTION' => 'PMQS/DB_File-1.831.tar.gz',
+        'FILES'        => q[cpan/DB_File],
+        'EXCLUDED'     => [
+            qr{^patches/},
+            qw( t/pod.t
+                fallback.h
+                fallback.xs
+                ),
+        ],
+    },
+
+    'Devel::PPPort' => {
+        'DISTRIBUTION' => 'MHX/Devel-PPPort-3.21.tar.gz',
+        # RJBS has asked MHX to have UPSTREAM be 'blead'
+        # (i.e. move this from cpan/ to dist/)
+        'FILES'        => q[cpan/Devel-PPPort],
+        'EXCLUDED'     => [
+            'PPPort.pm',    # we use PPPort_pm.PL instead
+            'README.md',
+        ]
+    },
+
+    'Devel::SelfStubber' => {
+        'DISTRIBUTION' => 'FLORA/Devel-SelfStubber-1.05.tar.gz',
+        'FILES'        => q[dist/Devel-SelfStubber],
+        'EXCLUDED'     => [qr{^t/release-.*\.t}],
+    },
+
+    'Digest' => {
+        'DISTRIBUTION' => 'GAAS/Digest-1.17.tar.gz',
+        'FILES'        => q[cpan/Digest],
+        'EXCLUDED'     => ['digest-bench'],
+    },
+
+    'Digest::MD5' => {
+        'DISTRIBUTION' => 'GAAS/Digest-MD5-2.53.tar.gz',
+        'FILES'        => q[cpan/Digest-MD5],
+        'EXCLUDED'     => ['rfc1321.txt'],
+        # Waiting to be merged upstream: see CPAN RT#89612
+        'CUSTOMIZED'   => ['t/files.t'],
+    },
+
+    'Digest::SHA' => {
+        'DISTRIBUTION' => 'MSHELOR/Digest-SHA-5.88.tar.gz',
+        'FILES'        => q[cpan/Digest-SHA],
+        'EXCLUDED'     => [
+            qw( t/pod.t
+                t/podcover.t
+                examples/dups
+                ),
+        ],
+    },
+
+    'Dumpvalue' => {
+        'DISTRIBUTION' => 'FLORA/Dumpvalue-1.17.tar.gz',
+        'FILES'        => q[dist/Dumpvalue],
+        'EXCLUDED'     => [qr{^t/release-.*\.t}],
+    },
+
+    'Encode' => {
+        'DISTRIBUTION' => 'DANKOGAI/Encode-2.60.tar.gz',
+        'FILES'        => q[cpan/Encode],
+        'CUSTOMIZED'   => [
+            # Waiting to be merged upstream: see CPAN RT#95130 and
+            # Message-Id: <201405062058.s46KwdCZ013775@m-l.org>
+            qw(
+                Byte/Makefile.PL
+                CN/Makefile.PL
+                EBCDIC/Makefile.PL
+                Encode.pm
+                Encode.xs
+                Encode/Makefile_PL.e2x
+                JP/Makefile.PL
+                KR/Makefile.PL
+                Symbol/Makefile.PL
+                TW/Makefile.PL
+                bin/enc2xs
+            ),
+        ],
+
+    },
+
+    'encoding::warnings' => {
+        'DISTRIBUTION' => 'AUDREYT/encoding-warnings-0.11.tar.gz',
+        'FILES'        => q[cpan/encoding-warnings],
+        'EXCLUDED'     => [
+            qr{^inc/Module/},
+            qw(t/0-signature.t),
+        ],
+    },
+
+    'Env' => {
+        'DISTRIBUTION' => 'FLORA/Env-1.04.tar.gz',
+        'FILES'        => q[dist/Env],
+        'EXCLUDED'     => [qr{^t/release-.*\.t}],
+    },
+
+    'experimental' => {
+        'DISTRIBUTION' => 'LEONT/experimental-0.007.tar.gz',
+        'FILES'        => q[cpan/experimental],
+        'EXCLUDED'     => [
+          qr{^t/release-.*\.t},
+          't/00-compile.t',
+        ],
+    },
+
+    'Exporter' => {
+        'DISTRIBUTION' => 'TODDR/Exporter-5.68.tar.gz',
+        'FILES'        => q[dist/Exporter],
+        'EXCLUDED' => [
+            qw( t/pod.t
+                t/use.t
+                ),
+        ],
+    },
+
+    'ExtUtils::CBuilder' => {
+        'DISTRIBUTION' => 'AMBS/ExtUtils/ExtUtils-CBuilder-0.280216.tar.gz',
+        'FILES'        => q[dist/ExtUtils-CBuilder],
+        'EXCLUDED'     => [
+            qw(README.mkdn),
+            qr{^xt},
+        ],
+    },
+
+    'ExtUtils::Command' => {
+        'DISTRIBUTION' => 'FLORA/ExtUtils-Command-1.18.tar.gz',
+        'FILES'        => q[dist/ExtUtils-Command],
+        'EXCLUDED'     => [qr{^t/release-}],
+    },
+
+    'ExtUtils::Constant' => {
+
+        # Nick has confirmed that while we have diverged from CPAN,
+        # this package isn't primarily maintained in core
+        # Another release will happen "Sometime"
+        'DISTRIBUTION' => '',    #'NWCLARK/ExtUtils-Constant-0.16.tar.gz',
+        'FILES'    => q[cpan/ExtUtils-Constant],
+        'EXCLUDED' => [
+            qw( lib/ExtUtils/Constant/Aaargh56Hash.pm
+                examples/perl_keyword.pl
+                examples/perl_regcomp_posix_keyword.pl
+                ),
+        ],
+    },
+
+    'ExtUtils::Install' => {
+        'DISTRIBUTION' => 'BINGOS/ExtUtils-Install-1.67.tar.gz',
+        'FILES'        => q[dist/ExtUtils-Install],
+        'EXCLUDED'     => [
+            qw( t/lib/Test/Builder.pm
+                t/lib/Test/Builder/Module.pm
+                t/lib/Test/More.pm
+                t/lib/Test/Simple.pm
+                t/pod-coverage.t
+                t/pod.t
+                ),
+        ],
+    },
+
+    'ExtUtils::MakeMaker' => {
+        'DISTRIBUTION' => 'BINGOS/ExtUtils-MakeMaker-6.98.tar.gz',
+        'FILES'        => q[cpan/ExtUtils-MakeMaker],
+        'EXCLUDED'     => [
+            qr{^t/lib/Test/},
+            qr{^(bundled|my)/},
+            qr{^t/Liblist_Kid.t},
+            qr{^t/liblist/},
+            qr{^\.perlcriticrc},
+            'PATCHING',
+            'README.packaging',
+        ],
+    },
+
+    'ExtUtils::Manifest' => {
+        'DISTRIBUTION' => 'FLORA/ExtUtils-Manifest-1.63.tar.gz',
+        'FILES'        => q[dist/ExtUtils-Manifest],
+        'EXCLUDED'     => [qr(t/release-.*\.t)],
+    },
+
+    'ExtUtils::ParseXS' => {
+        'DISTRIBUTION' => 'SMUELLER/ExtUtils-ParseXS-3.24.tar.gz',
+        'FILES'        => q[dist/ExtUtils-ParseXS],
+    },
+
+    'File::Fetch' => {
+        'DISTRIBUTION' => 'BINGOS/File-Fetch-0.48.tar.gz',
+        'FILES'        => q[cpan/File-Fetch],
+    },
+
+    'File::Path' => {
+        'DISTRIBUTION' => 'DLAND/File-Path-2.09.tar.gz',
+        'FILES'        => q[cpan/File-Path],
+        'EXCLUDED'     => [
+            qw( eg/setup-extra-tests
+                t/pod.t
+                )
+        ],
+        'MAP' => {
+            ''   => 'cpan/File-Path/lib/File/',
+            't/' => 'cpan/File-Path/t/',
+        },
+    },
+
+    'File::Temp' => {
+        'DISTRIBUTION' => 'DAGOLDEN/File-Temp-0.2304.tar.gz',
+        'FILES'        => q[cpan/File-Temp],
+        'EXCLUDED'     => [
+            qw( misc/benchmark.pl
+                misc/results.txt
+                ),
+            qw[t/00-report-prereqs.t],
+            qr{^xt},
+        ],
+    },
+
+    'Filter::Simple' => {
+        'DISTRIBUTION' => 'SMUELLER/Filter-Simple-0.91.tar.gz',
+        'FILES'        => q[dist/Filter-Simple],
+        'EXCLUDED'     => [
+            qr{^demo/}
+        ],
+    },
+
+    'Filter::Util::Call' => {
+        'DISTRIBUTION' => 'RURBAN/Filter-1.49.tar.gz',
+        'FILES'        => q[cpan/Filter-Util-Call
+                 pod/perlfilter.pod
+                ],
+        'EXCLUDED' => [
+            qr{^decrypt/},
+            qr{^examples/},
+            qr{^Exec/},
+            qr{^lib/Filter/},
+            qr{^tee/},
+            qw( Call/Makefile.PL
+                Call/ppport.h
+                Call/typemap
+                mytest
+                t/cpp.t
+                t/decrypt.t
+                t/exec.t
+                t/order.t
+                t/sh.t
+                t/tee.t
+                t/z_kwalitee.t
+                t/z_meta.t
+                t/z_perl_minimum_version.t
+                t/z_pod-coverage.t
+                t/z_pod.t
+                ),
+        ],
+        'MAP' => {
+            'Call/'          => 'cpan/Filter-Util-Call/',
+            'filter-util.pl' => 'cpan/Filter-Util-Call/filter-util.pl',
+            'perlfilter.pod' => 'pod/perlfilter.pod',
+            ''               => 'cpan/Filter-Util-Call/',
+        },
+    },
+
+    'Getopt::Long' => {
+        'DISTRIBUTION' => 'JV/Getopt-Long-2.42.tar.gz',
+        'FILES'        => q[cpan/Getopt-Long],
+        'EXCLUDED'     => [
+            qr{^examples/},
+            qw( perl-Getopt-Long.spec
+                lib/newgetopt.pl
+                t/gol-compat.t
+                ),
+        ],
+    },
+
+    'HTTP::Tiny' => {
+        'DISTRIBUTION' => 'DAGOLDEN/HTTP-Tiny-0.043.tar.gz',
+        'FILES'        => q[cpan/HTTP-Tiny],
+        'EXCLUDED'     => [
+            't/00-report-prereqs.t',
+            't/200_live.t',
+            't/200_live_local_ip.t',
+            't/210_live_ssl.t',
+            qr/^eg/,
+            qr/^xt/
+        ],
+    },
+
+    'I18N::Collate' => {
+        'DISTRIBUTION' => 'FLORA/I18N-Collate-1.02.tar.gz',
+        'FILES'        => q[dist/I18N-Collate],
+        'EXCLUDED'     => [qr{^t/release-.*\.t}],
+    },
+
+    'I18N::LangTags' => {
+        'FILES'        => q[dist/I18N-LangTags],
+    },
+
+    'if' => {
+        'DISTRIBUTION' => 'ILYAZ/modules/if-0.0601.tar.gz',
+        'FILES'        => q[dist/if],
+    },
+
+    'IO' => {
+        'DISTRIBUTION' => 'GBARR/IO-1.25.tar.gz',
+        'FILES'        => q[dist/IO/],
+        'EXCLUDED'     => ['t/test.pl'],
+    },
+
+    'IO-Compress' => {
+        'DISTRIBUTION' => 'PMQS/IO-Compress-2.064.tar.gz',
+        'FILES'        => q[cpan/IO-Compress],
+        'EXCLUDED'     => [
+            qr{^examples/},
+            qr{^t/Test/},
+            't/010examples-bzip2.t',
+            't/010examples-zlib.t',
+            't/cz-05examples.t',
+        ],
+    },
+
+    'IO::Socket::IP' => {
+        'DISTRIBUTION' => 'PEVANS/IO-Socket-IP-0.29.tar.gz',
+        'FILES'        => q[cpan/IO-Socket-IP],
+        'EXCLUDED'     => [
+            qr{^examples/},
+        ],
+    },
+
+    'IO::Zlib' => {
+        'DISTRIBUTION' => 'TOMHUGHES/IO-Zlib-1.10.tar.gz',
+        'FILES'        => q[cpan/IO-Zlib],
+    },
+
+    'IPC::Cmd' => {
+        'DISTRIBUTION' => 'BINGOS/IPC-Cmd-0.92.tar.gz',
+        'FILES'        => q[cpan/IPC-Cmd],
+    },
+
+    'IPC::SysV' => {
+        'DISTRIBUTION' => 'MHX/IPC-SysV-2.04.tar.gz',
+        'FILES'        => q[cpan/IPC-SysV],
+        'EXCLUDED'     => [
+            qw( const-c.inc
+                const-xs.inc
+                ),
+        ],
+    },
+
+    'JSON::PP' => {
+        'DISTRIBUTION' => 'MAKAMAKA/JSON-PP-2.27203.tar.gz',
+        'FILES'        => q[cpan/JSON-PP],
+    },
+
+    'lib' => {
+        'DISTRIBUTION' => 'SMUELLER/lib-0.63.tar.gz',
+        'FILES'        => q[dist/lib/],
+        'EXCLUDED'     => [
+            qw( forPAUSE/lib.pm
+                t/00pod.t
+                ),
+        ],
+    },
+
+    'libnet' => {
+        'DISTRIBUTION' => 'SHAY/libnet-1.25.tar.gz',
+        'FILES'        => q[cpan/libnet],
+        'EXCLUDED'     => [
+            qw( Configure
+                install-nomake
+                ),
+            qr(^demos/),
+        ],
+        # Customized for perl since we cannot use either an auto-generated
+        # script or the version in the CPAN distro.
+        'CUSTOMIZED' => ['Makefile.PL'],
+    },
+
+    'Locale-Codes' => {
+        'DISTRIBUTION' => 'SBECK/Locale-Codes-3.30.tar.gz',
+        'FILES'        => q[cpan/Locale-Codes],
+        'EXCLUDED'     => [
+            qw( README.first
+                t/pod_coverage.ign
+                t/pod_coverage.t
+                t/pod.t),
+            qr{^t/runtests},
+            qr{^t/runtests\.bat},
+            qr{^internal/},
+            qr{^examples/},
+        ],
+    },
+
+    'Locale::Maketext' => {
+        'DISTRIBUTION' => 'TODDR/Locale-Maketext-1.23.tar.gz',
+        'FILES'        => q[dist/Locale-Maketext],
+        'EXCLUDED'     => [
+            qw(
+                perlcriticrc
+                t/00_load.t
+                t/pod.t
+                ),
+        ],
+    },
+
+    'Locale::Maketext::Simple' => {
+        'DISTRIBUTION' => 'JESSE/Locale-Maketext-Simple-0.21.tar.gz',
+        'FILES'        => q[cpan/Locale-Maketext-Simple],
+    },
+
+    'Math::BigInt' => {
+        'DISTRIBUTION' => 'PJACKLAM/Math-BigInt-1.997.tar.gz',
+        'FILES'        => q[dist/Math-BigInt],
+        'EXCLUDED'     => [
+            qr{^inc/},
+            qr{^examples/},
+            qw( t/00sig.t
+                t/01load.t
+                t/02pod.t
+                t/03podcov.t
+                ),
+        ],
+    },
+
+    'Math::BigInt::FastCalc' => {
+        'DISTRIBUTION' => 'PJACKLAM/Math-BigInt-FastCalc-0.30.tar.gz',
+        'FILES'        => q[dist/Math-BigInt-FastCalc],
+        'EXCLUDED'     => [
+            qr{^inc/},
+            qw( t/00sig.t
+                t/01load.t
+                t/02pod.t
+                t/03podcov.t
+                ),
+
+            # instead we use the versions of these test
+            # files that come with Math::BigInt:
+            qw( t/bigfltpm.inc
+                t/bigfltpm.t
+                t/bigintpm.inc
+                t/bigintpm.t
+                t/mbimbf.inc
+                t/mbimbf.t
+                ),
+        ],
+    },
+
+    'Math::BigRat' => {
+        'DISTRIBUTION' => 'PJACKLAM/Math-BigRat-0.2602.tar.gz',
+        'FILES'        => q[dist/Math-BigRat],
+        'EXCLUDED'     => [
+            qr{^inc/},
+            qw( t/00sig.t
+                t/01load.t
+                t/02pod.t
+                t/03podcov.t
+                ),
+        ],
+    },
+
+    'Math::Complex' => {
+        'DISTRIBUTION' => 'ZEFRAM/Math-Complex-1.59.tar.gz',
+        'FILES'        => q[cpan/Math-Complex],
+        'EXCLUDED'     => [
+            qw( t/pod.t
+                t/pod-coverage.t
+                ),
+        ],
+    },
+
+    'Memoize' => {
+        'DISTRIBUTION' => 'MJD/Memoize-1.03.tgz',
+        'FILES'        => q[cpan/Memoize],
+        'EXCLUDED'     => ['article.html'],
+    },
+
+    'MIME::Base64' => {
+        'DISTRIBUTION' => 'GAAS/MIME-Base64-3.14.tar.gz',
+        'FILES'        => q[cpan/MIME-Base64],
+        'EXCLUDED'     => ['t/bad-sv.t'],
+    },
+
+    #
+    # To update Module-Build in blead see
+    # https://github.com/Perl-Toolchain-Gang/Module-Build/blob/master/devtools/patching_blead.pod
+    #
+
+    'Module::Build' => {
+        'DISTRIBUTION' => 'LEONT/Module-Build-0.4205.tar.gz',
+        'FILES'        => q[cpan/Module-Build],
+        'EXCLUDED'     => [
+            qw( t/par.t
+                t/signature.t
+                ),
+            qr{^contrib/},
+            qr{^inc},
+        ],
+        # Generated file, not part of the CPAN distro:
+        'CUSTOMIZED' => ['lib/Module/Build/ConfigData.pm'],
+        'DEPRECATED' => '5.019000',
+    },
+
+    'Module::CoreList' => {
+        'DISTRIBUTION' => 'BINGOS/Module-CoreList-3.10.tar.gz',
+        'FILES'        => q[dist/Module-CoreList],
+    },
+
+    'Module::Load' => {
+        'DISTRIBUTION' => 'BINGOS/Module-Load-0.32.tar.gz',
+        'FILES'        => q[cpan/Module-Load],
+    },
+
+    'Module::Load::Conditional' => {
+        'DISTRIBUTION' => 'BINGOS/Module-Load-Conditional-0.62.tar.gz',
+        'FILES'        => q[cpan/Module-Load-Conditional],
+    },
+
+    'Module::Loaded' => {
+        'DISTRIBUTION' => 'BINGOS/Module-Loaded-0.08.tar.gz',
+        'FILES'        => q[cpan/Module-Loaded],
+    },
+
+    'Module::Metadata' => {
+        'DISTRIBUTION' => 'ETHER/Module-Metadata-1.000019.tar.gz',
+        'FILES'        => q[cpan/Module-Metadata],
+        'EXCLUDED'     => [
+            qr{^maint},
+            qr{^xt},
+        ],
+    },
+
+    'Net::Ping' => {
+        'DISTRIBUTION' => 'SMPETERS/Net-Ping-2.41.tar.gz',
+        'FILES'        => q[dist/Net-Ping],
+        'EXCLUDED'     => [
+            qr{^.travis.yml},
+            qr{^README.md},
+        ],
+    },
+
+    'NEXT' => {
+        'DISTRIBUTION' => 'FLORA/NEXT-0.65.tar.gz',
+        'FILES'        => q[cpan/NEXT],
+        'EXCLUDED'     => [qr{^demo/}],
+    },
+
+    'Package::Constants' => {
+        'DISTRIBUTION' => 'BINGOS/Package-Constants-0.04.tar.gz',
+        'FILES'        => q[cpan/Package-Constants],
+        'DEPRECATED'   => '5.019006',
+    },
+
+    'Params::Check' => {
+        'DISTRIBUTION' => 'BINGOS/Params-Check-0.38.tar.gz',
+        'FILES'        => q[cpan/Params-Check],
+    },
+
+    'parent' => {
+        'DISTRIBUTION' => 'CORION/parent-0.228.tar.gz',
+        'FILES'        => q[cpan/parent],
+    },
+
+    'Parse::CPAN::Meta' => {
+        'DISTRIBUTION' => 'DAGOLDEN/Parse-CPAN-Meta-1.4414.tar.gz',
+        'FILES'        => q[cpan/Parse-CPAN-Meta],
+        'EXCLUDED'     => [
+            qw[t/00-report-prereqs.t],
+            qr{^xt},
+        ],
+    },
+
+    'PathTools' => {
+        'DISTRIBUTION' => 'SMUELLER/PathTools-3.47.tar.gz',
+        'FILES'        => q[dist/PathTools],
+        'EXCLUDED'     => [qr{^t/lib/Test/}],
+    },
+
+    'Perl::OSType' => {
+        'DISTRIBUTION' => 'DAGOLDEN/Perl-OSType-1.007.tar.gz',
+        'FILES'        => q[cpan/Perl-OSType],
+        'EXCLUDED'     => [qw(tidyall.ini), qr/^xt/, qr{^t/00-}],
+    },
+
+    'perlfaq' => {
+        'DISTRIBUTION' => 'LLAP/perlfaq-5.0150044.tar.gz',
+        'FILES'        => q[cpan/perlfaq],
+        'EXCLUDED'     => [
+            qw( t/release-pod-syntax.t
+                t/release-eol.t
+                t/release-no-tabs.t
+                )
+        ],
+    },
+
+    'PerlIO::via::QuotedPrint' => {
+        'DISTRIBUTION' => 'ELIZABETH/PerlIO-via-QuotedPrint-0.07.tar.gz',
+        'FILES'        => q[cpan/PerlIO-via-QuotedPrint],
+
+        # Waiting to be merged upstream: see CPAN RT#54047
+        'CUSTOMIZED'   => [
+            qw( t/QuotedPrint.t
+                ),
+        ],
+
+    },
+
+    'Pod::Checker' => {
+        'DISTRIBUTION' => 'MAREKR/Pod-Checker-1.60.tar.gz',
+        'FILES'        => q[cpan/Pod-Checker],
+    },
+
+    'Pod::Escapes' => {
+        'DISTRIBUTION' => 'NEILB/Pod-Escapes-1.06.tar.gz',
+        'FILES'        => q[cpan/Pod-Escapes],
+    },
+
+    'Pod::Parser' => {
+        'DISTRIBUTION' => 'MAREKR/Pod-Parser-1.62.tar.gz',
+        'FILES'        => q[cpan/Pod-Parser],
+        # Waiting to be merged upstream: see CPAN RT#101847
+        'CUSTOMIZED'   => [ qw( lib/Pod/PlainText.pm) ],
+    },
+
+    'Pod::Perldoc' => {
+        'DISTRIBUTION' => 'MALLEN/Pod-Perldoc-3.23.tar.gz',
+        'FILES'        => q[cpan/Pod-Perldoc],
+
+        # Note that we use the CPAN-provided Makefile.PL, since it
+        # contains special handling of the installation of perldoc.pod
+
+        # In blead, the perldoc executable is generated by perldoc.PL
+        # instead
+        # XXX We can and should fix this, but clean up the DRY-failure in utils
+        # first
+        'EXCLUDED' => ['perldoc'],
+    },
+
+    'Pod::Simple' => {
+        'DISTRIBUTION' => 'DWHEELER/Pod-Simple-3.28.tar.gz',
+        'FILES'        => q[cpan/Pod-Simple],
+    },
+
+    'Pod::Usage' => {
+        'DISTRIBUTION' => 'MAREKR/Pod-Usage-1.63.tar.gz',
+        'FILES'        => q[cpan/Pod-Usage],
+    },
+
+    'podlators' => {
+        'DISTRIBUTION' => 'RRA/podlators-2.5.3.tar.gz',
+        'FILES'        => q[cpan/podlators pod/perlpodstyle.pod],
+
+        # The perl distribution has pod2man.PL and pod2text.PL,  which are
+        # run to create pod2man and pod2text, while the CPAN distribution
+        # just has the post-generated pod2man and pod2text files.
+        # The following entries attempt to codify that odd fact.
+        'CUSTOMIZED' => [
+            qw( scripts/pod2man.PL
+                scripts/pod2text.PL
+                ),
+        ],
+        'MAP' => {
+            ''                 => 'cpan/podlators/',
+            'scripts/pod2man'  => 'cpan/podlators/scripts/pod2man.PL',
+            'scripts/pod2text' => 'cpan/podlators/scripts/pod2text.PL',
+
+            # this file lives outside the cpan/ directory
+            'pod/perlpodstyle.pod' => 'pod/perlpodstyle.pod',
+        },
+    },
+
+    'Safe' => {
+        'DISTRIBUTION' => 'RGARCIA/Safe-2.35.tar.gz',
+        'FILES'        => q[dist/Safe],
+    },
+
+    'Scalar-List-Utils' => {
+        'DISTRIBUTION' => 'PEVANS/Scalar-List-Utils-1.38.tar.gz',
+        'FILES'    => q[cpan/Scalar-List-Utils],
+    },
+
+    'Search::Dict' => {
+        'DISTRIBUTION' => 'DAGOLDEN/Search-Dict-1.07.tar.gz',
+        'FILES'        => q[dist/Search-Dict],
+    },
+
+    'SelfLoader' => {
+        'DISTRIBUTION' => 'SMUELLER/SelfLoader-1.20.tar.gz',
+        'FILES'        => q[dist/SelfLoader],
+        'EXCLUDED'     => ['t/00pod.t'],
+    },
+
+    'Socket' => {
+        'DISTRIBUTION' => 'PEVANS/Socket-2.013.tar.gz',
+        'FILES'        => q[cpan/Socket],
+    },
+
+    'Storable' => {
+        'DISTRIBUTION' => 'AMS/Storable-2.45.tar.gz',
+        'FILES'        => q[dist/Storable],
+    },
+
+    'Sys::Syslog' => {
+        'DISTRIBUTION' => 'SAPER/Sys-Syslog-0.33.tar.gz',
+        'FILES'        => q[cpan/Sys-Syslog],
+        'EXCLUDED'     => [
+            qr{^eg/},
+            qw( README.win32
+                t/data-validation.t
+                t/distchk.t
+                t/pod.t
+                t/podcover.t
+                t/podspell.t
+                t/portfs.t
+                win32/PerlLog.RES
+                ),
+        ],
+    },
+
+    'Term::ANSIColor' => {
+        'DISTRIBUTION' => 'RRA/Term-ANSIColor-4.02.tar.gz',
+        'FILES'        => q[cpan/Term-ANSIColor],
+        'EXCLUDED'     => [
+            qr{^examples/},
+            qr{^t/data/},
+            qw( t/aliases-env.t
+                t/critic.t
+                t/minimum-version.t
+                t/pod-spelling.t
+                t/pod-coverage.t
+                t/pod.t
+                t/strict.t
+                t/synopsis.t
+                ),
+        ],
+    },
+
+    'Term::Cap' => {
+        'DISTRIBUTION' => 'JSTOWE/Term-Cap-1.15.tar.gz',
+        'FILES'        => q[cpan/Term-Cap],
+    },
+
+    'Term::Complete' => {
+        'DISTRIBUTION' => 'FLORA/Term-Complete-1.402.tar.gz',
+        'FILES'        => q[dist/Term-Complete],
+        'EXCLUDED'     => [qr{^t/release-.*\.t}],
+    },
+
+    'Term::ReadLine' => {
+        'DISTRIBUTION' => 'FLORA/Term-ReadLine-1.14.tar.gz',
+        'FILES'        => q[dist/Term-ReadLine],
+        'EXCLUDED'     => [qr{^t/release-.*\.t}],
+    },
+
+    'Test' => {
+        'DISTRIBUTION' => 'JESSE/Test-1.26.tar.gz',
+        'FILES'        => q[cpan/Test],
+    },
+
+    'Test::Harness' => {
+        'DISTRIBUTION' => 'LEONT/Test-Harness-3.30.tar.gz',
+        'FILES'        => q[cpan/Test-Harness],
+        'EXCLUDED'     => [
+            qr{^examples/},
+            qr{^inc/},
+            qr{^t/lib/Test/},
+            qr{^xt/},
+            qw( Changes-2.64
+                MANIFEST.CUMMULATIVE
+                NotBuild.PL
+                HACKING.pod
+                perlcriticrc
+                t/000-load.t
+                t/lib/if.pm
+                ),
+        ],
+    },
+
+    'Test::Simple' => {
+        'DISTRIBUTION' => 'RJBS/Test-Simple-1.001002.tar.gz',
+        'FILES'        => q[cpan/Test-Simple],
+        'EXCLUDED'     => [
+            qr{^t/xt},
+            qw( .perlcriticrc
+                .perltidyrc
+                examples/indent.pl
+                examples/subtest.t
+                t/00compile.t
+                t/pod.t
+                t/pod-coverage.t
+                t/Builder/reset_outputs.t
+                lib/Test/Builder/IO/Scalar.pm
+                ),
+        ],
+    },
+
+    'Text::Abbrev' => {
+        'DISTRIBUTION' => 'FLORA/Text-Abbrev-1.02.tar.gz',
+        'FILES'        => q[dist/Text-Abbrev],
+        'EXCLUDED'     => [qr{^t/release-.*\.t}],
+    },
+
+    'Text::Balanced' => {
+        'DISTRIBUTION' => 'ADAMK/Text-Balanced-2.02.tar.gz',
+        'FILES'        => q[cpan/Text-Balanced],
+        'EXCLUDED'     => [
+            qw( t/97_meta.t
+                t/98_pod.t
+                t/99_pmv.t
+                ),
+        ],
+
+        # Waiting to be merged upstream: see CPAN RT#87788
+        'CUSTOMIZED'   => [
+            qw( t/01_compile.t
+                t/02_extbrk.t
+                t/03_extcbk.t
+                t/04_extdel.t
+                t/05_extmul.t
+                t/06_extqlk.t
+                t/07_exttag.t
+                t/08_extvar.t
+                t/09_gentag.t
+                ),
+        ],
+
+    },
+
+    'Text::ParseWords' => {
+        'DISTRIBUTION' => 'CHORNY/Text-ParseWords-3.29.tar.gz',
+        'FILES'        => q[cpan/Text-ParseWords],
+
+        # Waiting to be merged upstream: see CPAN RT#50929
+        'CUSTOMIZED'   => [
+            qw( t/ParseWords.t
+                t/taint.t
+                ),
+        ],
+
+        # For the benefit of make_ext.pl, we have to have this accessible:
+        'MAP' => {
+            'ParseWords.pm' => 'cpan/Text-ParseWords/lib/Text/ParseWords.pm',
+            ''              => 'cpan/Text-ParseWords/',
+        },
+    },
+
+    'Text-Tabs+Wrap' => {
+        'DISTRIBUTION' => 'MUIR/modules/Text-Tabs+Wrap-2013.0523.tar.gz',
+        'FILES'        => q[cpan/Text-Tabs],
+        'EXCLUDED'   => [
+            qr/^lib\.old/,
+            't/dnsparks.t',    # see af6492bf9e
+        ],
+        'MAP'          => {
+            ''                        => 'cpan/Text-Tabs/',
+            'lib.modern/Text/Tabs.pm' => 'cpan/Text-Tabs/lib/Text/Tabs.pm',
+            'lib.modern/Text/Wrap.pm' => 'cpan/Text-Tabs/lib/Text/Wrap.pm',
+        },
+    },
+
+    # Jerry Hedden does take patches that are applied to blead first, even
+    # though that can be hard to discern from the Git history; so it's
+    # correct for this (and Thread::Semaphore, threads, and threads::shared)
+    # to be under dist/ rather than cpan/
+    'Thread::Queue' => {
+        'DISTRIBUTION' => 'JDHEDDEN/Thread-Queue-3.05.tar.gz',
+        'FILES'        => q[dist/Thread-Queue],
+        'EXCLUDED'     => [
+            qr{^examples/},
+            qw( t/00_load.t
+                t/99_pod.t
+                t/test.pl
+                ),
+        ],
+    },
+
+    'Thread::Semaphore' => {
+        'DISTRIBUTION' => 'JDHEDDEN/Thread-Semaphore-2.12.tar.gz',
+        'FILES'        => q[dist/Thread-Semaphore],
+        'EXCLUDED'     => [
+            qw( examples/semaphore.pl
+                t/00_load.t
+                t/99_pod.t
+                t/test.pl
+                ),
+        ],
+    },
+
+    'threads' => {
+        'DISTRIBUTION' => 'JDHEDDEN/threads-1.92.tar.gz',
+        'FILES'        => q[dist/threads],
+        'EXCLUDED'     => [
+            qr{^examples/},
+            qw( t/pod.t
+                t/test.pl
+                threads.h
+                ),
+        ],
+    },
+
+    'threads::shared' => {
+        'DISTRIBUTION' => 'JDHEDDEN/threads-shared-1.46.tar.gz',
+        'FILES'        => q[dist/threads-shared],
+        'EXCLUDED'     => [
+            qw( examples/class.pl
+                shared.h
+                t/pod.t
+                t/test.pl
+                ),
+        ],
+    },
+
+    'Tie::File' => {
+        'DISTRIBUTION' => 'TODDR/Tie-File-0.98.tar.gz',
+        'FILES'        => q[dist/Tie-File],
+    },
+
+    'Tie::RefHash' => {
+        'DISTRIBUTION' => 'FLORA/Tie-RefHash-1.39.tar.gz',
+        'FILES'        => q[cpan/Tie-RefHash],
+    },
+
+    'Time::HiRes' => {
+        'DISTRIBUTION' => 'ZEFRAM/Time-HiRes-1.9726.tar.gz',
+        'FILES'        => q[cpan/Time-HiRes],
+    },
+
+    'Time::Local' => {
+        'DISTRIBUTION' => 'DROLSKY/Time-Local-1.2300.tar.gz',
+        'FILES'        => q[cpan/Time-Local],
+        'EXCLUDED'     => [
+            qr{^t/release-.*\.t},
+        ],
+    },
+
+    'Time::Piece' => {
+        'DISTRIBUTION' => 'RJBS/Time-Piece-1.27.tar.gz',
+        'FILES'        => q[cpan/Time-Piece],
+    },
+
+    'Unicode::Collate' => {
+        'DISTRIBUTION' => 'SADAHIRO/Unicode-Collate-1.04.tar.gz',
+        'FILES'        => q[cpan/Unicode-Collate],
+        'EXCLUDED'     => [
+            qr{N$},
+            qr{^data/},
+            qr{^gendata/},
+            qw( disableXS
+                enableXS
+                mklocale
+                ),
+        ],
+    },
+
+    'Unicode::Normalize' => {
+        'DISTRIBUTION' => 'SADAHIRO/Unicode-Normalize-1.17.tar.gz',
+        'FILES'        => q[cpan/Unicode-Normalize],
+        'EXCLUDED'     => [
+            qw( MANIFEST.N
+                Normalize.pmN
+                disableXS
+                enableXS
+                ),
+        ],
+    },
+
+    'version' => {
+        'DISTRIBUTION' => 'JPEACOCK/version-0.9909.tar.gz',
+        'FILES'        => q[cpan/version vutil.c vutil.h vxs.inc],
+        'EXCLUDED' => [
+            qr{^vutil/lib/},
+            'vutil/Makefile.PL',
+            'vutil/ppport.h',
+            'vutil/vxs.xs',
+            't/survey_locales',
+        ],
+
+        # When adding the CPAN-distributed files for version.pm, it is necessary
+        # to delete an entire block out of lib/version.pm, since that code is
+        # only necessary with the CPAN release.
+        'CUSTOMIZED'   => [
+            qw( lib/version.pm
+                ),
+        ],
+
+        'MAP' => {
+            'vperl/'         => 'cpan/version/lib/version/',
+            'vutil/'         => '',
+            ''               => 'cpan/version/',
+        },
+    },
+
+    'warnings' => {
+        'FILES'      => q[
+                 lib/warnings
+                 lib/warnings.{pm,t}
+                 regen/warnings.pl
+                 t/lib/warnings
+        ],
+    },
+
+    'Win32' => {
+        'DISTRIBUTION' => "JDB/Win32-0.49.tar.gz",
+        'FILES'        => q[cpan/Win32],
+    },
+
+    'Win32API::File' => {
+        'DISTRIBUTION' => 'CHORNY/Win32API-File-0.1201.tar.gz',
+        'FILES'        => q[cpan/Win32API-File],
+        'EXCLUDED'     => [
+            qr{^ex/},
+            't/pod.t',
+        ],
+    },
+
+    'XSLoader' => {
+        'DISTRIBUTION' => 'SAPER/XSLoader-0.16.tar.gz',
+        'FILES'        => q[dist/XSLoader],
+        'EXCLUDED'     => [
+            qr{^eg/},
+            qw( t/00-load.t
+                t/01-api.t
+                t/distchk.t
+                t/pod.t
+                t/podcover.t
+                t/portfs.t
+                ),
+            'XSLoader.pm',    # we use XSLoader_pm.PL
+        ],
+    },
 
     # this pseudo-module represents all the files under ext/ and lib/
     # that aren't otherwise claimed. This means that the following two
@@ -2088,120 +1379,174 @@ use File::Glob qw(:case);
     #    perl Porting/Maintainers --checkmani lib ext
     #    perl Porting/Maintainers --checkmani
 
-    '_PERLLIB' =>
-	{
-	'MAINTAINER'	=> 'p5p',
-	'FILES'		=> q[
-				ext/XS-APItest/
-				lib/CORE.pod
-				lib/Config.t
-				lib/Config/Extensions.{pm,t}
-				lib/DB.{pm,t}
-				lib/ExtUtils/Embed.pm
-				lib/ExtUtils/XSSymSet.pm
-				lib/ExtUtils/t/Embed.t
-				lib/ExtUtils/typemap
-				lib/Internals.t
-				lib/Module/Build/ConfigData.pm
-				lib/Net/hostent.{pm,t}
-				lib/Net/netent.{pm,t}
-				lib/Net/protoent.{pm,t}
-				lib/Net/servent.{pm,t}
-				lib/Pod/Functions.pm
-				lib/Pod/t/Functions.t
-				lib/Pod/t/InputObjects.t
-				lib/Pod/t/Select.t
-				lib/Pod/t/Usage.t
-				lib/Pod/t/eol.t
-				lib/Pod/t/utils.t
-				lib/Search/Dict.{pm,t}
-				lib/SelectSaver.{pm,t}
-				lib/Symbol.{pm,t}
-				lib/Term/Complete.{pm,t}
-				lib/Term/ReadLine.{pm,t}
-				lib/Text/Abbrev.{pm,t}
-				lib/Thread.{pm,t}
-				lib/Tie/Array.pm
-				lib/Tie/Array/
-				lib/Tie/ExtraHash.t
-				lib/Tie/Handle.pm
-				lib/Tie/Handle/
-				lib/Tie/Scalar.{pm,t}
-				lib/Tie/StdHandle.pm
-				lib/Tie/SubstrHash.{pm,t}
-				lib/Time/gmtime.{pm,t}
-				lib/Time/localtime.{pm,t}
-				lib/Time/tm.pm
-				lib/UNIVERSAL.pm
-				lib/Unicode/README
-				lib/User/grent.{pm,t}
-				lib/User/pwent.{pm,t}
-				lib/abbrev.pl
-				lib/assert.pl
-				lib/bigfloat{.pl,pl.t}
-				lib/bigint{.pl,pl.t}
-				lib/bigrat.pl
-				lib/blib.{pm,t}
-				lib/bytes.{pm,t}
-				lib/bytes_heavy.pl
-				lib/cacheout.pl
-				lib/charnames.{pm,t}
-				lib/complete.pl
-				lib/ctime.pl
-				lib/dbm_filter_util.pl
-				lib/deprecate.pm
-				lib/dotsh.pl
-				lib/dumpvar.{pl,t}
-				lib/exceptions.pl
-				lib/fastcwd.pl
-				lib/feature.{pm,t}
-				lib/feature/
-				lib/filetest.{pm,t}
-				lib/find.pl
-				lib/finddepth.pl
-				lib/flush.pl
-				lib/getcwd.pl
-				lib/getopt.pl
-				lib/getopts.pl
-				lib/h2ph.t
-				lib/h2xs.t
-				lib/hostname.pl
-				lib/importenv.pl
-				lib/integer.{pm,t}
-				lib/less.{pm,t}
-				lib/locale.{pm,t}
-				lib/look.pl
-				lib/open.{pm,t}
-				lib/open2.pl
-				lib/open3.pl
-				lib/overload/numbers.pm
-				lib/overloading.{pm,t}
-				lib/perl5db.{pl,t}
-				lib/perl5db/
-				lib/pwd.pl
-				lib/shellwords.pl
-				lib/sort.{pm,t}
-				lib/stat.pl
-				lib/strict.{pm,t}
-				lib/subs.{pm,t}
-				lib/syslog.pl
-				lib/tainted.pl
-				lib/termcap.pl
-				lib/timelocal.pl
-				lib/unicore/
-				lib/utf8.{pm,t}
-				lib/utf8_heavy.pl
-				lib/validate.pl
-				lib/vars{.pm,.t,_carp.t}
-				lib/vmsish.{pm,t}
-			    ],
-	'UPSTREAM'	=> 'blead',
-	},
+    '_PERLLIB' => {
+        'FILES'    => q[
+                ext/B/
+                ext/Devel-Peek/
+                ext/DynaLoader/
+                ext/Errno/
+                ext/ExtUtils-Miniperl/
+                ext/Fcntl/
+                ext/File-DosGlob/
+                ext/File-Find/
+                ext/File-Glob/
+                ext/FileCache/
+                ext/GDBM_File/
+                ext/Hash-Util-FieldHash/
+                ext/Hash-Util/
+                ext/I18N-Langinfo/
+                ext/IPC-Open3/
+                ext/NDBM_File/
+                ext/ODBM_File/
+                ext/Opcode/
+                ext/POSIX/
+                ext/PerlIO-encoding/
+                ext/PerlIO-mmap/
+                ext/PerlIO-scalar/
+                ext/PerlIO-via/
+                ext/Pod-Functions/
+                ext/Pod-Html/
+                ext/SDBM_File/
+                ext/Sys-Hostname/
+                ext/Tie-Hash-NamedCapture/
+                ext/Tie-Memoize/
+                ext/VMS-DCLsym/
+                ext/VMS-Filespec/
+                ext/VMS-Stdio/
+                ext/Win32CORE/
+                ext/XS-APItest/
+                ext/XS-Typemap/
+                ext/arybase/
+                ext/attributes/
+                ext/mro/
+                ext/re/
+                lib/AnyDBM_File.{pm,t}
+                lib/Benchmark.{pm,t}
+                lib/B/Deparse{.pm,.t,-core.t}
+                lib/CORE.pod
+                lib/Class/Struct.{pm,t}
+                lib/Config.t
+                lib/Config/Extensions.{pm,t}
+                lib/DB.{pm,t}
+                lib/DBM_Filter.pm
+                lib/DBM_Filter/
+                lib/DirHandle.{pm,t}
+                lib/English.{pm,t}
+                lib/ExtUtils/Embed.pm
+                lib/ExtUtils/XSSymSet.pm
+                lib/ExtUtils/t/Embed.t
+                lib/ExtUtils/typemap
+                lib/File/Basename.{pm,t}
+                lib/File/Compare.{pm,t}
+                lib/File/Copy.{pm,t}
+                lib/File/stat{.pm,.t,-7896.t}
+                lib/FileHandle.{pm,t}
+                lib/FindBin.{pm,t}
+                lib/Getopt/Std.{pm,t}
+                lib/Internals.t
+                lib/Net/hostent.{pm,t}
+                lib/Net/netent.{pm,t}
+                lib/Net/protoent.{pm,t}
+                lib/Net/servent.{pm,t}
+                lib/PerlIO.pm
+                lib/Pod/t/InputObjects.t
+                lib/Pod/t/Select.t
+                lib/Pod/t/Usage.t
+                lib/Pod/t/utils.t
+                lib/SelectSaver.{pm,t}
+                lib/Symbol.{pm,t}
+                lib/Thread.{pm,t}
+                lib/Tie/Array.pm
+                lib/Tie/Array/
+                lib/Tie/ExtraHash.t
+                lib/Tie/Handle.pm
+                lib/Tie/Handle/
+                lib/Tie/Hash.{pm,t}
+                lib/Tie/Scalar.{pm,t}
+                lib/Tie/StdHandle.pm
+                lib/Tie/SubstrHash.{pm,t}
+                lib/Time/gmtime.{pm,t}
+                lib/Time/localtime.{pm,t}
+                lib/Time/tm.pm
+                lib/UNIVERSAL.pm
+                lib/Unicode/README
+                lib/Unicode/UCD.{pm,t}
+                lib/User/grent.{pm,t}
+                lib/User/pwent.{pm,t}
+                lib/_charnames.pm
+                lib/blib.{pm,t}
+                lib/bytes.{pm,t}
+                lib/bytes_heavy.pl
+                lib/charnames.{pm,t}
+                lib/dbm_filter_util.pl
+                lib/deprecate.pm
+                lib/diagnostics.{pm,t}
+                lib/dumpvar.{pl,t}
+                lib/feature.{pm,t}
+                lib/feature/
+                lib/filetest.{pm,t}
+                lib/h2ph.t
+                lib/h2xs.t
+                lib/integer.{pm,t}
+                lib/less.{pm,t}
+                lib/locale.{pm,t}
+                lib/open.{pm,t}
+                lib/overload/numbers.pm
+                lib/overloading.{pm,t}
+                lib/overload{.pm,.t,64.t}
+                lib/perl5db.{pl,t}
+                lib/perl5db/
+                lib/sigtrap.{pm,t}
+                lib/sort.{pm,t}
+                lib/strict.{pm,t}
+                lib/subs.{pm,t}
+                lib/unicore/
+                lib/utf8.{pm,t}
+                lib/utf8_heavy.pl
+                lib/vars{.pm,.t,_carp.t}
+                lib/vmsish.{pm,t}
+                ],
+    },
 );
 
 # legacy CPAN flag
-for (values %Modules) {
+for ( values %Modules ) {
     $_->{CPAN} = !!$_->{DISTRIBUTION};
+}
+
+# legacy UPSTREAM flag
+for ( keys %Modules ) {
+    # Keep any existing UPSTREAM flag so that "overrides" can be applied
+    next if exists $Modules{$_}{UPSTREAM};
+
+    if ($_ eq '_PERLLIB' or $Modules{$_}{FILES} =~ m{^\s*(?:dist|ext|lib)/}) {
+        $Modules{$_}{UPSTREAM} = 'blead';
+    }
+    elsif ($Modules{$_}{FILES} =~ m{^\s*cpan/}) {
+        $Modules{$_}{UPSTREAM} = 'cpan';
+    }
+    else {
+        warn "Unexpected location of FILES for module $_: $Modules{$_}{FILES}";
+    }
+}
+
+# legacy MAINTAINER field
+for ( keys %Modules ) {
+    # Keep any existing MAINTAINER flag so that "overrides" can be applied
+    next if exists $Modules{$_}{MAINTAINER};
+
+    if ($Modules{$_}{UPSTREAM} eq 'blead') {
+        $Modules{$_}{MAINTAINER} = 'P5P';
+        $Maintainers{P5P} = 'perl5-porters <perl5-porters@perl.org>';
+    }
+    elsif (exists $Modules{$_}{DISTRIBUTION}) {
+        (my $pause_id = $Modules{$_}{DISTRIBUTION}) =~ s{/.*$}{};
+        $Modules{$_}{MAINTAINER} = $pause_id;
+        $Maintainers{$pause_id} = "<$pause_id\@cpan.org>";
+    }
+    else {
+        warn "No DISTRIBUTION for non-blead module $_";
+    }
 }
 
 1;

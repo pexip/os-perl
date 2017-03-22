@@ -8,11 +8,11 @@ BEGIN {
 use warnings;
 use strict;
 use vars qw($foo $bar $baz $ballast);
-use Test::More tests => 196;
+use Test::More tests => 195;
 
 use Benchmark qw(:all);
 
-my $delta = 0.4;
+my $DELTA = 0.4;
 
 # Some timing ballast
 sub fib {
@@ -31,6 +31,15 @@ my $Nop_Pattern =
 # Please don't trust the matching parentheses to be useful in this :-)
 my $Default_Pattern = qr/$All_Pattern|$Noc_Pattern/;
 
+# see if the ratio of two integer values is within (1+$delta)
+
+sub cmp_delta {
+    my ($min, $max, $delta) = @_;
+    ($min, $max) = ($max, $min) if $max < $min;
+    return 0 if $min < 1; # avoid / 0
+    return $max/$min <= (1+$delta);
+}
+
 my $t0 = new Benchmark;
 isa_ok ($t0, 'Benchmark', "Ensure we can create a benchmark object");
 
@@ -47,9 +56,7 @@ timeit( 1, sub { $foo = @_ });
 is ($foo, 0, "benchmarked code called without arguments");
 
 
-print "# Burning CPU to benchmark things will take time...\n";
-
-
+print "# Burning CPU to benchmark things; will take time...\n";
 
 # We need to do something fairly slow in the coderef.
 # Same coderef. Same place in memory.
@@ -63,12 +70,14 @@ isnt ($baz, 0, "benchmarked code was run");
 my $in_threesecs = $threesecs->iters;
 print "# in_threesecs=$in_threesecs iterations\n";
 ok ($in_threesecs > 0, "iters returned positive iterations");
-my $cpu = $threesecs->[1] + $threesecs->[2]; # user + sys 
-cmp_ok($cpu, '>=', 3.0, "3s cpu is at least 3s");
-$in_threesecs *= (3/$cpu); # adjust because may not have run for exactly 3s
-print "# in_threesecs=$in_threesecs adjusted iterations\n";
+my $cpu3 = $threesecs->[1]; # user
+my $sys3 = $threesecs->[2]; # sys
+cmp_ok($cpu3+$sys3, '>=', 3.0, "3s cpu3 is at least 3s");
+my $in_threesecs_adj = $in_threesecs;
+$in_threesecs_adj *= (3/$cpu3); # adjust because may not have run for exactly 3s
+print "# in_threesecs_adj=$in_threesecs_adj adjusted iterations\n";
 
-my $estimate = int (100 * $in_threesecs / 3) / 100;
+my $estimate = int (100 * $in_threesecs_adj / 3) / 100;
 print "# from the 3 second run estimate $estimate iterations in 1 second...\n";
 $baz = 0;
 my $onesec = countit(1, $coderef);
@@ -77,17 +86,13 @@ isnt ($baz, 0, "benchmarked code was run");
 my $in_onesec = $onesec->iters;
 print "# in_onesec=$in_onesec iterations\n";
 ok ($in_onesec > 0, "iters returned positive iterations");
-$cpu = $onesec->[1] + $onesec->[2]; # user + sys 
-cmp_ok($cpu, '>=', 1.0, "1s cpu is at least 1s");
-$in_onesec *= (1/$cpu); # adjust because may not have run for exactly 1s
-print "# in_onesec=$in_onesec adjusted iterations\n";
+my $cpu1 = $onesec->[1]; # user
+my $sys1 = $onesec->[2]; # sys
+cmp_ok($cpu1+$sys1, '>=', 1.0, "is cpu1 is at least 1s");
+my $in_onesec_adj = $in_onesec;
+$in_onesec_adj *= (1/$cpu1); # adjust because may not have run for exactly 1s
+print "# in_onesec_adj=$in_onesec_adj adjusted iterations\n";
 
-{
-  my $difference = $in_onesec - $estimate;
-  my $actual = abs ($difference / $in_onesec);
-  cmp_ok($actual, '<=', $delta, "is $in_onesec within $delta of estimate ($estimate)")
-    or diag("# $in_onesec is between " . ($delta / 2) . " and $delta of estimate. Not that safe.");
-}
 
 # I found that the eval'ed version was 3 times faster than the coderef.
 # (now it has a different ballast value)
@@ -122,7 +127,7 @@ is ($auto, $default, 'timestr ($diff, "auto") matches timestr ($diff)');
     is (timestr ($diff, 'none'), '', "none suppresses output");
 
     my $noc = timestr ($diff, 'noc');
-    like ($noc, qr/$wallclock +wallclock secs? +\( *$usr +usr +\+ +$sys +sys += +$cpu +CPU\)/, 'timestr ($diff, "noc")');
+    like ($noc, qr/$wallclock +wallclock secs? +\( *$usr +usr +\+ +$sys +sys += +\d+\.\d\d +CPU\)/, 'timestr ($diff, "noc")');
 
     my $nop = timestr ($diff, 'nop');
     like ($nop, qr/$wallclock +wallclock secs? +\( *$cusr +cusr +\+ +$csys +csys += +\d+\.\d\d +CPU\)/, 'timestr ($diff, "nop")');
@@ -396,7 +401,9 @@ sub check_graph {
 {
     select(OUT);
     my $start = times;
-    my $chart = cmpthese( -0.1, { a => "++\$i", b => "\$i = sqrt(\$i++)" }, "auto" ) ;
+    my $chart = cmpthese( -0.1, { a => "\$i = sqrt(\$i++) * sqrt(\$i)",
+                                  b => "\$i = sqrt(\$i++)",
+                                }, "auto" ) ;
     my $end = times;
     select(STDOUT);
     ok (($end - $start) > 0.05, "benchmarked code ran for over 0.05 seconds");
@@ -418,7 +425,8 @@ sub check_graph {
 {
     select(OUT);
     my $start = times;
-    my $chart = cmpthese( -0.1, { a => "++\$i", b => "\$i = sqrt(\$i++)" } ) ;
+    my $chart = cmpthese( -0.1, { a => "\$i = sqrt(\$i++) * sqrt(\$i)",
+                                  b => "\$i = sqrt(\$i++)" });
     my $end = times;
     select(STDOUT);
     ok (($end - $start) > 0.05, "benchmarked code ran for over 0.05 seconds");

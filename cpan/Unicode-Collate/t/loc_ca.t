@@ -1,8 +1,11 @@
 
 BEGIN {
-    unless ("A" eq pack('U', 0x41)) {
-	print "1..0 # Unicode::Collate " .
-	    "cannot stringify a Unicode code point\n";
+    unless ('A' eq pack('U', 0x41)) {
+	print "1..0 # Unicode::Collate cannot pack a Unicode code point\n";
+	exit 0;
+    }
+    unless (0x41 == unpack('U', 'A')) {
+	print "1..0 # Unicode::Collate cannot get a Unicode code point\n";
 	exit 0;
     }
     if ($ENV{PERL_CORE}) {
@@ -11,11 +14,19 @@ BEGIN {
     }
 }
 
-use Test;
-BEGIN { plan tests => 41 };
-
 use strict;
 use warnings;
+BEGIN { $| = 1; print "1..41\n"; }
+my $count = 0;
+sub ok ($;$) {
+    my $p = my $r = shift;
+    if (@_) {
+	my $x = shift;
+	$p = !defined $x ? !defined $r : !defined $r ? 0 : $r eq $x;
+    }
+    print $p ? "ok" : "not ok", ' ', ++$count, "\n";
+}
+
 use Unicode::Collate::Locale;
 
 ok(1);
@@ -31,11 +42,11 @@ ok($objCa->getlocale, 'ca');
 
 $objCa->change(level => 1);
 
-ok($objCa->lt("c",  "ch"));
-ok($objCa->lt("cz", "ch"));
+ok($objCa->lt("c", "ch"));
+ok($objCa->lt("cz","ch"));
 ok($objCa->gt("d", "ch"));
-ok($objCa->lt("l",  "ll"));
-ok($objCa->lt("lz", "ll"));
+ok($objCa->lt("l", "ll"));
+ok($objCa->lt("lz","ll"));
 ok($objCa->gt("m", "ll"));
 
 # 8
@@ -57,13 +68,13 @@ ok($objCa->eq("Ch", "CH"));
 ok($objCa->eq("ll", "lL"));
 ok($objCa->eq("lL", "Ll"));
 ok($objCa->eq("Ll", "LL"));
-ok($objCa->eq("l${dot}l", "lL"));
-ok($objCa->eq("l${dot}L", "Ll"));
-ok($objCa->eq("L${dot}l", "LL"));
-ok($objCa->eq("ll","l${dot}l"));
-ok($objCa->eq("lL","l${dot}L"));
-ok($objCa->eq("Ll","L${dot}l"));
-ok($objCa->eq("LL","L${dot}L"));
+ok($objCa->eq("ll", "l${dot}l"));
+ok($objCa->eq("lL", "l${dot}l"));
+ok($objCa->eq("lL", "l${dot}L"));
+ok($objCa->eq("Ll", "l${dot}L"));
+ok($objCa->eq("Ll", "L${dot}l"));
+ok($objCa->eq("LL", "L${dot}l"));
+ok($objCa->eq("LL", "L${dot}L"));
 
 # 25
 
@@ -76,13 +87,13 @@ ok($objCa->lt("Ch", "CH"));
 ok($objCa->lt("ll", "lL"));
 ok($objCa->lt("lL", "Ll"));
 ok($objCa->lt("Ll", "LL"));
-ok($objCa->lt("l${dot}l", "lL"));
-ok($objCa->lt("l${dot}L", "Ll"));
-ok($objCa->lt("L${dot}l", "LL"));
-ok($objCa->lt("ll","l${dot}l"));
-ok($objCa->lt("lL","l${dot}L"));
-ok($objCa->lt("Ll","L${dot}l"));
-ok($objCa->lt("LL","L${dot}L"));
+ok($objCa->lt("ll", "l${dot}l"));
+ok($objCa->gt("lL", "l${dot}l"));
+ok($objCa->lt("lL", "l${dot}L"));
+ok($objCa->gt("Ll", "l${dot}L"));
+ok($objCa->lt("Ll", "L${dot}l"));
+ok($objCa->gt("LL", "L${dot}l"));
+ok($objCa->lt("LL", "L${dot}L"));
 
 # 38
 

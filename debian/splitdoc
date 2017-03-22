@@ -35,7 +35,7 @@ while (<>)
 	    {
 		s/\.pm$/.pod/;
 		s/perl-base/perl-doc/;
-		s!/usr/lib/!/usr/share/!;
+		s!/usr/lib/([^/]*/)?perl!/usr/share/perl!;
 		($dir) = m!(.*)/!;
 	    }
 

@@ -1,4 +1,5 @@
 package CGI::Carp;
+use if $] >= 5.019, 'deprecate';
 
 =head1 NAME
 
@@ -33,9 +34,9 @@ with
 
     use CGI::Carp
 
-And the standard warn(), die (), croak(), confess() and carp() calls
-will automagically be replaced with functions that write out nicely
-time-stamped messages to the HTTP server error log.
+The standard warn(), die (), croak(), confess() and carp() calls will
+be replaced with functions that write time-stamped messages to the
+HTTP server error log.
 
 For example:
 
@@ -57,10 +58,10 @@ saying
 
    use CGI::Carp qw(carpout);
 
-The carpout() function requires one argument, which should be a
-reference to an open filehandle for writing errors.  It should be
-called in a C<BEGIN> block at the top of the CGI application so that
-compiler errors will be caught.  Example:
+The carpout() function requires one argument, a reference to an open
+filehandle for writing errors.  It should be called in a C<BEGIN>
+block at the top of the CGI application so that compiler errors will
+be caught.  Example:
 
    BEGIN {
      use CGI::Carp qw(carpout);
@@ -69,14 +70,15 @@ compiler errors will be caught.  Example:
      carpout(LOG);
    }
 
-carpout() does not handle file locking on the log for you at this point.
-Also, note that carpout() does not work with in-memory file handles, although
-a patch would be welcome to address that.
+carpout() does not handle file locking on the log for you at this
+point.  Also, note that carpout() does not work with in-memory file
+handles, although a patch would be welcome to address that.
 
-The real STDERR is not closed -- it is moved to CGI::Carp::SAVEERR.  Some
-servers, when dealing with CGI scripts, close their connection to the
-browser when the script closes STDOUT and STDERR.  CGI::Carp::SAVEERR is there to
-prevent this from happening prematurely.
+The real STDERR is not closed -- it is moved to CGI::Carp::SAVEERR.
+Some servers, when dealing with CGI scripts, close their connection to
+the browser when the script closes STDOUT and STDERR.
+CGI::Carp::SAVEERR is there to prevent this from happening
+prematurely.
 
 You can pass filehandles to carpout() in a variety of ways.  The "correct"
 way according to Tom Christiansen is to pass a reference to a filehandle
@@ -104,17 +106,17 @@ CGI::Carp methods is called to prevent the performance hit.
 
 =head1 MAKING PERL ERRORS APPEAR IN THE BROWSER WINDOW
 
-If you want to send fatal (die, confess) errors to the browser, ask to
-import the special "fatalsToBrowser" subroutine:
+If you want to send fatal (die, confess) errors to the browser, import
+the special "fatalsToBrowser" subroutine:
 
     use CGI::Carp qw(fatalsToBrowser);
     die "Bad error here";
 
-Fatal errors will now be echoed to the browser as well as to the log.  CGI::Carp
-arranges to send a minimal HTTP header to the browser so that even errors that
-occur in the early compile phase will be seen.
-Nonfatal errors will still be directed to the log file only (unless redirected
-with carpout).
+Fatal errors will now be echoed to the browser as well as to the log.
+CGI::Carp arranges to send a minimal HTTP header to the browser so
+that even errors that occur in the early compile phase will be seen.
+Nonfatal errors will still be directed to the log file only (unless
+redirected with carpout).
 
 Note that fatalsToBrowser may B<not> work well with mod_perl version 2.0
 and higher.
@@ -190,13 +192,13 @@ when a C<die()> is done inside an C<eval> body or expression.
 Even though the
 fatalsToBrower support takes precautions to avoid this,
 you still may get the error message printed to STDOUT.
-This may have some undesireable effects when the purpose of doing the
+This may have some undesirable effects when the purpose of doing the
 eval is to determine which of several algorithms is to be used.
 
-By setting C<$CGI::Carp::TO_BROWSER> to 0 you can suppress printing the C<die> messages
-but without all of the complexity of using C<set_die_handler>.
-You can localize this effect to inside C<eval> bodies if this is desireable:
-For example:
+By setting C<$CGI::Carp::TO_BROWSER> to 0 you can suppress printing
+the C<die> messages but without all of the complexity of using
+C<set_die_handler>.  You can localize this effect to inside C<eval>
+bodies if this is desirable: For example:
 
  eval {
    local $CGI::Carp::TO_BROWSER = 0;
@@ -207,12 +209,12 @@ For example:
 
 =head1 MAKING WARNINGS APPEAR AS HTML COMMENTS
 
-It is now also possible to make non-fatal errors appear as HTML
-comments embedded in the output of your program.  To enable this
-feature, export the new "warningsToBrowser" subroutine.  Since sending
-warnings to the browser before the HTTP headers have been sent would
-cause an error, any warnings are stored in an internal buffer until
-you call the warningsToBrowser() subroutine with a true argument:
+It is also possible to make non-fatal errors appear as HTML comments
+embedded in the output of your program.  To enable this feature,
+export the new "warningsToBrowser" subroutine.  Since sending warnings
+to the browser before the HTTP headers have been sent would cause an
+error, any warnings are stored in an internal buffer until you call
+the warningsToBrowser() subroutine with a true argument:
 
     use CGI::Carp qw(fatalsToBrowser warningsToBrowser);
     use CGI qw(:standard);
@@ -320,12 +322,10 @@ Copyright 1995-2002, Lincoln D. Stein.  All rights reserved.
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
 
-Address bug reports and comments to: lstein@cshl.org
-
 =head1 SEE ALSO
 
-Carp, CGI::Base, CGI::BasePlus, CGI::Request, CGI::MiniSvr, CGI::Form,
-CGI::Response
+L<Carp>, L<CGI::Base>, L<CGI::BasePlus>, L<CGI::Request>,
+L<CGI::MiniSvr>, L<CGI::Form>, L<CGI::Response>.
 
 =cut
 
@@ -345,7 +345,7 @@ use File::Spec;
 
 $main::SIG{__WARN__}=\&CGI::Carp::warn;
 
-$CGI::Carp::VERSION     = '3.51';
+$CGI::Carp::VERSION     = '3.64';
 $CGI::Carp::CUSTOM_MSG  = undef;
 $CGI::Carp::DIE_HANDLER = undef;
 $CGI::Carp::TO_BROWSER  = 1;

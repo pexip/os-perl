@@ -24,7 +24,7 @@ Due to a bleadperl optimization (Dave Mitchell, circa apr 04), the
 private flags /1, /2 are gone in blead (for the cases covered)
 
 When the optree stuff was integrated into 5.8.6, these tests failed,
-and were todo'd.  Theyre now done, by version-specific tweaking in
+and were todo'd.  They're now done, by version-specific tweaking in
 mkCheckRex(), therefore the skip is removed too.
 
 =head1 Test Notes
@@ -129,7 +129,8 @@ checkOptree(note   => q{},
 # 2  <0> pushmark s
 # 3  <0> pushmark s
 # 4  <#> gv[*files] s
-# 5  <1> rv2av[t9] lK/1
+# 5  <1> rv2av[t9] lK/1		< 5.019002
+# 5  <1> rv2av[t9] lKM/1	>=5.019002
 # 6  <@> sort lKS*
 # 7  <0> pushmark s
 # 8  <#> gv[*articles] s
@@ -141,7 +142,8 @@ EOT_EOT
 # 2  <0> pushmark s
 # 3  <0> pushmark s
 # 4  <$> gv(*files) s
-# 5  <1> rv2av[t5] lK/1
+# 5  <1> rv2av[t5] lK/1		< 5.019002
+# 5  <1> rv2av[t5] lKM/1	>=5.019002
 # 6  <@> sort lKS*
 # 7  <0> pushmark s
 # 8  <$> gv(*articles) s
@@ -278,8 +280,10 @@ checkOptree(note   => q{},
 # 2  <0> pushmark s
 # 3  <0> pushmark s
 # 4  <#> gv[*age] s
-# 5  <1> rv2hv[t9] lKRM/1
-# 6  <1> keys[t10] lK/1
+# 5  <1> rv2hv[t9] lKRM/1       < 5.019006
+# 5  <1> rv2hv lKRM/1           >=5.019006
+# 6  <1> keys[t10] lK/1		< 5.019002
+# 6  <1> keys[t10] lKM/1	>=5.019002
 # 7  <@> sort lKS*
 # 8  <0> pushmark s
 # 9  <#> gv[*eldest] s
@@ -291,8 +295,10 @@ EOT_EOT
 # 2  <0> pushmark s
 # 3  <0> pushmark s
 # 4  <$> gv(*age) s
-# 5  <1> rv2hv[t3] lKRM/1
-# 6  <1> keys[t4] lK/1
+# 5  <1> rv2hv[t3] lKRM/1       < 5.019006
+# 5  <1> rv2hv lKRM/1           >=5.019006
+# 6  <1> keys[t4] lK/1		< 5.019002
+# 6  <1> keys[t4] lKM/1		>=5.019002
 # 7  <@> sort lKS*
 # 8  <0> pushmark s
 # 9  <$> gv(*eldest) s
@@ -321,7 +327,8 @@ checkOptree(note   => q{},
 # 3  <0> pushmark s
 # 4  <$> const[PV "byage"] s/BARE
 # 5  <#> gv[*class] s
-# 6  <1> rv2av[t4] lK/1
+# 6  <1> rv2av[t4] lK/1		< 5.019002
+# 6  <1> rv2av[t4] lKM/1	>=5.019002
 # 7  <@> sort lKS
 # 8  <0> pushmark s
 # 9  <#> gv[*sortedclass] s
@@ -334,7 +341,8 @@ EOT_EOT
 # 3  <0> pushmark s
 # 4  <$> const(PV "byage") s/BARE
 # 5  <$> gv(*class) s
-# 6  <1> rv2av[t2] lK/1
+# 6  <1> rv2av[t2] lK/1		< 5.019002
+# 6  <1> rv2av[t2] lKM/1	>=5.019002
 # 7  <@> sort lKS
 # 8  <0> pushmark s
 # 9  <$> gv(*sortedclass) s
@@ -400,7 +408,8 @@ checkOptree(name   => q{sort USERSUB LIST },
 # w  <0> pushmark s
 # x  <$> const[PV "backwards"] s/BARE
 # y  <#> gv[*harry] s
-# z  <1> rv2av[t10] lK/1
+# z  <1> rv2av[t10] lK/1	< 5.019002
+# z  <1> rv2av[t10] lKM/1	>=5.019002
 # 10 <@> sort lKS
 # 11 <@> print vK
 # 12 <;> nextstate(main 602 (eval 32):5) v:{
@@ -449,7 +458,8 @@ EOT_EOT
 # w  <0> pushmark s
 # x  <$> const(PV "backwards") s/BARE
 # y  <$> gv(*harry) s
-# z  <1> rv2av[t6] lK/1
+# z  <1> rv2av[t6] lK/1		< 5.019002
+# z  <1> rv2av[t6] lKM/1	>=5.019002
 # 10 <@> sort lKS
 # 11 <@> print vK
 # 12 <;> nextstate(main 602 (eval 32):5) v:{
@@ -500,8 +510,10 @@ checkOptree(name   => q{Compound sort/map Expression },
 # 5  <0> pushmark s
 # 6  <#> gv[*old] s
 # 7  <1> rv2av[t19] lKM/1
-# 8  <@> mapstart lK*
-# 9  <|> mapwhile(other->a)[t20] lK
+# 8  <@> mapstart lK*              < 5.017002
+# 8  <@> mapstart lK               >=5.017002
+# 9  <|> mapwhile(other->a)[t20] lK     < 5.019002
+# 9  <|> mapwhile(other->a)[t20] lKM    >=5.019002
 # a      <0> enter l
 # b      <;> nextstate(main 608 (eval 34):2) v:{
 # c      <0> pushmark s
@@ -513,14 +525,15 @@ checkOptree(name   => q{Compound sort/map Expression },
 # i      <@> leave lKP
 #            goto 9
 # j  <@> sort lKMS*
-# k  <@> mapstart lK*
+# k  <@> mapstart lK*              < 5.017002
+# k  <@> mapstart lK               >=5.017002
 # l  <|> mapwhile(other->m)[t26] lK
 # m      <#> gv[*_] s
 # n      <1> rv2sv sKM/DREFAV,1
-# o      <1> rv2av[t4] sKR/DREFed,1
+# o      <1> rv2av[t4] sKR/1
 # p      <$> const[IV 0] s
 # q      <2> aelem sK/2
-# -      <@> scope lK
+# -      <@> scope lK              < 5.017002
 #            goto l
 # r  <0> pushmark s
 # s  <#> gv[*new] s
@@ -535,8 +548,10 @@ EOT_EOT
 # 5  <0> pushmark s
 # 6  <$> gv(*old) s
 # 7  <1> rv2av[t10] lKM/1
-# 8  <@> mapstart lK*
-# 9  <|> mapwhile(other->a)[t11] lK
+# 8  <@> mapstart lK*              < 5.017002
+# 8  <@> mapstart lK               >=5.017002
+# 9  <|> mapwhile(other->a)[t11] lK     < 5.019002
+# 9  <|> mapwhile(other->a)[t11] lKM    >=5.019002
 # a      <0> enter l
 # b      <;> nextstate(main 608 (eval 34):2) v:{
 # c      <0> pushmark s
@@ -548,14 +563,15 @@ EOT_EOT
 # i      <@> leave lKP
 #            goto 9
 # j  <@> sort lKMS*
-# k  <@> mapstart lK*
+# k  <@> mapstart lK*              < 5.017002
+# k  <@> mapstart lK               >=5.017002
 # l  <|> mapwhile(other->m)[t12] lK
 # m      <$> gv(*_) s
 # n      <1> rv2sv sKM/DREFAV,1
-# o      <1> rv2av[t2] sKR/DREFed,1
+# o      <1> rv2av[t2] sKR/1
 # p      <$> const(IV 0) s
 # q      <2> aelem sK/2
-# -      <@> scope lK
+# -      <@> scope lK              < 5.017002
 #            goto l
 # r  <0> pushmark s
 # s  <$> gv(*new) s
@@ -586,7 +602,8 @@ checkOptree(name   => q{sort other::sub LIST },
 # 3  <0> pushmark s
 # 4  <$> const[PV "other::backwards"] s/BARE
 # 5  <#> gv[*old] s
-# 6  <1> rv2av[t4] lK/1
+# 6  <1> rv2av[t4] lK/1	< 5.019002
+# 6  <1> rv2av[t4] lKM/1	>=5.019002
 # 7  <@> sort lKS
 # 8  <0> pushmark s
 # 9  <#> gv[*new] s
@@ -599,7 +616,8 @@ EOT_EOT
 # 3  <0> pushmark s
 # 4  <$> const(PV "other::backwards") s/BARE
 # 5  <$> gv(*old) s
-# 6  <1> rv2av[t2] lK/1
+# 6  <1> rv2av[t2] lK/1		< 5.019002
+# 6  <1> rv2av[t2] lKM/1	>=5.019002
 # 7  <@> sort lKS
 # 8  <0> pushmark s
 # 9  <$> gv(*new) s
@@ -626,7 +644,8 @@ checkOptree(note   => q{},
 # 3  <0> pushmark s
 # 4  <$> const[PV "other::backwards"] s/BARE
 # 5  <#> gv[*old] s
-# 6  <1> rv2av[t4] lK/1
+# 6  <1> rv2av[t4] lK/1		< 5.019002
+# 6  <1> rv2av[t4] lKM/1	>=5.019002
 # 7  <@> sort lKS
 # 8  <0> pushmark s
 # 9  <#> gv[*new] s
@@ -639,7 +658,8 @@ EOT_EOT
 # 3  <0> pushmark s
 # 4  <$> const(PV "other::backwards") s/BARE
 # 5  <$> gv(*old) s
-# 6  <1> rv2av[t2] lK/1
+# 6  <1> rv2av[t2] lK/1		< 5.019002
+# 6  <1> rv2av[t2] lKM/1	>=5.019002
 # 7  <@> sort lKS
 # 8  <0> pushmark s
 # 9  <$> gv(*new) s
@@ -662,7 +682,8 @@ my ($expect, $expect_nt) = (<<'EOT_EOT', <<'EONT_EONT');
 # 2  <0> pushmark s
 # 3  <0> pushmark s
 # 4  <#> gv[*old] s
-# 5  <1> rv2av[t9] lK/1
+# 5  <1> rv2av[t9] lK/1		< 5.019002
+# 5  <1> rv2av[t9] lKM/1	>=5.019002
 # 6  <@> sort lKS*/STABLE
 # 7  <0> pushmark s
 # 8  <#> gv[*new] s
@@ -674,7 +695,8 @@ EOT_EOT
 # 2  <0> pushmark s
 # 3  <0> pushmark s
 # 4  <$> gv(*old) s
-# 5  <1> rv2av[t5] lK/1
+# 5  <1> rv2av[t5] lK/1		< 5.019002
+# 5  <1> rv2av[t5] lKM/1	>=5.019002
 # 6  <@> sort lKS*/STABLE
 # 7  <0> pushmark s
 # 8  <$> gv(*new) s
@@ -683,10 +705,6 @@ EOT_EOT
 # b  <1> leavesub[1 ref] K/REFC,1
 EONT_EONT
 
-if($] < 5.009) {
-    # 5.8.x doesn't show the /STABLE flag, so massage the golden results.
-    s!/STABLE!!s foreach ($expect, $expect_nt);
-}
 
 checkOptree(note   => q{},
 	    bcopts => q{-exec},
@@ -709,7 +727,8 @@ checkOptree(note   => q{},
 # 2  <0> pushmark s
 # 3  <0> pushmark s
 # 4  <#> gv[*old] s
-# 5  <1> rv2av[t9] lK/1
+# 5  <1> rv2av[t9] lK/1		< 5.019002
+# 5  <1> rv2av[t9] lKM/1	>=5.019002
 # 6  <@> sort lKS*
 # 7  <0> pushmark s
 # 8  <#> gv[*new] s
@@ -721,7 +740,8 @@ EOT_EOT
 # 2  <0> pushmark s
 # 3  <0> pushmark s
 # 4  <$> gv(*old) s
-# 5  <1> rv2av[t5] lK/1
+# 5  <1> rv2av[t5] lK/1		< 5.019002
+# 5  <1> rv2av[t5] lKM/1	>=5.019002
 # 6  <@> sort lKS*
 # 7  <0> pushmark s
 # 8  <$> gv(*new) s
@@ -746,7 +766,8 @@ checkOptree(note   => q{},
 # 2  <0> pushmark s
 # 3  <0> pushmark s
 # 4  <#> gv[*files] s
-# 5  <1> rv2av[t7] lK/1
+# 5  <1> rv2av[t7] lK/1		< 5.019002
+# 5  <1> rv2av[t7] lKM/1	>=5.019002
 # 6  <@> sort lKS*
 # 7  <0> pushmark s
 # 8  <#> gv[*articles] s
@@ -758,7 +779,8 @@ EOT_EOT
 # 2  <0> pushmark s
 # 3  <0> pushmark s
 # 4  <$> gv(*files) s
-# 5  <1> rv2av[t3] lK/1
+# 5  <1> rv2av[t3] lK/1		< 5.019002
+# 5  <1> rv2av[t3] lKM/1	>=5.019002
 # 6  <@> sort lKS*
 # 7  <0> pushmark s
 # 8  <$> gv(*articles) s
@@ -785,12 +807,13 @@ checkOptree(note   => q{},
 # 4  <0> pushmark s
 # 5  <#> gv[*input] s
 # 6  <1> rv2av[t9] lKM/1
-# 7  <@> grepstart lK*
+# 7  <@> grepstart lK*              < 5.017002
+# 7  <@> grepstart lK               >=5.017002
 # 8  <|> grepwhile(other->9)[t10] lK
 # 9      <#> gvsv[*_] s
 # a      <#> gvsv[*_] s
 # b      <2> eq sK/2
-# -      <@> scope sK
+# -      <@> scope sK              < 5.017002
 #            goto 8
 # c  <@> sort lK/NUM
 # d  <0> pushmark s
@@ -805,12 +828,13 @@ EOT_EOT
 # 4  <0> pushmark s
 # 5  <$> gv(*input) s
 # 6  <1> rv2av[t3] lKM/1
-# 7  <@> grepstart lK*
+# 7  <@> grepstart lK*              < 5.017002
+# 7  <@> grepstart lK               >=5.017002
 # 8  <|> grepwhile(other->9)[t4] lK
 # 9      <$> gvsv(*_) s
 # a      <$> gvsv(*_) s
 # b      <2> eq sK/2
-# -      <@> scope sK
+# -      <@> scope sK              < 5.017002
 #            goto 8
 # c  <@> sort lK/NUM
 # d  <0> pushmark s
@@ -864,12 +888,13 @@ checkOptree(note   => q{},
 # 3  <0> pushmark s
 # 4  <#> gv[*input] s
 # 5  <1> rv2av[t7] lKM/1
-# 6  <@> grepstart lK*
+# 6  <@> grepstart lK*              < 5.017002
+# 6  <@> grepstart lK               >=5.017002
 # 7  <|> grepwhile(other->8)[t8] lK
 # 8      <#> gvsv[*_] s
 # 9      <#> gvsv[*_] s
 # a      <2> eq sK/2
-# -      <@> scope sK
+# -      <@> scope sK              < 5.017002
 #            goto 7
 # b  <@> sort K/NUM
 # c  <1> leavesub[1 ref] K/REFC,1
@@ -879,12 +904,13 @@ EOT_EOT
 # 3  <0> pushmark s
 # 4  <$> gv(*input) s
 # 5  <1> rv2av[t2] lKM/1
-# 6  <@> grepstart lK*
+# 6  <@> grepstart lK*              < 5.017002
+# 6  <@> grepstart lK               >=5.017002
 # 7  <|> grepwhile(other->8)[t3] lK
 # 8      <$> gvsv(*_) s
 # 9      <$> gvsv(*_) s
 # a      <2> eq sK/2
-# -      <@> scope sK
+# -      <@> scope sK              < 5.017002
 #            goto 7
 # b  <@> sort K/NUM
 # c  <1> leavesub[1 ref] K/REFC,1
@@ -937,12 +963,13 @@ checkOptree(note   => q{},
 # 3  <0> pushmark s
 # 4  <#> gv[*input] s
 # 5  <1> rv2av[t8] lKM/1
-# 6  <@> grepstart lK*
+# 6  <@> grepstart lK*              < 5.017002
+# 6  <@> grepstart lK               >=5.017002
 # 7  <|> grepwhile(other->8)[t9] lK
 # 8      <#> gvsv[*_] s
 # 9      <#> gvsv[*_] s
 # a      <2> eq sK/2
-# -      <@> scope sK
+# -      <@> scope sK              < 5.017002
 #            goto 7
 # b  <@> sort sK/NUM
 # c  <#> gvsv[*s] s
@@ -954,12 +981,13 @@ EOT_EOT
 # 3  <0> pushmark s
 # 4  <$> gv(*input) s
 # 5  <1> rv2av[t2] lKM/1
-# 6  <@> grepstart lK*
+# 6  <@> grepstart lK*              < 5.017002
+# 6  <@> grepstart lK               >=5.017002
 # 7  <|> grepwhile(other->8)[t3] lK
 # 8      <$> gvsv(*_) s
 # 9      <$> gvsv(*_) s
 # a      <2> eq sK/2
-# -      <@> scope sK
+# -      <@> scope sK              < 5.017002
 #            goto 7
 # b  <@> sort sK/NUM
 # c  <$> gvsv(*s) s

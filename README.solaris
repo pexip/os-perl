@@ -4,7 +4,7 @@ specifically designed to be readable as is.
 
 =head1 NAME
 
-README.solaris - Perl version 5 on Solaris systems
+perlsolaris - Perl version 5 on Solaris systems
 
 =head1 DESCRIPTION
 
@@ -529,6 +529,20 @@ to catch all tmpfs situations.
 =head2 nss_delete core dump from op/pwent or op/grent
 
 See L<perlhpux/"nss_delete core dump from op/pwent or op/grent">.
+
+=head1 CROSS-COMPILATION
+
+Nothing too unusual here.  You can easily do this if you have a 
+cross-compiler available;  A usual Configure invocation when targetting a
+Solaris x86 looks something like this:
+
+    sh ./Configure -des -Dusecrosscompile \
+        -Dcc=i386-pc-solaris2.11-gcc      \
+        -Dsysroot=$SYSROOT                \
+        -Alddlflags=" -Wl,-z,notext"      \
+        -Dtargethost=... # The usual cross-compilation options
+
+The lddlflags addition is the only abnormal bit.
 
 =head1 PREBUILT BINARIES OF PERL FOR SOLARIS.
 

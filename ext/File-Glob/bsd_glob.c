@@ -17,7 +17,7 @@
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+ * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
  * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
@@ -171,7 +171,7 @@ static int	 glob0(const Char *, glob_t *);
 static int	 glob1(Char *, Char *, glob_t *, size_t *);
 static int	 glob2(Char *, Char *, Char *, Char *, Char *, Char *,
 		       glob_t *, size_t *);
-static int	 glob3(Char *, Char *, Char *, Char *, Char *, Char *,
+static int	 glob3(Char *, Char *, Char *, Char *, Char *,
 		       Char *, Char *, glob_t *, size_t *);
 static int	 globextend(const Char *, glob_t *, size_t *);
 static const Char *
@@ -457,6 +457,7 @@ globtilde(const Char *pattern, Char *patbuf, size_t patbuf_len, glob_t *pglob)
 		/*
 		 * handle a plain ~ or ~/ by expanding $HOME
 		 * first and then trying the password file
+		 * or $USERPROFILE on DOSISH systems
 		 */
 		if ((h = getenv("HOME")) == NULL) {
 #ifdef HAS_PASSWD
@@ -465,6 +466,14 @@ globtilde(const Char *pattern, Char *patbuf, size_t patbuf_len, glob_t *pglob)
 				return pattern;
 			else
 				h = pwd->pw_dir;
+#elif DOSISH
+			/*
+			 * When no passwd file, fallback to the USERPROFILE
+			 * environment variable on DOSish systems.
+			 */
+			if ((h = getenv("USERPROFILE")) == NULL) {
+			    return pattern;
+			}
 #else
                         return pattern;
 #endif
@@ -608,12 +617,12 @@ ci_compare(const void *p, const void *q)
 	const char *qq = *(const char **)q;
 	int ci;
 	while (*pp && *qq) {
-		if (toLOWER(*pp) != toLOWER(*qq))
+		if (toFOLD(*pp) != toFOLD(*qq))
 			break;
 		++pp;
 		++qq;
 	}
-	ci = toLOWER(*pp) - toLOWER(*qq);
+	ci = toFOLD(*pp) - toFOLD(*qq);
 	if (ci == 0)
 		return compare(p, q);
 	return ci;
@@ -629,6 +638,8 @@ static int
 glob1(Char *pattern, Char *pattern_last, glob_t *pglob, size_t *limitp)
 {
 	Char pathbuf[MAXPATHLEN];
+
+        assert(pattern < pattern_last);
 
 	/* A null pathname is invalid -- POSIX 1003.1 sect. 2.4. */
 	if (*pattern == BG_EOS)
@@ -650,6 +661,8 @@ glob2(Char *pathbuf, Char *pathbuf_last, Char *pathend, Char *pathend_last,
 	Stat_t sb;
 	Char *p, *q;
 	int anymeta;
+
+        assert(pattern < pattern_last);
 
 	/*
 	 * Loop over pattern segments until end of pattern or until
@@ -690,6 +703,7 @@ glob2(Char *pathbuf, Char *pathbuf_last, Char *pathend, Char *pathend_last,
 		       && *p != BG_SEP2
 #endif
 		       ) {
+                        assert(p < pattern_last);
 			if (ismeta(*p))
 				anymeta = 1;
 			if (q+1 > pathend_last)
@@ -705,6 +719,7 @@ glob2(Char *pathbuf, Char *pathbuf_last, Char *pathend, Char *pathend_last,
 			       || *pattern == BG_SEP2
 #endif
 			       ) {
+                                assert(p < pattern_last);
 				if (pathend+1 > pathend_last)
 					return (1);
 				*pathend++ = *pattern++;
@@ -712,7 +727,7 @@ glob2(Char *pathbuf, Char *pathbuf_last, Char *pathend, Char *pathend_last,
 		} else
 			/* Need expansion, recurse. */
 			return(glob3(pathbuf, pathbuf_last, pathend,
-				     pathend_last, pattern, pattern_last,
+				     pathend_last, pattern,
 				     p, pattern_last, pglob, limitp));
 	}
 	/* NOTREACHED */
@@ -720,10 +735,10 @@ glob2(Char *pathbuf, Char *pathbuf_last, Char *pathend, Char *pathend_last,
 
 static int
 glob3(Char *pathbuf, Char *pathbuf_last, Char *pathend, Char *pathend_last,
-      Char *pattern, Char *pattern_last,
+      Char *pattern,
       Char *restpattern, Char *restpattern_last, glob_t *pglob, size_t *limitp)
 {
-	register Direntry_t *dp;
+	Direntry_t *dp;
 	DIR *dirp;
 	int err;
 	int nocase;
@@ -736,6 +751,9 @@ glob3(Char *pathbuf, Char *pathbuf_last, Char *pathend, Char *pathend_last,
 	 * structures.
 	 */
 	Direntry_t *(*readdirfunc)(DIR*);
+
+        assert(pattern < restpattern_last);
+        assert(restpattern < restpattern_last);
 
 	if (pathend > pathend_last)
 		return (1);
@@ -780,8 +798,8 @@ glob3(Char *pathbuf, Char *pathbuf_last, Char *pathend, Char *pathend_last,
 	else
 		readdirfunc = (Direntry_t *(*)(DIR *))my_readdir;
 	while ((dp = (*readdirfunc)(dirp))) {
-		register U8 *sc;
-		register Char *dc;
+		U8 *sc;
+		Char *dc;
 
 		/* Initial BG_DOT must be matched literally. */
 		if (dp->d_name[0] == BG_DOT && *pattern != BG_DOT)
@@ -831,8 +849,8 @@ glob3(Char *pathbuf, Char *pathbuf_last, Char *pathend, Char *pathend_last,
 static int
 globextend(const Char *path, glob_t *pglob, size_t *limitp)
 {
-	register char **pathv;
-	register int i;
+	char **pathv;
+	int i;
 	STRLEN newsize, len;
 	char *copy;
 	const Char *p;
@@ -880,7 +898,7 @@ globextend(const Char *path, glob_t *pglob, size_t *limitp)
 	pathv[pglob->gl_offs + pglob->gl_pathc] = NULL;
 
 	if ((pglob->gl_flags & GLOB_LIMIT) &&
-	    newsize + *limitp >= ARG_MAX) {
+	    newsize + *limitp >= (unsigned long)ARG_MAX) {
 		errno = 0;
 		return(GLOB_NOSPACE);
 	}
@@ -894,7 +912,7 @@ globextend(const Char *path, glob_t *pglob, size_t *limitp)
  * pattern causes a recursion level.
  */
 static int
-match(register Char *name, register Char *pat, register Char *patend, int nocase)
+match(Char *name, Char *pat, Char *patend, int nocase)
 {
 	int ok, negate_range;
 	Char c, k;
@@ -950,8 +968,8 @@ match(register Char *name, register Char *pat, register Char *patend, int nocase
 void
 bsd_globfree(glob_t *pglob)
 {
-	register int i;
-	register char **pp;
+	int i;
+	char **pp;
 
 	if (pglob->gl_pathv != NULL) {
 		pp = pglob->gl_pathv + pglob->gl_offs;
@@ -964,7 +982,7 @@ bsd_globfree(glob_t *pglob)
 }
 
 static DIR *
-g_opendir(register Char *str, glob_t *pglob)
+g_opendir(Char *str, glob_t *pglob)
 {
 	char buf[MAXPATHLEN];
 
@@ -982,7 +1000,7 @@ g_opendir(register Char *str, glob_t *pglob)
 }
 
 static int
-g_lstat(register Char *fn, Stat_t *sb, glob_t *pglob)
+g_lstat(Char *fn, Stat_t *sb, glob_t *pglob)
 {
 	char buf[MAXPATHLEN];
 
@@ -998,7 +1016,7 @@ g_lstat(register Char *fn, Stat_t *sb, glob_t *pglob)
 }
 
 static int
-g_stat(register Char *fn, Stat_t *sb, glob_t *pglob)
+g_stat(Char *fn, Stat_t *sb, glob_t *pglob)
 {
 	char buf[MAXPATHLEN];
 
@@ -1020,7 +1038,7 @@ g_strchr(Char *str, int ch)
 }
 
 static int
-g_Ctoc(register const Char *str, char *buf, STRLEN len)
+g_Ctoc(const Char *str, char *buf, STRLEN len)
 {
 	while (len--) {
 		if ((*buf++ = (char)*str++) == BG_EOS)
@@ -1031,9 +1049,9 @@ g_Ctoc(register const Char *str, char *buf, STRLEN len)
 
 #ifdef GLOB_DEBUG
 static void
-qprintf(const char *str, register Char *s)
+qprintf(const char *str, Char *s)
 {
-	register Char *p;
+	Char *p;
 
 	(void)printf("%s:\n", str);
 	for (p = s; *p; p++)

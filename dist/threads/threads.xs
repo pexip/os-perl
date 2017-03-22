@@ -14,6 +14,9 @@
 #  if defined(USE_NO_MINGW_SETJMP_TWO_ARGS) || (!defined(__BORLANDC__) && !defined(__MINGW64__))
 #    define setjmp(x) _setjmp(x)
 #  endif
+#  if defined(__MINGW64__)
+#    define setjmp(x) _setjmpex((x), mingw_getsp())
+#  endif
 #endif
 #ifdef HAS_PPPORT_H
 #  define NEED_PL_signals
@@ -387,7 +390,10 @@ MGVTBL ithread_vtbl = {
     0,                  /* clear */
     ithread_mg_free,    /* free */
     0,                  /* copy */
-    ithread_mg_dup      /* dup */
+    ithread_mg_dup,     /* dup */
+#if (PERL_VERSION > 8) || (PERL_VERSION == 8 && PERL_SUBVERSION > 8)
+    0                   /* local */
+#endif
 };
 
 
@@ -465,8 +471,8 @@ S_ithread_run(void * arg)
     ithread *thread = (ithread *)arg;
     int jmp_rc = 0;
     I32 oldscope;
-    int exit_app = 0;   /* Thread terminated using 'exit' */
-    int exit_code = 0;
+    volatile int exit_app = 0;   /* Thread terminated using 'exit' */
+    volatile int exit_code = 0;
     int died = 0;       /* Thread terminated abnormally */
 
     dJMPENV;
@@ -493,7 +499,7 @@ S_ithread_run(void * arg)
 
     {
         AV *params = thread->params;
-        int len = (int)av_len(params)+1;
+        volatile int len = (int)av_len(params)+1;
         int ii;
 
         dSP;
@@ -707,8 +713,11 @@ S_ithread_create(
     }
     PERL_SET_CONTEXT(aTHX);
     if (!thread) {
+        int rc;
         MUTEX_UNLOCK(&MY_POOL.create_destruct_mutex);
-        PerlLIO_write(PerlIO_fileno(Perl_error_log), PL_no_mem, strlen(PL_no_mem));
+        rc = PerlLIO_write(PerlIO_fileno(Perl_error_log),
+                            PL_no_mem, strlen(PL_no_mem));
+        PERL_UNUSED_VAR(rc);
         my_exit(1);
     }
     Zero(thread, 1, ithread);
@@ -982,7 +991,6 @@ ithread_create(...)
         SV *thread_exit_only;
         char *str;
         int idx;
-        unsigned int num_args;
         dMY_POOL;
     CODE:
         if ((items >= 2) && SvROK(ST(1)) && SvTYPE(SvRV(ST(1)))==SVt_PVHV) {
@@ -1412,7 +1420,7 @@ ithread_kill(...)
         /* Set the signal for the thread */
         thread = S_SV_to_ithread(aTHX_ ST(0));
         MUTEX_LOCK(&thread->mutex);
-        if (thread->interp) {
+        if (thread->interp && ! (thread->state & PERL_ITHR_FINISHED)) {
             dTHXa(thread->interp);
             if (PL_psig_pend && PL_psig_ptr[signal]) {
                 PL_psig_pend[signal]++;
@@ -1420,7 +1428,7 @@ ithread_kill(...)
                 no_handler = 0;
             }
         } else {
-            /* Ignore signal to terminated thread */
+            /* Ignore signal to terminated/finished thread */
             no_handler = 0;
         }
         MUTEX_UNLOCK(&thread->mutex);

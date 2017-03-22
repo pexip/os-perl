@@ -1,3 +1,5 @@
+#!/bin/sh
+
 case $PERL_CONFIG_SH in
 '')
 	if test -f config.sh; then TOP=.;
@@ -42,9 +44,6 @@ cat >Makefile <<!GROK!THIS!
 CC = $cc
 BYACC = $byacc
 LDFLAGS = $ldflags
-# XXX Perl malloc temporarily unusable (declaration collisions with stdlib.h)
-#mallocsrc = $mallocsrc
-#mallocobj = $mallocobj
 shellflags = $shellflags
 
 libs = $perllibs
@@ -70,7 +69,7 @@ OPTIMIZE = $optimize
 
 .SUFFIXES: .c \$(OBJ_EXT)
 
-RUN = $run
+RUN =
 PERL = $perl
 
 !GROK!THIS!
@@ -78,32 +77,16 @@ PERL = $perl
 cat >>Makefile <<'!NO!SUBS!'
 
 REALPERL = ../perl
-CCCMD = `sh $(shellflags) cflags "optimize='$(OPTIMIZE)'" $@`
-
-public = a2p$(EXE_EXT) s2p find2perl
-
-private = 
-
-manpages = a2p.man s2p.man
-
-util =
-
-sh = Makefile.SH cflags.SH
-shextract = Makefile cflags
+CCCMD = `sh $(shellflags) ../cflags "optimize='$(OPTIMIZE)'" $@`
 
 pl = find2perl.PL s2p.PL
 plextract = find2perl s2p
-plexe = find2perl.exe s2p.exe
-plc   = find2perl.c s2p.c
-plm   = a2p.loadmap
-
-addedbyconf = $(shextract) $(plextract)
 
 h = EXTERN.h INTERN.h ../config.h ../handy.h hash.h a2p.h str.h util.h
 
-c = hash.c $(mallocsrc) str.c util.c walk.c
+c = hash.c str.c util.c walk.c
 
-obj = hash$(OBJ_EXT) $(mallocobj) str$(OBJ_EXT) util$(OBJ_EXT) walk$(OBJ_EXT)
+obj = hash$(OBJ_EXT) str$(OBJ_EXT) util$(OBJ_EXT) walk$(OBJ_EXT)
 
 lintflags = -phbvxac
 
@@ -111,7 +94,7 @@ lintflags = -phbvxac
 .c$(OBJ_EXT):
 	$(CCCMD) -DPERL_FOR_X2P $*.c
 
-all: $(public) $(private) $(util)
+all: a2p$(EXE_EXT) s2p find2perl
 	@echo " "
 
 a2p$(EXE_EXT): $(obj) a2p$(OBJ_EXT)
@@ -150,13 +133,13 @@ a2p$(OBJ_EXT): a2p.c a2py.c a2p.h EXTERN.h util.h INTERN.h \
 	$(CCCMD) a2p.c
 
 clean:
-	rm -f a2p$(EXE_EXT) psed *$(OBJ_EXT) $(plexe) $(plc) $(plm)
+	rm -f a2p$(EXE_EXT) psed *$(OBJ_EXT) $(plexe) $(plc)
 
 distclean: veryclean
 
 realclean: clean
 	-rmdir .depending
-	rm -f core $(addedbyconf) all malloc.c
+	rm -f core $(plextract) all
 	rm -f $(FIRSTMAKEFILE) $(FIRSTMAKEFILE).old makefile.old
 
 veryclean: realclean
@@ -170,8 +153,8 @@ veryclean: realclean
 lint:
 	lint $(lintflags) $(defs) $(c) > a2p.fuzz
 
-depend: $(mallocsrc) ../makedepend
-	sh ../makedepend MAKE=$(MAKE)
+depend: ../makedepend
+	sh ../makedepend MAKE=$(MAKE) ../cflags
 
 clist:
 	echo $(c) | tr ' ' $(TRNL) >.clist
@@ -179,23 +162,12 @@ clist:
 hlist:
 	echo $(h) | tr ' ' $(TRNL) >.hlist
 
-shlist:
-	echo $(sh) | tr ' ' $(TRNL) >.shlist
-
 $(plextract):
 	$(RUN) $(PERL) -I../lib $@.PL
 
-find2perl: find2perl.PL
+find2perl: find2perl.PL ../config.sh
 
-s2p: s2p.PL
-
-malloc.c: ../malloc.c
-	rm -f malloc.c
-	sed <../malloc.c >malloc.c \
-	    -e 's/"EXTERN.h"/"..\/EXTERN.h"/' \
-	    -e 's/"perl.h"/"..\/perl.h"/' \
-	    -e 's/my_exit/exit/' \
-	    -e 's/MUTEX_[A-Z_]*(&PL_malloc_mutex);//'
+s2p: s2p.PL ../config.sh
 
 # AUTOMATICALLY GENERATED MAKE DEPENDENCIES--PUT NOTHING BELOW THIS LINE
 $(obj):
@@ -203,10 +175,4 @@ $(obj):
 makedepend: depend
 !NO!SUBS!
 $eunicefix Makefile
-case `pwd` in
-*SH)
-    $rm -f ../Makefile
-    $ln Makefile ../Makefile
-    ;;
-esac
 rm -f $firstmakefile

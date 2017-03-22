@@ -58,7 +58,7 @@ while (<DATA>)
       } elsif ($f =~ /^(numify|length|as_number|as_hex|as_bin)$/) {
         $try .= "\$x->$f();";
       # some unary ops (test the fxxx form, since that is done by AUTOLOAD)
-      } elsif ($f =~ /^f(nan|sstr|neg|floor|ceil|abs)$/) {
+      } elsif ($f =~ /^f(nan|sstr|neg|floor|ceil|int|abs)$/) {
         $try .= "\$x->f$1();";
       # some is_xxx test function	
       } elsif ($f =~ /^is_(zero|one|negative|positive|odd|even|nan|int)$/) {
@@ -256,6 +256,14 @@ $class->accuracy(undef); $class->precision(undef);	# reset
 $x = $class->new('0.008'); $y = $class->new(2);
 $x->bdiv(3,$y);
 is ($x,'0.0027');
+
+###############################################################################
+# Verify that numify() returns a normalized value, and underflows and
+# overflows when given "extreme" values.
+
+like($class->new("12345e67")->numify(), qr/^1\.2345e\+?0*71$/);
+like($class->new("1e-9999")->numify(), qr/^\+?0$/);              # underflow
+unlike($class->new("1e9999")->numify(), qr/^1(\.0*)?e\+?9+$/);   # overflow
 
 ###############################################################################
 # fsqrt() with set global A/P or A/P enabled on $x, also a test whether fsqrt()
@@ -637,15 +645,12 @@ hexNaN:NaN
 -5:-0b101
 &numify
 # uses bsstr() so 5 => 5e+0 to be compatible w/ Perls output
-0:0e+1
-+1:1e+0
-1234:1234e+0
-NaN:NaN
-+inf:inf
--inf:-inf
--5:-5e+0
-100:1e+2
--100:-1e+2
+0:0
++1:1
+1234:1234
+-5:-5
+100:100
+-100:-100
 &fnan
 abc:NaN
 2:NaN
@@ -1820,3 +1825,12 @@ abc:NaN
 -51:-51
 -51.2:-51
 12.2:13
+&fint
+0:0
+NaN:NaN
++inf:inf
+-inf:-inf
+1:1
+-51:-51
+-51.2:-51
+12.2:12

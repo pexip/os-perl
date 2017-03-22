@@ -10,7 +10,7 @@ BEGIN {
     require 'test.pl';		# we use runperl from 'test.pl', so can't use Test::More
 }
 
-plan tests => 159;
+plan tests => 163;
 
 require_ok("B::Concise");
 
@@ -413,8 +413,12 @@ like($out, qr/FUNC: \*ExtUtils::Mksymlists::_write_vms/,
 $out = runperl ( switches => ["-MO=Concise,-stash=Data::Dumper,-src,-exec"],
 		 prog => '-e 1', stderr => 1 );
 
-like($out, qr/FUNC: \*Data::Dumper::format_refaddr/,
-     "stash rendering loads package as needed");
+SKIP: {
+    skip "Data::Dumper is statically linked", 1
+	if $Config{static_ext} =~ m|\bData/Dumper\b|;
+    like($out, qr/FUNC: \*Data::Dumper::format_refaddr/,
+	"stash rendering loads package as needed");
+}
 
 my $prog = q{package FOO; sub bar { print q{bar} } package main; FOO::bar(); };
 
@@ -447,5 +451,57 @@ ok index $out=~s/\r\n/\n/gr=~s/gvsv\(\*_\)/gvsv[*_]/r, <<'end'=~s/\r\n/\n/gr =>>
                 `-<5>print-+-<3>pushmark
                            `-ex-rv2sv---<4>gvsv[*_]
 end
+
+# -nobanner
+$out =
+ runperl(
+  switches => ["-MO=Concise,-nobanner,foo"], prog=>'sub foo{}', stderr => 1
+ );
+unlike $out, 'main::foo', '-nobanner';
+
+# glob
+$out =
+ runperl(
+  switches => ["-MO=Concise"], prog=>'glob(q{.})', stderr => 1
+ );
+like $out, '\*<none>::', 'glob(q{.})';
+
+# Test op_other in -debug
+$out = runperl(
+    switches => ["-MO=Concise,-debug,xx"],
+    prog => q{sub xx { if ($a) { return $b } }},
+    stderr => 1,
+);
+
+$out =~s/\r\n/\n/g;
+
+# Look for OP_AND
+$end = <<'EOF';
+LOGOP \(0x\w+\)
+	op_next		0x\w+
+	op_other	(0x\w+)
+	op_sibling	0
+	op_ppaddr	PL_ppaddr\[OP_AND\]
+EOF
+
+$end =~ s/\r\n/\n/g;
+
+like $out, $end, 'OP_AND has op_other';
+
+# like(..) above doesn't fill in $1
+$out =~ $end;
+my $next = $1;
+
+# Check it points to a PUSHMARK
+$end = <<'EOF';
+OP \(<NEXT>\)
+	op_next		0x\w+
+	op_sibling	0x\w+
+	op_ppaddr	PL_ppaddr\[OP_PUSHMARK\]
+EOF
+
+$end =~ s/<NEXT>/$next/;
+
+like $out, $end, 'OP_AND->op_other points correctly';
 
 __END__

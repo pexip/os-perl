@@ -2181,7 +2181,7 @@ int yyparse (void);
 #define YYERROR goto yyerrlab
 
 #if YYDEBUG
-#  if defined(WIN32) && !defined(__BORLANDC__)
+#  if defined(WIN32)
 EXTERN_C _CRTIMP char *getenv(const char *);
 #  else
 EXTERN_C char *getenv(const char *);
@@ -2191,9 +2191,9 @@ EXTERN_C char *getenv(const char *);
 int
 yyparse(void)
 {
-    register int yym, yyn, yystate;
+    int yym, yyn, yystate;
 #if YYDEBUG
-    register const char *yys;
+    const char *yys;
 
     if ((yys = getenv("YYDEBUG")))
     {

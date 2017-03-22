@@ -10,7 +10,7 @@ $|  = 1;
 use warnings;
 use Config;
 
-plan tests => 114;
+plan tests => 153;
 
 my $Perl = which_perl();
 
@@ -105,6 +105,15 @@ EOC
 ok( !eval { open my $f, '<&', $afile; 1; },    '<& on a non-filehandle' );
 like( $@, qr/Bad filehandle:\s+$afile/,          '       right error' );
 
+ok( !eval { *some_glob = 1; open my $f, '<&', *some_glob; 1; },    '<& on a non-filehandle glob' );
+like( $@, qr/Bad filehandle:\s+some_glob/,          '       right error' );
+
+{
+    use utf8;
+    use open qw( :utf8 :std );
+    ok( !eval { use utf8; *ǡﬁlḛ = 1; open my $f, '<&', *ǡﬁlḛ; 1; },    '<& on a non-filehandle glob' );
+    like( $@, qr/Bad filehandle:\s+ǡﬁlḛ/u,          '       right error' );
+}
 
 # local $file tests
 {
@@ -224,6 +233,10 @@ like( $@, qr/Bad filehandle:\s+$afile/,          '       right error' );
 
     # used to try to open a file [perl #17830]
     ok( open(my $stdin,  "<&", fileno STDIN),   'dup fileno(STDIN) into lexical fh') or _diag $!;
+
+    fileno(STDIN) =~ /(.)/;
+    ok open($stdin, "<&", $1), 'open ... "<&", $magical_fileno',
+	||  _diag $!;
 }
 
 SKIP: {
@@ -258,7 +271,7 @@ SKIP: {
 
     open($fh1{k}, "TEST");
     gimme($fh1{k});
-    like($@, qr/<\$fh1{...}> line 1\./, "autoviv fh package helem");
+    like($@, qr/<\$fh1\{...}> line 1\./, "autoviv fh package helem");
 
     my @fh2;
     open($fh2[0], "TEST");
@@ -268,7 +281,12 @@ SKIP: {
     my %fh3;
     open($fh3{k}, "TEST");
     gimme($fh3{k});
-    like($@, qr/<\$fh3{...}> line 1\./, "autoviv fh lexical helem");
+    like($@, qr/<\$fh3\{...}> line 1\./, "autoviv fh lexical helem");
+
+    local $/ = *F;  # used to cause an assertion failure
+    gimme($fh3{k});
+    like($@, qr/<\$fh3\{...}> chunk 2\./,
+	'<...> line 1 when $/ is set to a glob');
 }
     
 SKIP: {
@@ -309,6 +327,15 @@ fresh_perl_is(
 
 eval { open $99, "foo" };
 like($@, qr/Modification of a read-only value attempted/, "readonly fh");
+# But we do not want that exception applying to close(), since it does not
+# modify the fh.
+eval {
+   no warnings "uninitialized";
+   # make sure $+ is undefined
+   "a" =~ /(b)?/;
+   close $+
+};
+is($@, '', 'no "Modification of a read-only value" when closing');
 
 # [perl#73626] mg_get wasn't run on the pipe arg
 
@@ -359,3 +386,90 @@ SKIP: {
     ok( eval { $fh->autoflush(1); 1 }, '$fh->autoflush(1) lives' );
     ok( $INC{'IO/File.pm'}, "IO::File now loaded" );
 }
+
+sub _117941 { package _117941; open my $a, "TEST" }
+delete $::{"_117941::"};
+_117941();
+pass("no crash when open autovivifies glob in freed package");
+
+# [perl #117265] check for embedded nul in pathnames, allow ending \0 though
+{
+    my $WARN;
+    local $SIG{__WARN__} = sub { $WARN = shift };
+    my $temp = tempfile();
+    my $temp_match = quotemeta $temp;
+
+    # create the file, so we can check nothing actually touched it
+    open my $temp_fh, ">", $temp;
+    close $temp_fh;
+    ok(utime(time()-10, time(), $temp), "set mtime to a known value");
+    ok(chmod(0666, $temp), "set mode to a known value");
+    my ($final_mode, $final_mtime) = (stat $temp)[2, 9];
+
+    my $fn = "$temp\0.invalid";
+    my $fno = bless \(my $fn2 = "$temp\0.overload"), "OverloadTest";
+    is(open(I, $fn), undef, "open with nul in pathnames since 5.18 [perl #117265]");
+    like($WARN, qr/^Invalid \\0 character in pathname for open: $temp_match\\0\.invalid/,
+         "warn on embedded nul"); $WARN = '';
+    is(open(I, $fno), undef, "open with nul in pathnames since 5.18 [perl #117265] (overload)");
+    like($WARN, qr/^Invalid \\0 character in pathname for open: $temp_match\\0\.overload/,
+         "warn on embedded nul"); $WARN = '';
+
+    is(chmod(0444, $fn), 0, "chmod fails with \\0 in name");
+    like($WARN, qr/^Invalid \\0 character in pathname for chmod: $temp_match\\0\.invalid/,
+         "also on chmod"); $WARN = '';
+
+    is(chmod(0444, $fno), 0, "chmod fails with \\0 in name (overload)");
+    like($WARN, qr/^Invalid \\0 character in pathname for chmod: $temp_match\\0\.overload/,
+         "also on chmod"); $WARN = '';
+
+    is (glob($fn), undef, "glob fails with \\0 in name");
+    like($WARN, qr/^Invalid \\0 character in pattern for glob: $temp_match\\0\.invalid/,
+         "also on glob"); $WARN = '';
+
+    is (glob($fno), undef, "glob fails with \\0 in name (overload)");
+    like($WARN, qr/^Invalid \\0 character in pattern for glob: $temp_match\\0\.overload/,
+         "also on glob"); $WARN = '';
+
+    {
+        no warnings 'syscalls';
+        $WARN = '';
+        is(open(I, $fn), undef, "open with nul with no warnings syscalls");
+        is($WARN, '', "ignore warning on embedded nul with no warnings syscalls");
+    }
+
+    use Errno 'ENOENT';
+    # check handling of multiple arguments, which the original patch
+    # mis-handled
+    $! = 0;
+    is (unlink($fn, $fn), 0, "check multiple arguments to unlink");
+    is($!+0, ENOENT, "check errno");
+    $! = 0;
+    is (chmod(0644, $fn, $fn), 0, "check multiple arguments to chmod");
+    is($!+0, ENOENT, "check errno");
+    $! = 0;
+    is (utime(time, time, $fn, $fn), 0, "check multiple arguments to utime");
+    is($!+0, ENOENT, "check errno");
+    SKIP: {
+        skip "no chown", 2 unless $Config{d_chown};
+        $! = 0;
+        is(chown(-1, -1, $fn, $fn), 0, "check multiple arguments to chown");
+        is($!+0, ENOENT, "check errno");
+    }
+
+    is (unlink($fn), 0, "unlink fails with \\0 in name");
+    like($WARN, qr/^Invalid \\0 character in pathname for unlink: $temp_match\\0\.invalid/,
+         "also on unlink"); $WARN = '';
+
+    is (unlink($fno), 0, "unlink fails with \\0 in name (overload)");
+    like($WARN, qr/^Invalid \\0 character in pathname for unlink: $temp_match\\0\.overload/,
+         "also on unlink"); $WARN = '';
+
+    ok(-f $temp, "nothing removed the temp file");
+    is((stat $temp)[2], $final_mode, "nothing changed its mode");
+    is((stat $temp)[9], $final_mtime, "nothing changes its mtime");
+}
+
+
+package OverloadTest;
+use overload '""' => sub { ${$_[0]} };

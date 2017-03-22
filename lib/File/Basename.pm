@@ -54,7 +54,7 @@ our(@ISA, @EXPORT, $VERSION, $Fileparse_fstype, $Fileparse_igncase);
 require Exporter;
 @ISA = qw(Exporter);
 @EXPORT = qw(fileparse fileparse_set_fstype basename dirname);
-$VERSION = "2.82";
+$VERSION = "2.85";
 
 fileparse_set_fstype($^O);
 
@@ -64,14 +64,14 @@ fileparse_set_fstype($^O);
 =item C<fileparse>
 X<fileparse>
 
-    my($filename, $directories, $suffix) = fileparse($path);
-    my($filename, $directories, $suffix) = fileparse($path, @suffixes);
-    my $filename                         = fileparse($path, @suffixes);
+    my($filename, $dirs, $suffix) = fileparse($path);
+    my($filename, $dirs, $suffix) = fileparse($path, @suffixes);
+    my $filename                  = fileparse($path, @suffixes);
 
-The C<fileparse()> routine divides a file path into its $directories, $filename
+The C<fileparse()> routine divides a file path into its $dirs, $filename
 and (optionally) the filename $suffix.
 
-$directories contains everything up to and including the last
+$dirs contains everything up to and including the last
 directory separator in the $path including the volume (if applicable).
 The remainder of the $path is the $filename.
 
@@ -91,11 +91,11 @@ portion is removed and becomes the $suffix.
      # On Unix returns ("baz", "/foo/bar/", ".txt")
      fileparse("/foo/bar/baz.txt", qr/\.[^.]*/);
 
-If type is non-Unix (see C<fileparse_set_fstype()>) then the pattern
+If type is non-Unix (see L</fileparse_set_fstype>) then the pattern
 matching for suffix removal is performed case-insensitively, since
 those systems are not case-sensitive when opening existing files.
 
-You are guaranteed that C<$directories . $filename . $suffix> will
+You are guaranteed that C<$dirs . $filename . $suffix> will
 denote the same location as the original $path.
 
 =cut
@@ -215,7 +215,7 @@ sub basename {
   my($path) = shift;
 
   # From BSD basename(1)
-  # The basename utility deletes any prefix ending with the last slash `/'
+  # The basename utility deletes any prefix ending with the last slash '/'
   # character present in string (after first stripping trailing slashes)
   _strip_trailing_sep($path);
 
@@ -250,10 +250,10 @@ C<fileparse()>.
 Only on VMS (where there is no ambiguity between the file and directory
 portions of a path) and AmigaOS (possibly due to an implementation quirk in
 this module) does C<dirname()> work like C<fileparse($path)>, returning just the
-$directories.
+$dirs.
 
     # On VMS and AmigaOS
-    my $directories = dirname($path);
+    my $dirs = dirname($path);
 
 When using Unix or MSDOS syntax this emulates the C<dirname(1)> shell function
 which is subtly different from how C<fileparse()> works.  It returns all but

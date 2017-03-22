@@ -27,7 +27,7 @@ BEGIN {
 }
 
 
-$VERSION = '1.19';
+$VERSION = '1.25';
 @ISA = ();
 
 $MATCH_SUPERS = 1;
@@ -194,7 +194,7 @@ sub maketext {
     my($handle, $phrase) = splice(@_,0,2);
     Carp::confess('No handle/phrase') unless (defined($handle) && defined($phrase));
 
-    # backup $@ in case it it's still being used in the calling code.
+    # backup $@ in case it's still being used in the calling code.
     # If no failures, we'll re-set it back to what it was later.
     my $at = $@;
 
@@ -344,7 +344,7 @@ sub _langtag_munging {
     my($base_class, @languages) = @_;
 
     # We have all these DEBUG statements because otherwise it's hard as hell
-    # to diagnose ifwhen something goes wrong.
+    # to diagnose if/when something goes wrong.
 
     DEBUG and warn 'Lgs1: ', map("<$_>", @languages), "\n";
 
@@ -570,6 +570,7 @@ sub _compile {
                             $c[-1] = ''; # reuse this slot
                         }
                         else {
+                            $c[-1] =~ s/\\\\/\\/g;
                             push @code, ' $c[' . $#c . "],\n";
                             push @c, ''; # new chunk
                         }
@@ -625,21 +626,9 @@ sub _compile {
                         # 0-length method name means to just interpolate:
                         push @code, ' (';
                     }
-                    elsif($m =~ /^\w+(?:\:\:\w+)*$/s
-                            and $m !~ m/(?:^|\:)\d/s
-                        # exclude starting a (sub)package or symbol with a digit
+                    elsif($m =~ /^\w+$/s
+                        # exclude anything fancy, especially fully-qualified module names
                     ) {
-                        # Yes, it even supports the demented (and undocumented?)
-                        #  $obj->Foo::bar(...) syntax.
-                        $target->_die_pointing(
-                            $string_to_compile, q{Can't use "SUPER::" in a bracket-group method},
-                            2 + length($c[-1])
-                        )
-                        if $m =~ m/^SUPER::/s;
-                        # Because for SUPER:: to work, we'd have to compile this into
-                        #  the right package, and that seems just not worth the bother,
-                        #  unless someone convinces me otherwise.
-
                         push @code, ' $_[0]->' . $m . '(';
                     }
                     else {
@@ -693,7 +682,9 @@ sub _compile {
             elsif(substr($1,0,1) ne '~') {
                 # it's stuff not containing "~" or "[" or "]"
                 # i.e., a literal blob
-                $c[-1] .= $1;
+                my $text = $1;
+                $text =~ s/\\/\\\\/g;
+                $c[-1] .= $text;
 
             }
             elsif($1 eq '~~') { # "~~"
@@ -731,7 +722,9 @@ sub _compile {
             else {
                 # It's a "~X" where X is not a special character.
                 # Consider it a literal ~ and X.
-                $c[-1] .= $1;
+                my $text = $1;
+                $text =~ s/\\/\\\\/g;
+                $c[-1] .= $text;
             }
         }
     }

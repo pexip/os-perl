@@ -1,5 +1,7 @@
 package Module::Build;
 
+use if $] >= 5.019, 'deprecate';
+
 # This module doesn't do much of anything itself, it inherits from the
 # modules that do the real work.  The only real thing it has to do is
 # figure out which OS-specific module to pull in.  Many of the
@@ -16,9 +18,8 @@ use Module::Build::Base;
 
 use vars qw($VERSION @ISA);
 @ISA = qw(Module::Build::Base);
-$VERSION = '0.3800';
+$VERSION = '0.4205';
 $VERSION = eval $VERSION;
-
 
 # Inserts the given module into the @ISA hierarchy between
 # Module::Build and its immediate parent
@@ -94,10 +95,7 @@ C<ExtUtils::MakeMaker>.  Developers may alter the behavior of the
 module through subclassing in a much more straightforward way than
 with C<MakeMaker>.  It also does not require a C<make> on your system
 - most of the C<Module::Build> code is pure-perl and written in a very
-cross-platform way.  In fact, you don't even need a shell, so even
-platforms like MacOS (traditional) can use it fairly easily.  Its only
-prerequisites are modules that are included with perl 5.6.0, and it
-works fine on perl 5.005 if you can install a few additional modules.
+cross-platform way.
 
 See L<"MOTIVATIONS"> for more comparisons between C<ExtUtils::MakeMaker>
 and C<Module::Build>.
@@ -139,7 +137,7 @@ You can run the 'help' action for a complete list of actions.
 
 =head1 GUIDE TO DOCUMENTATION
 
-The documentation for C<Module::Build> is broken up into three sections:
+The documentation for C<Module::Build> is broken up into sections:
 
 =over
 
@@ -378,6 +376,12 @@ installed if the install paths can be determined from values in
 C<Config.pm>.  You can also supply or override install paths on the
 command line by specifying C<install_path> values for the C<binhtml>
 and/or C<libhtml> installation targets.
+
+With an optional C<html_links> argument set to a false value, you can
+skip the search for other documentation to link to, because that can
+waste a lot of time if there aren't any links to generate anyway:
+
+  ./Build html --html_links 0
 
 =item install
 
@@ -747,7 +751,7 @@ executed build actions.
 
 When Module::Build starts up, it will look first for a file,
 F<$ENV{HOME}/.modulebuildrc>.  If it's not found there, it will look
-in the the F<.modulebuildrc> file in the directories referred to by
+in the F<.modulebuildrc> file in the directories referred to by
 the environment variables C<HOMEDRIVE> + C<HOMEDIR>, C<USERPROFILE>,
 C<APPDATA>, C<WINDIR>, C<SYS$LOGIN>.  If the file exists, the options
 specified there will be used as defaults, as if they were typed on the
@@ -878,7 +882,7 @@ parameter as follows:
 
   lib     => installprivlib  installsitelib      installvendorlib
   arch    => installarchlib  installsitearch     installvendorarch
-  script  => installscript   installsitebin      installvendorbin
+  script  => installscript   installsitescript   installvendorscript
   bin     => installbin      installsitebin      installvendorbin
   bindoc  => installman1dir  installsiteman1dir  installvendorman1dir
   libdoc  => installman3dir  installsiteman3dir  installvendorman3dir
@@ -967,24 +971,28 @@ platform you're installing on.
 =item prefix
 
 Provided for compatibility with C<ExtUtils::MakeMaker>'s PREFIX argument.
-C<prefix> should be used when you wish Module::Build to install your
-modules, documentation and scripts in the same place
-C<ExtUtils::MakeMaker> does.
+C<prefix> should be used when you want Module::Build to install your
+modules, documentation, and scripts in the same place as
+C<ExtUtils::MakeMaker>'s PREFIX mechanism.
 
 The following are equivalent.
 
     perl Build.PL --prefix /tmp/foo
     perl Makefile.PL PREFIX=/tmp/foo
 
-Because of the very complex nature of the prefixification logic, the
+Because of the complex nature of the prefixification logic, the
 behavior of PREFIX in C<MakeMaker> has changed subtly over time.
 Module::Build's --prefix logic is equivalent to the PREFIX logic found
 in C<ExtUtils::MakeMaker> 6.30.
 
-If you do not need to retain compatibility with C<ExtUtils::MakeMaker> or
+The maintainers of C<MakeMaker> do understand the troubles with the
+PREFIX mechanism, and added INSTALL_BASE support in version 6.31 of
+C<MakeMaker>, which was released in 2006.
+
+If you don't need to retain compatibility with old versions (pre-6.31) of C<ExtUtils::MakeMaker> or
 are starting a fresh Perl installation we recommend you use
 C<install_base> instead (and C<INSTALL_BASE> in C<ExtUtils::MakeMaker>).
-See L<Module::Build::Cookbook/Instaling in the same location as
+See L<Module::Build::Cookbook/Installing in the same location as
 ExtUtils::MakeMaker> for further information.
 
 
@@ -1046,14 +1054,14 @@ perl.
 It is risky to make major changes to C<MakeMaker>, since it does so many
 things, is so important, and generally works.  C<Module::Build> is an
 entirely separate package so that I can work on it all I want, without
-worrying about backward compatibility.
+worrying about backward compatibility with C<MakeMaker>.
 
 =item *
 
 Finally, Perl is said to be a language for system administration.
 Could it really be the case that Perl isn't up to the task of building
-and installing software?  Even if that software is a bunch of stupid
-little C<.pm> files that just need to be copied from one place to
+and installing software?  Even if that software is a bunch of
+C<.pm> files that just need to be copied from one place to
 another?  My sense was that we could design a system to accomplish
 this in a flexible, extensible, and friendly manner.  Or die trying.
 
@@ -1083,7 +1091,7 @@ Bug reports are also welcome at
 <http://rt.cpan.org/NoAuth/Bugs.html?Dist=Module-Build>.
 
 The latest development version is available from the Git
-repository at <https://github.com/dagolden/module-build/>
+repository at <https://github.com/Perl-Toolchain-Gang/Module-Build>
 
 
 =head1 COPYRIGHT
