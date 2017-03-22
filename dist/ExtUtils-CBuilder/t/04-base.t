@@ -1,7 +1,7 @@
 #! perl -w
 
 use strict;
-use Test::More tests => 50;
+use Test::More tests => 64;
 use Config;
 use Cwd;
 use File::Path qw( mkpath );
@@ -45,8 +45,8 @@ isa_ok( $base, 'ExtUtils::CBuilder::Base' );
 }
 
 {
-    my $path_to_perl = $^O eq 'VMS' 
-                       ? 'perl_root:[000000]perl.exe' 
+    my $path_to_perl = $^O eq 'VMS'
+                       ? 'perl_root:[000000]perl.exe'
                        : File::Spec->catfile( '', qw| usr bin perl | );
     local $^X = $path_to_perl;
     is(
@@ -194,7 +194,7 @@ is_deeply(
 $seen_ref = { map {$_ => 1} $base->arg_share_object_file('alpha') };
 my %exp = map {$_ => 1} $base->split_like_shell($base->{config}{lddlflags});
 $exp{'-o'} = 1;
-$exp{'alpha'} = 1; 
+$exp{'alpha'} = 1;
 
 is_deeply(
     $seen_ref,
@@ -223,7 +223,7 @@ is_deeply( \%split_seen, \%exp,
     $cwd = cwd();
     my $tdir = tempdir(CLEANUP => 1);
     my $subdir = File::Spec->catdir(
-        $tdir, qw| alpha beta gamma delta epsilon 
+        $tdir, qw| alpha beta gamma delta epsilon
             zeta eta theta iota kappa lambda |
     );
     mkpath($subdir, { mode => 0711 } );
@@ -264,7 +264,13 @@ is_deeply( \%split_seen, \%exp,
     touch_file($exporter);
     $rv = $base->perl_src();
     ok( -d $rv, "perl_src(): returned a directory" );
-    is( uc($rv), uc(Cwd::realpath($subdir)), "perl_src(): identified directory" );
+    my $rp = Cwd::realpath($subdir);
+  SKIP: {
+      if ($^O eq 'dec_osf' && $rp =~ m[^/cluster/members/]) {
+          skip "Tru64 cluster filesystem", 1;
+      } # SKIP
+      is( uc($rv), uc($rp), "perl_src(): identified directory" );
+    }
     is( $capture, q{}, "perl_src(): no warning, as expected" );
 
     chdir $cwd
@@ -327,6 +333,29 @@ is_deeply( $mksymlists_args,
     },
     "_prepare_mksymlists_args(): got expected arguments for Mksymlists",
 );
+
+my %testvars = (
+    CFLAGS  => 'ccflags',
+    LDFLAGS => 'ldflags',
+);
+
+while (my ($VAR, $var) = each %testvars) {
+    local $ENV{$VAR};
+    $base = ExtUtils::CBuilder::Base->new( quiet => 1 );
+    ok( $base, "ExtUtils::CBuilder::Base->new() returned true value" );
+    isa_ok( $base, 'ExtUtils::CBuilder::Base' );
+    like($base->{config}{$var}, qr/\Q$Config{$var}/,
+        "honours $var from Config.pm");
+
+    $ENV{$VAR} = "-foo -bar";
+    $base = ExtUtils::CBuilder::Base->new( quiet => 1 );
+    ok( $base, "ExtUtils::CBuilder::Base->new() returned true value" );
+    isa_ok( $base, 'ExtUtils::CBuilder::Base' );
+    like($base->{config}{$var}, qr/\Q$ENV{$VAR}/,
+        "honours $VAR from the environment");
+    like($base->{config}{$var}, qr/\Q$Config{$var}/,
+        "doesn't override $var from Config.pm with $VAR from the environment");
+}
 
 #####
 

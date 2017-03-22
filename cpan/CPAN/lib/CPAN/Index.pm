@@ -1,11 +1,11 @@
 package CPAN::Index;
 use strict;
 use vars qw($LAST_TIME $DATE_OF_02 $DATE_OF_03 $HAVE_REANIMATED $VERSION);
-$VERSION = "1.9600";
+$VERSION = "1.9601";
 @CPAN::Index::ISA = qw(CPAN::Debug);
 $LAST_TIME ||= 0;
 $DATE_OF_03 ||= 0;
-# use constant PROTOCOL => "2.0"; # outcommented to avoid warning on upgrade from 1.57
+# use constant PROTOCOL => "2.0"; # commented out to avoid warning on upgrade from 1.57
 sub PROTOCOL { 2.0 }
 
 #-> sub CPAN::Index::force_reload ;
@@ -123,74 +123,75 @@ sub reanimate_build_dir {
     my $i = 0;
     my $painted = 0;
     my $restored = 0;
+    my $start = CPAN::FTP::_mytime();
     my @candidates = map { $_->[0] }
         sort { $b->[1] <=> $a->[1] }
             map { [ $_, -M File::Spec->catfile($d,$_) ] }
-                grep {/\.yml$/} readdir $dh;
-    unless (@candidates) {
-        $CPAN::Frontend->myprint("Build_dir empty, nothing to restore\n");
-        return;
-    }
-    $CPAN::Frontend->myprint
-        (sprintf("Going to read %d yaml file%s from %s/\n",
-                 scalar @candidates,
-                 @candidates==1 ? "" : "s",
-                 $CPAN::Config->{build_dir}
-                ));
-    my $start = CPAN::FTP::_mytime();
-  DISTRO: for $i (0..$#candidates) {
-        my $dirent = $candidates[$i];
-        my $y = eval {CPAN->_yaml_loadfile(File::Spec->catfile($d,$dirent))};
-        if ($@) {
-            warn "Error while parsing file '$dirent'; error: '$@'";
-            next DISTRO;
-        }
-        my $c = $y->[0];
-        if ($c && $c->{perl} && $c->{distribution} && CPAN->_perl_fingerprint($c->{perl})) {
-            my $key = $c->{distribution}{ID};
-            for my $k (keys %{$c->{distribution}}) {
-                if ($c->{distribution}{$k}
-                    && ref $c->{distribution}{$k}
-                    && UNIVERSAL::isa($c->{distribution}{$k},"CPAN::Distrostatus")) {
-                    $c->{distribution}{$k}{COMMANDID} = $i - @candidates;
-                }
+                grep {/(.+)\.yml$/ && -d File::Spec->catfile($d,$1)} readdir $dh;
+    if ( @candidates ) {
+        $CPAN::Frontend->myprint
+            (sprintf("Reading %d yaml file%s from %s/\n",
+                    scalar @candidates,
+                    @candidates==1 ? "" : "s",
+                    $CPAN::Config->{build_dir}
+                    ));
+      DISTRO: for $i (0..$#candidates) {
+            my $dirent = $candidates[$i];
+            my $y = eval {CPAN->_yaml_loadfile(File::Spec->catfile($d,$dirent))};
+            if ($@) {
+                warn "Error while parsing file '$dirent'; error: '$@'";
+                next DISTRO;
             }
+            my $c = $y->[0];
+            if ($c && $c->{perl} && $c->{distribution} && CPAN->_perl_fingerprint($c->{perl})) {
+                my $key = $c->{distribution}{ID};
+                for my $k (keys %{$c->{distribution}}) {
+                    if ($c->{distribution}{$k}
+                        && ref $c->{distribution}{$k}
+                        && UNIVERSAL::isa($c->{distribution}{$k},"CPAN::Distrostatus")) {
+                        $c->{distribution}{$k}{COMMANDID} = $i - @candidates;
+                    }
+                }
 
-            #we tried to restore only if element already
-            #exists; but then we do not work with metadata
-            #turned off.
-            my $do
-                = $CPAN::META->{readwrite}{'CPAN::Distribution'}{$key}
-                    = $c->{distribution};
-            for my $skipper (qw(
-                                badtestcnt
-                                configure_requires_later
-                                configure_requires_later_for
-                                force_update
-                                later
-                                later_for
-                                notest
-                                should_report
-                                sponsored_mods
-                                prefs
-                                negative_prefs_cache
-                               )) {
-                delete $do->{$skipper};
-            }
-            if ($do->can("tested_ok_but_not_installed")) {
-                if ($do->tested_ok_but_not_installed) {
-                    $CPAN::META->is_tested($do->{build_dir},$do->{make_test}{TIME});
-                } else {
-                    next DISTRO;
+                #we tried to restore only if element already
+                #exists; but then we do not work with metadata
+                #turned off.
+                my $do
+                    = $CPAN::META->{readwrite}{'CPAN::Distribution'}{$key}
+                        = $c->{distribution};
+                for my $skipper (qw(
+                                    badtestcnt
+                                    configure_requires_later
+                                    configure_requires_later_for
+                                    force_update
+                                    later
+                                    later_for
+                                    notest
+                                    should_report
+                                    sponsored_mods
+                                    prefs
+                                    negative_prefs_cache
+                                  )) {
+                    delete $do->{$skipper};
                 }
+                if ($do->can("tested_ok_but_not_installed")) {
+                    if ($do->tested_ok_but_not_installed) {
+                        $CPAN::META->is_tested($do->{build_dir},$do->{make_test}{TIME});
+                    } else {
+                        next DISTRO;
+                    }
+                }
+                $restored++;
             }
-            $restored++;
+            $i++;
+            while (($painted/76) < ($i/@candidates)) {
+                $CPAN::Frontend->myprint(".");
+                $painted++;
+            }
         }
-        $i++;
-        while (($painted/76) < ($i/@candidates)) {
-            $CPAN::Frontend->myprint(".");
-            $painted++;
-        }
+    }
+    else {
+        $CPAN::Frontend->myprint("Build_dir empty, nothing to restore\n");
     }
     my $took = CPAN::FTP::_mytime() - $start;
     $CPAN::Frontend->myprint(sprintf(
@@ -231,7 +232,7 @@ sub rd_authindex {
     return unless defined $index_target;
     return if CPAN::_sqlite_running();
     my @lines;
-    $CPAN::Frontend->myprint("Going to read '$index_target'\n");
+    $CPAN::Frontend->myprint("Reading '$index_target'\n");
     local(*FH);
     tie *FH, 'CPAN::Tarzip', $index_target;
     local($/) = "\n";
@@ -271,7 +272,7 @@ sub rd_modpacks {
     my($self, $index_target) = @_;
     return unless defined $index_target;
     return if CPAN::_sqlite_running();
-    $CPAN::Frontend->myprint("Going to read '$index_target'\n");
+    $CPAN::Frontend->myprint("Reading '$index_target'\n");
     my $fh = CPAN::Tarzip->TIEHANDLE($index_target);
     local $_;
     CPAN->debug(sprintf "start[%d]", time) if $CPAN::DEBUG;
@@ -494,7 +495,7 @@ sub rd_modlist {
     my($cl,$index_target) = @_;
     return unless defined $index_target;
     return if CPAN::_sqlite_running();
-    $CPAN::Frontend->myprint("Going to read '$index_target'\n");
+    $CPAN::Frontend->myprint("Reading '$index_target'\n");
     my $fh = CPAN::Tarzip->TIEHANDLE($index_target);
     local $_;
     my $slurp = "";
@@ -556,7 +557,7 @@ sub write_metadata_cache {
     $cache->{last_time} = $LAST_TIME;
     $cache->{DATE_OF_02} = $DATE_OF_02;
     $cache->{PROTOCOL} = PROTOCOL;
-    $CPAN::Frontend->myprint("Going to write $metadata_file\n");
+    $CPAN::Frontend->myprint("Writing $metadata_file\n");
     eval { Storable::nstore($cache, $metadata_file) };
     $CPAN::Frontend->mywarn($@) if $@; # ?? missing "\n" after $@ in mywarn ??
 }
@@ -569,7 +570,7 @@ sub read_metadata_cache {
     return unless $CPAN::META->has_usable("Storable");
     my $metadata_file = File::Spec->catfile($CPAN::Config->{cpan_home},"Metadata");
     return unless -r $metadata_file and -f $metadata_file;
-    $CPAN::Frontend->myprint("Going to read '$metadata_file'\n");
+    $CPAN::Frontend->myprint("Reading '$metadata_file'\n");
     my $cache;
     eval { $cache = Storable::retrieve($metadata_file) };
     $CPAN::Frontend->mywarn($@) if $@; # ?? missing "\n" after $@ in mywarn ??

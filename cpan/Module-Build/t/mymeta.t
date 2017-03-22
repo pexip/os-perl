@@ -4,6 +4,7 @@ use strict;
 use lib 't/lib';
 use MBTest;
 use CPAN::Meta 2.110420;
+use CPAN::Meta::YAML;
 use Parse::CPAN::Meta 1.4401;
 plan tests => 39;
 
@@ -23,6 +24,9 @@ my \$builder = Module::Build->new(
   requires            => {
     'File::Spec' => ( \$ENV{BUMP_PREREQ} ? 0.86 : 0 ),
   },
+  configure_requires  => {
+    'Module::Build' => '0.42',
+  }
 );
 
 \$builder->create_build_script();

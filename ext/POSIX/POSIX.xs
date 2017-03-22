@@ -28,6 +28,9 @@
 #include <dirent.h>
 #endif
 #include <errno.h>
+#ifdef WIN32
+#include <sys/errno2.h>
+#endif
 #ifdef I_FLOAT
 #include <float.h>
 #endif
@@ -82,74 +85,17 @@ char *tzname[] = { "" , "" };
 #endif
 #endif
 
-#ifndef PERL_UNUSED_DECL
-#  ifdef HASATTRIBUTE
-#    if (defined(__GNUC__) && defined(__cplusplus)) || defined(__INTEL_COMPILER)
-#      define PERL_UNUSED_DECL
-#    else
-#      define PERL_UNUSED_DECL __attribute__((unused))
-#    endif
-#  else
-#    define PERL_UNUSED_DECL
-#  endif
-#endif
-
-#ifndef dNOOP
-#define dNOOP extern int Perl___notused PERL_UNUSED_DECL
-#endif
-
-#ifndef dVAR
-#define dVAR dNOOP
-#endif
-
 #if defined(__VMS) && !defined(__POSIX_SOURCE)
-#  include <libdef.h>       /* LIB$_INVARG constant */
-#  include <lib$routines.h> /* prototype for lib$ediv() */
-#  include <starlet.h>      /* prototype for sys$gettim() */
-#  if DECC_VERSION < 50000000
-#    define pid_t int       /* old versions of DECC miss this in types.h */
-#  endif
+
+#  include <utsname.h>
 
 #  undef mkfifo
 #  define mkfifo(a,b) (not_here("mkfifo"),-1)
-#  define tzset() not_here("tzset")
-
-#if ((__VMS_VER >= 70000000) && (__DECC_VER >= 50200000)) || (__CRTL_VER >= 70000000)
-#    define HAS_TZNAME  /* shows up in VMS 7.0 or Dec C 5.6 */
-#    include <utsname.h>
-#  endif /* __VMS_VER >= 70000000 or Dec C 5.6 */
 
    /* The POSIX notion of ttyname() is better served by getname() under VMS */
    static char ttnambuf[64];
 #  define ttyname(fd) (isatty(fd) > 0 ? getname(fd,ttnambuf,0) : NULL)
 
-   /* The non-POSIX CRTL times() has void return type, so we just get the
-      current time directly */
-   clock_t vms_times(struct tms *bufptr) {
-	dTHX;
-	clock_t retval;
-	/* Get wall time and convert to 10 ms intervals to
-	 * produce the return value that the POSIX standard expects */
-#  if defined(__DECC) && defined (__ALPHA)
-#    include <ints.h>
-	uint64 vmstime;
-	_ckvmssts(sys$gettim(&vmstime));
-	vmstime /= 100000;
-	retval = vmstime & 0x7fffffff;
-#  else
-	/* (Older hw or ccs don't have an atomic 64-bit type, so we
-	 * juggle 32-bit ints (and a float) to produce a time_t result
-	 * with minimal loss of information.) */
-	long int vmstime[2],remainder,divisor = 100000;
-	_ckvmssts(sys$gettim((unsigned long int *)vmstime));
-	vmstime[1] &= 0x7fff;  /* prevent overflow in EDIV */
-	_ckvmssts(lib$ediv(&divisor,vmstime,(long int *)&retval,&remainder));
-#  endif
-	/* Fill in the struct tms using the CRTL routine . . .*/
-	times((tbuffer_t *)bufptr);
-	return (clock_t) retval;
-   }
-#  define times(t) vms_times(t)
 #else
 #if defined (__CYGWIN__)
 #    define tzname _tzname
@@ -160,9 +106,6 @@ char *tzname[] = { "" , "" };
 #  define ttyname(a) (char*)not_here("ttyname")
 #  define sigset_t long
 #  define pid_t long
-#  ifdef __BORLANDC__
-#    define tzname _tzname
-#  endif
 #  ifdef _MSC_VER
 #    define mode_t short
 #  endif
@@ -216,160 +159,6 @@ char *tzname[] = { "" , "" };
 #endif /* WIN32 || NETWARE */
 #endif /* __VMS */
 
-#ifdef WIN32
-   /* Perl on Windows assigns WSAGetLastError() return values to errno
-    * (in win32/win32sck.c).  Therefore we need to map these values
-    * back to standard symbolic names, but only for those names having
-    * no existing value or an existing value >= 100. (VC++ 2010 defines
-    * a group of names with values >= 100 in its errno.h which we *do*
-    * need to redefine.) The Errno.pm module does a similar mapping.
-    */
-#  ifdef EWOULDBLOCK
-#    undef EWOULDBLOCK
-#  endif
-#  define EWOULDBLOCK WSAEWOULDBLOCK
-#  ifdef EINPROGRESS
-#    undef EINPROGRESS
-#  endif
-#  define EINPROGRESS WSAEINPROGRESS
-#  ifdef EALREADY
-#    undef EALREADY
-#  endif
-#  define EALREADY WSAEALREADY
-#  ifdef ENOTSOCK
-#    undef ENOTSOCK
-#  endif
-#  define ENOTSOCK WSAENOTSOCK
-#  ifdef EDESTADDRREQ
-#    undef EDESTADDRREQ
-#  endif
-#  define EDESTADDRREQ WSAEDESTADDRREQ
-#  ifdef EMSGSIZE
-#    undef EMSGSIZE
-#  endif
-#  define EMSGSIZE WSAEMSGSIZE
-#  ifdef EPROTOTYPE
-#    undef EPROTOTYPE
-#  endif
-#  define EPROTOTYPE WSAEPROTOTYPE
-#  ifdef ENOPROTOOPT
-#    undef ENOPROTOOPT
-#  endif
-#  define ENOPROTOOPT WSAENOPROTOOPT
-#  ifdef EPROTONOSUPPORT
-#    undef EPROTONOSUPPORT
-#  endif
-#  define EPROTONOSUPPORT WSAEPROTONOSUPPORT
-#  ifdef ESOCKTNOSUPPORT
-#    undef ESOCKTNOSUPPORT
-#  endif
-#  define ESOCKTNOSUPPORT WSAESOCKTNOSUPPORT
-#  ifdef EOPNOTSUPP
-#    undef EOPNOTSUPP
-#  endif
-#  define EOPNOTSUPP WSAEOPNOTSUPP
-#  ifdef EPFNOSUPPORT
-#    undef EPFNOSUPPORT
-#  endif
-#  define EPFNOSUPPORT WSAEPFNOSUPPORT
-#  ifdef EAFNOSUPPORT
-#    undef EAFNOSUPPORT
-#  endif
-#  define EAFNOSUPPORT WSAEAFNOSUPPORT
-#  ifdef EADDRINUSE
-#    undef EADDRINUSE
-#  endif
-#  define EADDRINUSE WSAEADDRINUSE
-#  ifdef EADDRNOTAVAIL
-#    undef EADDRNOTAVAIL
-#  endif
-#  define EADDRNOTAVAIL WSAEADDRNOTAVAIL
-#  ifdef ENETDOWN
-#    undef ENETDOWN
-#  endif
-#  define ENETDOWN WSAENETDOWN
-#  ifdef ENETUNREACH
-#    undef ENETUNREACH
-#  endif
-#  define ENETUNREACH WSAENETUNREACH
-#  ifdef ENETRESET
-#    undef ENETRESET
-#  endif
-#  define ENETRESET WSAENETRESET
-#  ifdef ECONNABORTED
-#    undef ECONNABORTED
-#  endif
-#  define ECONNABORTED WSAECONNABORTED
-#  ifdef ECONNRESET
-#    undef ECONNRESET
-#  endif
-#  define ECONNRESET WSAECONNRESET
-#  ifdef ENOBUFS
-#    undef ENOBUFS
-#  endif
-#  define ENOBUFS WSAENOBUFS
-#  ifdef EISCONN
-#    undef EISCONN
-#  endif
-#  define EISCONN WSAEISCONN
-#  ifdef ENOTCONN
-#    undef ENOTCONN
-#  endif
-#  define ENOTCONN WSAENOTCONN
-#  ifdef ESHUTDOWN
-#    undef ESHUTDOWN
-#  endif
-#  define ESHUTDOWN WSAESHUTDOWN
-#  ifdef ETOOMANYREFS
-#    undef ETOOMANYREFS
-#  endif
-#  define ETOOMANYREFS WSAETOOMANYREFS
-#  ifdef ETIMEDOUT
-#    undef ETIMEDOUT
-#  endif
-#  define ETIMEDOUT WSAETIMEDOUT
-#  ifdef ECONNREFUSED
-#    undef ECONNREFUSED
-#  endif
-#  define ECONNREFUSED WSAECONNREFUSED
-#  ifdef ELOOP
-#    undef ELOOP
-#  endif
-#  define ELOOP WSAELOOP
-#  ifdef EHOSTDOWN
-#    undef EHOSTDOWN
-#  endif
-#  define EHOSTDOWN WSAEHOSTDOWN
-#  ifdef EHOSTUNREACH
-#    undef EHOSTUNREACH
-#  endif
-#  define EHOSTUNREACH WSAEHOSTUNREACH
-#  ifdef EPROCLIM
-#    undef EPROCLIM
-#  endif
-#  define EPROCLIM WSAEPROCLIM
-#  ifdef EUSERS
-#    undef EUSERS
-#  endif
-#  define EUSERS WSAEUSERS
-#  ifdef EDQUOT
-#    undef EDQUOT
-#  endif
-#  define EDQUOT WSAEDQUOT
-#  ifdef ESTALE
-#    undef ESTALE
-#  endif
-#  define ESTALE WSAESTALE
-#  ifdef EREMOTE
-#    undef EREMOTE
-#  endif
-#  define EREMOTE WSAEREMOTE
-#  ifdef EDISCON
-#    undef EDISCON
-#  endif
-#  define EDISCON WSAEDISCON
-#endif
-
 typedef int SysRet;
 typedef long SysRetLong;
 typedef sigset_t* POSIX__SigSet;
@@ -396,9 +185,11 @@ typedef struct termios* POSIX__Termios;
 
 /* Possibly needed prototypes */
 #ifndef WIN32
+START_EXTERN_C
 double strtod (const char *, char **);
 long strtol (const char *, char **, int);
 unsigned long strtoul (const char *, char **, int);
+END_EXTERN_C
 #endif
 
 #ifndef HAS_DIFFTIME
@@ -491,7 +282,45 @@ unsigned long strtoul (const char *, char **, int);
 #endif
 #endif
 
-#ifndef HAS_LOCALECONV
+#ifdef HAS_LOCALECONV
+struct lconv_offset {
+    const char *name;
+    size_t offset;
+};
+
+const struct lconv_offset lconv_strings[] = {
+    {"decimal_point",     offsetof(struct lconv, decimal_point)},
+    {"thousands_sep",     offsetof(struct lconv, thousands_sep)},
+#ifndef NO_LOCALECONV_GROUPING
+    {"grouping",          offsetof(struct lconv, grouping)},
+#endif
+    {"int_curr_symbol",   offsetof(struct lconv, int_curr_symbol)},
+    {"currency_symbol",   offsetof(struct lconv, currency_symbol)},
+    {"mon_decimal_point", offsetof(struct lconv, mon_decimal_point)},
+#ifndef NO_LOCALECONV_MON_THOUSANDS_SEP
+    {"mon_thousands_sep", offsetof(struct lconv, mon_thousands_sep)},
+#endif
+#ifndef NO_LOCALECONV_MON_GROUPING
+    {"mon_grouping",      offsetof(struct lconv, mon_grouping)},
+#endif
+    {"positive_sign",     offsetof(struct lconv, positive_sign)},
+    {"negative_sign",     offsetof(struct lconv, negative_sign)},
+    {NULL, 0}
+};
+
+const struct lconv_offset lconv_integers[] = {
+    {"int_frac_digits",   offsetof(struct lconv, int_frac_digits)},
+    {"frac_digits",       offsetof(struct lconv, frac_digits)},
+    {"p_cs_precedes",     offsetof(struct lconv, p_cs_precedes)},
+    {"p_sep_by_space",    offsetof(struct lconv, p_sep_by_space)},
+    {"n_cs_precedes",     offsetof(struct lconv, n_cs_precedes)},
+    {"n_sep_by_space",    offsetof(struct lconv, n_sep_by_space)},
+    {"p_sign_posn",       offsetof(struct lconv, p_sign_posn)},
+    {"n_sign_posn",       offsetof(struct lconv, n_sign_posn)},
+    {NULL, 0}
+};
+
+#else
 #define localeconv() not_here("localeconv")
 #endif
 
@@ -531,7 +360,7 @@ unsigned long strtoul (const char *, char **, int);
  * as expected. The better solution would be not to use the W*() macros
  * in the first place, though. -- Ingo Weinhold
  */
-#if defined(__BEOS__) || defined(__HAIKU__)
+#if defined(__HAIKU__)
 #    define WMUNGE(x) (((x) & 0xFF00) >> 8 | ((x) & 0x00FF) << 8)
 #else
 #    define WMUNGE(x) (x)
@@ -556,6 +385,16 @@ restore_sigmask(pTHX_ SV *osset_sv)
       */
      sigset_t *ossetp = (sigset_t *) SvPV_nolen( osset_sv );
      (void)sigprocmask(SIG_SETMASK, ossetp, (sigset_t *)0);
+}
+
+static void *
+allocate_struct(pTHX_ SV *rv, const STRLEN size, const char *packname) {
+    SV *const t = newSVrv(rv, packname);
+    void *const p = sv_grow(t, size + 1);
+
+    SvCUR_set(t, size);
+    SvPOK_on(t);
+    return p;
 }
 
 #ifdef WIN32
@@ -668,45 +507,144 @@ my_tzset(pTHX)
     tzset();
 }
 
+typedef int (*isfunc_t)(int);
+typedef void (*any_dptr_t)(void *);
+
+/* This needs to be ALIASed in a custom way, hence can't easily be defined as
+   a regular XSUB.  */
+static XSPROTO(is_common); /* prototype to pass -Wmissing-prototypes */
+static XSPROTO(is_common)
+{
+    dXSARGS;
+    static PTR_TBL_t * is_common_ptr_table;
+
+    if (items != 1)
+       croak_xs_usage(cv,  "charstring");
+
+    {
+	dXSTARG;
+	STRLEN	len;
+        /*int	RETVAL = 0;   YYY means uncomment this to return false on an
+                            * empty string input */
+	int	RETVAL;
+	unsigned char *s = (unsigned char *) SvPV(ST(0), len);
+	unsigned char *e = s + len;
+	isfunc_t isfunc = (isfunc_t) XSANY.any_dptr;
+
+        if (ckWARN_d(WARN_DEPRECATED)) {
+
+            /* Warn exactly once for each lexical place this function is
+             * called.  See thread at
+             * http://markmail.org/thread/jhqcag5njmx7jpyu */
+
+	    if (! is_common_ptr_table) {
+               is_common_ptr_table = ptr_table_new();
+            }
+	    if (! ptr_table_fetch(is_common_ptr_table, PL_op)) {
+                Perl_warner(aTHX_ packWARN(WARN_DEPRECATED),
+                            "Calling POSIX::%"HEKf"() is deprecated",
+                            HEKfARG(GvNAME_HEK(CvGV(cv))));
+                ptr_table_store(is_common_ptr_table, PL_op, (void *) 1);
+            }
+        }
+
+        /*if (e > s) { YYY */
+	for (RETVAL = 1; RETVAL && s < e; s++)
+	    if (!isfunc(*s))
+		RETVAL = 0;
+        /*} YYY */
+	XSprePUSH;
+	PUSHi((IV)RETVAL);
+    }
+    XSRETURN(1);
+}
+
+MODULE = POSIX		PACKAGE = POSIX
+
+BOOT:
+{
+    CV *cv;
+    const char *file = __FILE__;
+
+
+    /* silence compiler warning about not_here() defined but not used */
+    if (0) not_here("");
+
+    /* Ensure we get the function, not a macro implementation. Like the C89
+       standard says we can...  */
+#undef isalnum
+    cv = newXS("POSIX::isalnum", is_common, file);
+    XSANY.any_dptr = (any_dptr_t) &isalnum;
+#undef isalpha
+    cv = newXS("POSIX::isalpha", is_common, file);
+    XSANY.any_dptr = (any_dptr_t) &isalpha;
+#undef iscntrl
+    cv = newXS("POSIX::iscntrl", is_common, file);
+    XSANY.any_dptr = (any_dptr_t) &iscntrl;
+#undef isdigit
+    cv = newXS("POSIX::isdigit", is_common, file);
+    XSANY.any_dptr = (any_dptr_t) &isdigit;
+#undef isgraph
+    cv = newXS("POSIX::isgraph", is_common, file);
+    XSANY.any_dptr = (any_dptr_t) &isgraph;
+#undef islower
+    cv = newXS("POSIX::islower", is_common, file);
+    XSANY.any_dptr = (any_dptr_t) &islower;
+#undef isprint
+    cv = newXS("POSIX::isprint", is_common, file);
+    XSANY.any_dptr = (any_dptr_t) &isprint;
+#undef ispunct
+    cv = newXS("POSIX::ispunct", is_common, file);
+    XSANY.any_dptr = (any_dptr_t) &ispunct;
+#undef isspace
+    cv = newXS("POSIX::isspace", is_common, file);
+    XSANY.any_dptr = (any_dptr_t) &isspace;
+#undef isupper
+    cv = newXS("POSIX::isupper", is_common, file);
+    XSANY.any_dptr = (any_dptr_t) &isupper;
+#undef isxdigit
+    cv = newXS("POSIX::isxdigit", is_common, file);
+    XSANY.any_dptr = (any_dptr_t) &isxdigit;
+}
+
 MODULE = SigSet		PACKAGE = POSIX::SigSet		PREFIX = sig
 
-POSIX::SigSet
+void
 new(packname = "POSIX::SigSet", ...)
     const char *	packname
     CODE:
 	{
 	    int i;
-	    Newx(RETVAL, 1, sigset_t);
-	    sigemptyset(RETVAL);
+	    sigset_t *const s
+		= (sigset_t *) allocate_struct(aTHX_ (ST(0) = sv_newmortal()),
+					       sizeof(sigset_t),
+					       packname);
+	    sigemptyset(s);
 	    for (i = 1; i < items; i++)
-		sigaddset(RETVAL, SvIV(ST(i)));
+		sigaddset(s, SvIV(ST(i)));
+	    XSRETURN(1);
 	}
-    OUTPUT:
+
+SysRet
+addset(sigset, sig)
+	POSIX::SigSet	sigset
+	int		sig
+   ALIAS:
+	delset = 1
+   CODE:
+	RETVAL = ix ? sigdelset(sigset, sig) : sigaddset(sigset, sig);
+   OUTPUT:
 	RETVAL
 
-void
-DESTROY(sigset)
-	POSIX::SigSet	sigset
-    CODE:
-	Safefree(sigset);
-
 SysRet
-sigaddset(sigset, sig)
+emptyset(sigset)
 	POSIX::SigSet	sigset
-	int		sig
-
-SysRet
-sigdelset(sigset, sig)
-	POSIX::SigSet	sigset
-	int		sig
-
-SysRet
-sigemptyset(sigset)
-	POSIX::SigSet	sigset
-
-SysRet
-sigfillset(sigset)
-	POSIX::SigSet	sigset
+   ALIAS:
+	fillset = 1
+   CODE:
+	RETVAL = ix ? sigfillset(sigset) : sigemptyset(sigset);
+   OUTPUT:
+	RETVAL
 
 int
 sigismember(sigset, sig)
@@ -715,30 +653,24 @@ sigismember(sigset, sig)
 
 MODULE = Termios	PACKAGE = POSIX::Termios	PREFIX = cf
 
-POSIX::Termios
+void
 new(packname = "POSIX::Termios", ...)
     const char *	packname
     CODE:
 	{
 #ifdef I_TERMIOS
-	    Newx(RETVAL, 1, struct termios);
+	    void *const p = allocate_struct(aTHX_ (ST(0) = sv_newmortal()),
+					    sizeof(struct termios), packname);
+	    /* The previous implementation stored a pointer to an uninitialised
+	       struct termios. Seems safer to initialise it, particularly as
+	       this implementation exposes the struct to prying from perl-space.
+	    */
+	    memset(p, 0, 1 + sizeof(struct termios));
+	    XSRETURN(1);
 #else
 	    not_here("termios");
-        RETVAL = 0;
 #endif
 	}
-    OUTPUT:
-	RETVAL
-
-void
-DESTROY(termios_ref)
-	POSIX::Termios	termios_ref
-    CODE:
-#ifdef I_TERMIOS
-	Safefree(termios_ref);
-#else
-	    not_here("termios");
-#endif
 
 SysRet
 getattr(termios_ref, fd = 0)
@@ -749,72 +681,65 @@ getattr(termios_ref, fd = 0)
     OUTPUT:
 	RETVAL
 
+# If we define TCSANOW here then both a found and not found constant sub
+# are created causing a Constant subroutine TCSANOW redefined warning
+#ifndef TCSANOW
+#  define DEF_SETATTR_ACTION 0
+#else
+#  define DEF_SETATTR_ACTION TCSANOW
+#endif
 SysRet
-setattr(termios_ref, fd = 0, optional_actions = 0)
+setattr(termios_ref, fd = 0, optional_actions = DEF_SETATTR_ACTION)
 	POSIX::Termios	termios_ref
 	int		fd
 	int		optional_actions
     CODE:
+	/* The second argument to the call is mandatory, but we'd like to give
+	   it a useful default. 0 isn't valid on all operating systems - on
+	   Solaris (at least) TCSANOW, TCSADRAIN and TCSAFLUSH have the same
+	   values as the equivalent ioctls, TCSETS, TCSETSW and TCSETSF.  */
 	RETVAL = tcsetattr(fd, optional_actions, termios_ref);
     OUTPUT:
 	RETVAL
 
 speed_t
-cfgetispeed(termios_ref)
+getispeed(termios_ref)
 	POSIX::Termios	termios_ref
-
-speed_t
-cfgetospeed(termios_ref)
-	POSIX::Termios	termios_ref
+    ALIAS:
+	getospeed = 1
+    CODE:
+	RETVAL = ix ? cfgetospeed(termios_ref) : cfgetispeed(termios_ref);
+    OUTPUT:
+	RETVAL
 
 tcflag_t
 getiflag(termios_ref)
 	POSIX::Termios	termios_ref
+    ALIAS:
+	getoflag = 1
+	getcflag = 2
+	getlflag = 3
     CODE:
 #ifdef I_TERMIOS /* References a termios structure member so ifdef it out. */
-	RETVAL = termios_ref->c_iflag;
+	switch(ix) {
+	case 0:
+	    RETVAL = termios_ref->c_iflag;
+	    break;
+	case 1:
+	    RETVAL = termios_ref->c_oflag;
+	    break;
+	case 2:
+	    RETVAL = termios_ref->c_cflag;
+	    break;
+	case 3:
+	    RETVAL = termios_ref->c_lflag;
+	    break;
+        default:
+	    RETVAL = 0; /* silence compiler warning */
+	}
 #else
-     not_here("getiflag");
-     RETVAL = 0;
-#endif
-    OUTPUT:
-	RETVAL
-
-tcflag_t
-getoflag(termios_ref)
-	POSIX::Termios	termios_ref
-    CODE:
-#ifdef I_TERMIOS /* References a termios structure member so ifdef it out. */
-	RETVAL = termios_ref->c_oflag;
-#else
-     not_here("getoflag");
-     RETVAL = 0;
-#endif
-    OUTPUT:
-	RETVAL
-
-tcflag_t
-getcflag(termios_ref)
-	POSIX::Termios	termios_ref
-    CODE:
-#ifdef I_TERMIOS /* References a termios structure member so ifdef it out. */
-	RETVAL = termios_ref->c_cflag;
-#else
-     not_here("getcflag");
-     RETVAL = 0;
-#endif
-    OUTPUT:
-	RETVAL
-
-tcflag_t
-getlflag(termios_ref)
-	POSIX::Termios	termios_ref
-    CODE:
-#ifdef I_TERMIOS /* References a termios structure member so ifdef it out. */
-	RETVAL = termios_ref->c_lflag;
-#else
-     not_here("getlflag");
-     RETVAL = 0;
+	not_here(GvNAME(CvGV(cv)));
+	RETVAL = 0;
 #endif
     OUTPUT:
 	RETVAL
@@ -836,57 +761,43 @@ getcc(termios_ref, ccix)
 	RETVAL
 
 SysRet
-cfsetispeed(termios_ref, speed)
+setispeed(termios_ref, speed)
 	POSIX::Termios	termios_ref
 	speed_t		speed
-
-SysRet
-cfsetospeed(termios_ref, speed)
-	POSIX::Termios	termios_ref
-	speed_t		speed
+    ALIAS:
+	setospeed = 1
+    CODE:
+	RETVAL = ix
+	    ? cfsetospeed(termios_ref, speed) : cfsetispeed(termios_ref, speed);
+    OUTPUT:
+	RETVAL
 
 void
-setiflag(termios_ref, iflag)
+setiflag(termios_ref, flag)
 	POSIX::Termios	termios_ref
-	tcflag_t	iflag
+	tcflag_t	flag
+    ALIAS:
+	setoflag = 1
+	setcflag = 2
+	setlflag = 3
     CODE:
 #ifdef I_TERMIOS /* References a termios structure member so ifdef it out. */
-	termios_ref->c_iflag = iflag;
+	switch(ix) {
+	case 0:
+	    termios_ref->c_iflag = flag;
+	    break;
+	case 1:
+	    termios_ref->c_oflag = flag;
+	    break;
+	case 2:
+	    termios_ref->c_cflag = flag;
+	    break;
+	case 3:
+	    termios_ref->c_lflag = flag;
+	    break;
+	}
 #else
-	    not_here("setiflag");
-#endif
-
-void
-setoflag(termios_ref, oflag)
-	POSIX::Termios	termios_ref
-	tcflag_t	oflag
-    CODE:
-#ifdef I_TERMIOS /* References a termios structure member so ifdef it out. */
-	termios_ref->c_oflag = oflag;
-#else
-	    not_here("setoflag");
-#endif
-
-void
-setcflag(termios_ref, cflag)
-	POSIX::Termios	termios_ref
-	tcflag_t	cflag
-    CODE:
-#ifdef I_TERMIOS /* References a termios structure member so ifdef it out. */
-	termios_ref->c_cflag = cflag;
-#else
-	    not_here("setcflag");
-#endif
-
-void
-setlflag(termios_ref, lflag)
-	POSIX::Termios	termios_ref
-	tcflag_t	lflag
-    CODE:
-#ifdef I_TERMIOS /* References a termios structure member so ifdef it out. */
-	termios_ref->c_lflag = lflag;
-#else
-	    not_here("setlflag");
+	not_here(GvNAME(CvGV(cv)));
 #endif
 
 void
@@ -972,160 +883,6 @@ WEXITSTATUS(status)
     OUTPUT:
 	RETVAL
 
-int
-isalnum(charstring)
-	SV *	charstring
-    PREINIT:
-	STRLEN	len;
-    CODE:
-	unsigned char *s = (unsigned char *) SvPV(charstring, len);
-	unsigned char *e = s + len;
-	for (RETVAL = 1; RETVAL && s < e; s++)
-	    if (!isalnum(*s))
-		RETVAL = 0;
-    OUTPUT:
-	RETVAL
-
-int
-isalpha(charstring)
-	SV *	charstring
-    PREINIT:
-	STRLEN	len;
-    CODE:
-	unsigned char *s = (unsigned char *) SvPV(charstring, len);
-	unsigned char *e = s + len;
-	for (RETVAL = 1; RETVAL && s < e; s++)
-	    if (!isalpha(*s))
-		RETVAL = 0;
-    OUTPUT:
-	RETVAL
-
-int
-iscntrl(charstring)
-	SV *	charstring
-    PREINIT:
-	STRLEN	len;
-    CODE:
-	unsigned char *s = (unsigned char *) SvPV(charstring, len);
-	unsigned char *e = s + len;
-	for (RETVAL = 1; RETVAL && s < e; s++)
-	    if (!iscntrl(*s))
-		RETVAL = 0;
-    OUTPUT:
-	RETVAL
-
-int
-isdigit(charstring)
-	SV *	charstring
-    PREINIT:
-	STRLEN	len;
-    CODE:
-	unsigned char *s = (unsigned char *) SvPV(charstring, len);
-	unsigned char *e = s + len;
-	for (RETVAL = 1; RETVAL && s < e; s++)
-	    if (!isdigit(*s))
-		RETVAL = 0;
-    OUTPUT:
-	RETVAL
-
-int
-isgraph(charstring)
-	SV *	charstring
-    PREINIT:
-	STRLEN	len;
-    CODE:
-	unsigned char *s = (unsigned char *) SvPV(charstring, len);
-	unsigned char *e = s + len;
-	for (RETVAL = 1; RETVAL && s < e; s++)
-	    if (!isgraph(*s))
-		RETVAL = 0;
-    OUTPUT:
-	RETVAL
-
-int
-islower(charstring)
-	SV *	charstring
-    PREINIT:
-	STRLEN	len;
-    CODE:
-	unsigned char *s = (unsigned char *) SvPV(charstring, len);
-	unsigned char *e = s + len;
-	for (RETVAL = 1; RETVAL && s < e; s++)
-	    if (!islower(*s))
-		RETVAL = 0;
-    OUTPUT:
-	RETVAL
-
-int
-isprint(charstring)
-	SV *	charstring
-    PREINIT:
-	STRLEN	len;
-    CODE:
-	unsigned char *s = (unsigned char *) SvPV(charstring, len);
-	unsigned char *e = s + len;
-	for (RETVAL = 1; RETVAL && s < e; s++)
-	    if (!isprint(*s))
-		RETVAL = 0;
-    OUTPUT:
-	RETVAL
-
-int
-ispunct(charstring)
-	SV *	charstring
-    PREINIT:
-	STRLEN	len;
-    CODE:
-	unsigned char *s = (unsigned char *) SvPV(charstring, len);
-	unsigned char *e = s + len;
-	for (RETVAL = 1; RETVAL && s < e; s++)
-	    if (!ispunct(*s))
-		RETVAL = 0;
-    OUTPUT:
-	RETVAL
-
-int
-isspace(charstring)
-	SV *	charstring
-    PREINIT:
-	STRLEN	len;
-    CODE:
-	unsigned char *s = (unsigned char *) SvPV(charstring, len);
-	unsigned char *e = s + len;
-	for (RETVAL = 1; RETVAL && s < e; s++)
-	    if (!isspace(*s))
-		RETVAL = 0;
-    OUTPUT:
-	RETVAL
-
-int
-isupper(charstring)
-	SV *	charstring
-    PREINIT:
-	STRLEN	len;
-    CODE:
-	unsigned char *s = (unsigned char *) SvPV(charstring, len);
-	unsigned char *e = s + len;
-	for (RETVAL = 1; RETVAL && s < e; s++)
-	    if (!isupper(*s))
-		RETVAL = 0;
-    OUTPUT:
-	RETVAL
-
-int
-isxdigit(charstring)
-	SV *	charstring
-    PREINIT:
-	STRLEN	len;
-    CODE:
-	unsigned char *s = (unsigned char *) SvPV(charstring, len);
-	unsigned char *e = s + len;
-	for (RETVAL = 1; RETVAL && s < e; s++)
-	    if (!isxdigit(*s))
-		RETVAL = 0;
-    OUTPUT:
-	RETVAL
-
 SysRet
 open(filename, flags = O_RDONLY, mode = 0666)
 	char *		filename
@@ -1147,68 +904,25 @@ localeconv()
 	RETVAL = newHV();
 	sv_2mortal((SV*)RETVAL);
 	if ((lcbuf = localeconv())) {
-	    /* the strings */
-	    if (lcbuf->decimal_point && *lcbuf->decimal_point)
-		(void) hv_store(RETVAL, "decimal_point", 13,
-		    newSVpv(lcbuf->decimal_point, 0), 0);
-	    if (lcbuf->thousands_sep && *lcbuf->thousands_sep)
-		(void) hv_store(RETVAL, "thousands_sep", 13,
-		    newSVpv(lcbuf->thousands_sep, 0), 0);
-#ifndef NO_LOCALECONV_GROUPING
-	    if (lcbuf->grouping && *lcbuf->grouping)
-		(void) hv_store(RETVAL, "grouping", 8,
-		    newSVpv(lcbuf->grouping, 0), 0);
-#endif
-	    if (lcbuf->int_curr_symbol && *lcbuf->int_curr_symbol)
-		(void) hv_store(RETVAL, "int_curr_symbol", 15,
-		    newSVpv(lcbuf->int_curr_symbol, 0), 0);
-	    if (lcbuf->currency_symbol && *lcbuf->currency_symbol)
-		(void) hv_store(RETVAL, "currency_symbol", 15,
-		    newSVpv(lcbuf->currency_symbol, 0), 0);
-	    if (lcbuf->mon_decimal_point && *lcbuf->mon_decimal_point)
-		(void) hv_store(RETVAL, "mon_decimal_point", 17,
-		    newSVpv(lcbuf->mon_decimal_point, 0), 0);
-#ifndef NO_LOCALECONV_MON_THOUSANDS_SEP
-	    if (lcbuf->mon_thousands_sep && *lcbuf->mon_thousands_sep)
-		(void) hv_store(RETVAL, "mon_thousands_sep", 17,
-		    newSVpv(lcbuf->mon_thousands_sep, 0), 0);
-#endif
-#ifndef NO_LOCALECONV_MON_GROUPING
-	    if (lcbuf->mon_grouping && *lcbuf->mon_grouping)
-		(void) hv_store(RETVAL, "mon_grouping", 12,
-		    newSVpv(lcbuf->mon_grouping, 0), 0);
-#endif
-	    if (lcbuf->positive_sign && *lcbuf->positive_sign)
-		(void) hv_store(RETVAL, "positive_sign", 13,
-		    newSVpv(lcbuf->positive_sign, 0), 0);
-	    if (lcbuf->negative_sign && *lcbuf->negative_sign)
-		(void) hv_store(RETVAL, "negative_sign", 13,
-		    newSVpv(lcbuf->negative_sign, 0), 0);
-	    /* the integers */
-	    if (lcbuf->int_frac_digits != CHAR_MAX)
-		(void) hv_store(RETVAL, "int_frac_digits", 15,
-		    newSViv(lcbuf->int_frac_digits), 0);
-	    if (lcbuf->frac_digits != CHAR_MAX)
-		(void) hv_store(RETVAL, "frac_digits", 11,
-		    newSViv(lcbuf->frac_digits), 0);
-	    if (lcbuf->p_cs_precedes != CHAR_MAX)
-		(void) hv_store(RETVAL, "p_cs_precedes", 13,
-		    newSViv(lcbuf->p_cs_precedes), 0);
-	    if (lcbuf->p_sep_by_space != CHAR_MAX)
-		(void) hv_store(RETVAL, "p_sep_by_space", 14,
-		    newSViv(lcbuf->p_sep_by_space), 0);
-	    if (lcbuf->n_cs_precedes != CHAR_MAX)
-		(void) hv_store(RETVAL, "n_cs_precedes", 13,
-		    newSViv(lcbuf->n_cs_precedes), 0);
-	    if (lcbuf->n_sep_by_space != CHAR_MAX)
-		(void) hv_store(RETVAL, "n_sep_by_space", 14,
-		    newSViv(lcbuf->n_sep_by_space), 0);
-	    if (lcbuf->p_sign_posn != CHAR_MAX)
-		(void) hv_store(RETVAL, "p_sign_posn", 11,
-		    newSViv(lcbuf->p_sign_posn), 0);
-	    if (lcbuf->n_sign_posn != CHAR_MAX)
-		(void) hv_store(RETVAL, "n_sign_posn", 11,
-		    newSViv(lcbuf->n_sign_posn), 0);
+	    const struct lconv_offset *strings = lconv_strings;
+	    const struct lconv_offset *integers = lconv_integers;
+	    const char *ptr = (const char *) lcbuf;
+
+	    do {
+		const char *value = *((const char **)(ptr + strings->offset));
+
+		if (value && *value)
+		    (void) hv_store(RETVAL, strings->name, strlen(strings->name),
+				    newSVpv(value, 0), 0);
+	    } while ((++strings)->name);
+
+	    do {
+		const char value = *((const char *)(ptr + integers->offset));
+
+		if (value != CHAR_MAX)
+		    (void) hv_store(RETVAL, integers->name,
+				    strlen(integers->name), newSViv(value), 0);
+	    } while ((++integers)->name);
 	}
 #else
 	localeconv(); /* A stub to call not_here(). */
@@ -1223,8 +937,15 @@ setlocale(category, locale = 0)
     PREINIT:
 	char *		retval;
     CODE:
+#ifdef WIN32    /* Use wrapper on Windows */
+	retval = Perl_my_setlocale(aTHX_ category, locale);
+#else
 	retval = setlocale(category, locale);
-	if (retval) {
+#endif
+	if (! retval) {
+            XSRETURN_UNDEF;
+        }
+        else {
 	    /* Save retval since subsequent setlocale() calls
 	     * may overwrite it. */
 	    RETVAL = savepv(retval);
@@ -1280,37 +1001,58 @@ setlocale(category, locale = 0)
 	    }
 #endif /* USE_LOCALE_NUMERIC */
 	}
-	else
-	    RETVAL = NULL;
     OUTPUT:
 	RETVAL
     CLEANUP:
-        if (RETVAL)
-	    Safefree(RETVAL);
+        Safefree(RETVAL);
 
 NV
 acos(x)
 	NV		x
-
-NV
-asin(x)
-	NV		x
-
-NV
-atan(x)
-	NV		x
-
-NV
-ceil(x)
-	NV		x
-
-NV
-cosh(x)
-	NV		x
-
-NV
-floor(x)
-	NV		x
+    ALIAS:
+	asin = 1
+	atan = 2
+	ceil = 3
+	cosh = 4
+	floor = 5
+	log10 = 6
+	sinh = 7
+	tan = 8
+	tanh = 9
+    CODE:
+	switch (ix) {
+	case 0:
+	    RETVAL = acos(x);
+	    break;
+	case 1:
+	    RETVAL = asin(x);
+	    break;
+	case 2:
+	    RETVAL = atan(x);
+	    break;
+	case 3:
+	    RETVAL = ceil(x);
+	    break;
+	case 4:
+	    RETVAL = cosh(x);
+	    break;
+	case 5:
+	    RETVAL = floor(x);
+	    break;
+	case 6:
+	    RETVAL = log10(x);
+	    break;
+	case 7:
+	    RETVAL = sinh(x);
+	    break;
+	case 8:
+	    RETVAL = tan(x);
+	    break;
+	default:
+	    RETVAL = tanh(x);
+	}
+    OUTPUT:
+	RETVAL
 
 NV
 fmod(x,y)
@@ -1331,10 +1073,6 @@ ldexp(x,exp)
 	NV		x
 	int		exp
 
-NV
-log10(x)
-	NV		x
-
 void
 modf(x)
 	NV		x
@@ -1343,18 +1081,6 @@ modf(x)
 	/* (We already know stack is long enough.) */
 	PUSHs(sv_2mortal(newSVnv(Perl_modf(x,&intvar))));
 	PUSHs(sv_2mortal(newSVnv(intvar)));
-
-NV
-sinh(x)
-	NV		x
-
-NV
-tan(x)
-	NV		x
-
-NV
-tanh(x)
-	NV		x
 
 SysRet
 sigaction(sig, optaction, oldaction = 0)
@@ -1459,12 +1185,12 @@ sigaction(sig, optaction, oldaction = 0)
 		/* Get back the mask. */
 		svp = hv_fetchs(oldaction, "MASK", TRUE);
 		if (sv_isa(*svp, "POSIX::SigSet")) {
-		    IV tmp = SvIV((SV*)SvRV(*svp));
-		    sigset = INT2PTR(sigset_t*, tmp);
+		    sigset = (sigset_t *) SvPV_nolen(SvRV(*svp));
 		}
 		else {
-		    Newx(sigset, 1, sigset_t);
-		    sv_setptrobj(*svp, sigset, "POSIX::SigSet");
+		    sigset = (sigset_t *) allocate_struct(aTHX_ *svp,
+							  sizeof(sigset_t),
+							  "POSIX::SigSet");
 		}
 		*sigset = oact.sa_mask;
 
@@ -1518,8 +1244,7 @@ sigaction(sig, optaction, oldaction = 0)
 		/* Set up any desired mask. */
 		svp = hv_fetchs(action, "MASK", FALSE);
 		if (svp && sv_isa(*svp, "POSIX::SigSet")) {
-		    IV tmp = SvIV((SV*)SvRV(*svp));
-		    sigset = INT2PTR(sigset_t*, tmp);
+		    sigset = (sigset_t *) SvPV_nolen(SvRV(*svp));
 		    act.sa_mask = *sigset;
 		}
 		else
@@ -1550,6 +1275,14 @@ sigaction(sig, optaction, oldaction = 0)
 SysRet
 sigpending(sigset)
 	POSIX::SigSet		sigset
+    ALIAS:
+	sigsuspend = 1
+    CODE:
+	RETVAL = ix ? sigsuspend(sigset) : sigpending(sigset);
+    OUTPUT:
+	RETVAL
+    CLEANUP:
+    PERL_ASYNC_CHECK();
 
 SysRet
 sigprocmask(how, sigset, oldsigset = 0)
@@ -1560,8 +1293,7 @@ INIT:
 	if (! SvOK(ST(1))) {
 	    sigset = NULL;
 	} else if (sv_isa(ST(1), "POSIX::SigSet")) {
-	    IV tmp = SvIV((SV*)SvRV(ST(1)));
-	    sigset = INT2PTR(POSIX__SigSet,tmp);
+	    sigset = (sigset_t *) SvPV_nolen(SvRV(ST(1)));
 	} else {
 	    croak("sigset is not of type POSIX::SigSet");
 	}
@@ -1569,32 +1301,30 @@ INIT:
 	if (items < 3 || ! SvOK(ST(2))) {
 	    oldsigset = NULL;
 	} else if (sv_isa(ST(2), "POSIX::SigSet")) {
-	    IV tmp = SvIV((SV*)SvRV(ST(2)));
-	    oldsigset = INT2PTR(POSIX__SigSet,tmp);
+	    oldsigset = (sigset_t *) SvPV_nolen(SvRV(ST(2)));
 	} else {
 	    croak("oldsigset is not of type POSIX::SigSet");
 	}
-
-SysRet
-sigsuspend(signal_mask)
-	POSIX::SigSet		signal_mask
 
 void
 _exit(status)
 	int		status
 
 SysRet
-close(fd)
-	int		fd
-
-SysRet
-dup(fd)
-	int		fd
-
-SysRet
 dup2(fd1, fd2)
 	int		fd1
 	int		fd2
+    CODE:
+#ifdef WIN32
+	/* RT #98912 - More Microsoft muppetry - failing to actually implemented
+	   the well known documented POSIX behaviour for a POSIX API.
+	   http://msdn.microsoft.com/en-us/library/8syseb29.aspx   */
+	RETVAL = dup2(fd1, fd2) == -1 ? -1 : fd2;
+#else
+	RETVAL = dup2(fd1, fd2);
+#endif
+    OUTPUT:
+	RETVAL
 
 SV *
 lseek(fd, offset, whence)
@@ -1742,7 +1472,7 @@ strtod(str)
 	double num;
 	char *unparsed;
     PPCODE:
-	SET_NUMERIC_LOCAL();
+        STORE_NUMERIC_STANDARD_FORCE_LOCAL();
 	num = strtod(str, &unparsed);
 	PUSHs(sv_2mortal(newSVnv(num)));
 	if (GIMME == G_ARRAY) {
@@ -1752,6 +1482,7 @@ strtod(str)
 	    else
 		PUSHs(&PL_sv_undef);
 	}
+        RESTORE_NUMERIC_STANDARD();
 
 void
 strtol(str, base = 0)
@@ -1824,34 +1555,45 @@ SysRet
 mkfifo(filename, mode)
 	char *		filename
 	Mode_t		mode
+    ALIAS:
+	access = 1
     CODE:
-	TAINT_PROPER("mkfifo");
-	RETVAL = mkfifo(filename, mode);
+	if(ix) {
+	    RETVAL = access(filename, mode);
+	} else {
+	    TAINT_PROPER("mkfifo");
+	    RETVAL = mkfifo(filename, mode);
+	}
     OUTPUT:
 	RETVAL
 
 SysRet
 tcdrain(fd)
 	int		fd
+    ALIAS:
+	close = 1
+	dup = 2
+    CODE:
+	RETVAL = ix == 1 ? close(fd)
+	    : (ix < 1 ? tcdrain(fd) : dup(fd));
+    OUTPUT:
+	RETVAL
 
 
 SysRet
 tcflow(fd, action)
 	int		fd
 	int		action
+    ALIAS:
+	tcflush = 1
+	tcsendbreak = 2
+    CODE:
+	RETVAL = ix == 1 ? tcflush(fd, action)
+	    : (ix < 1 ? tcflow(fd, action) : tcsendbreak(fd, action));
+    OUTPUT:
+	RETVAL
 
-
-SysRet
-tcflush(fd, queue_selector)
-	int		fd
-	int		queue_selector
-
-SysRet
-tcsendbreak(fd, duration)
-	int		fd
-	int		duration
-
-char *
+void
 asctime(sec, min, hour, mday, mon, year, wday = 0, yday = 0, isdst = -1)
 	int		sec
 	int		min
@@ -1862,10 +1604,13 @@ asctime(sec, min, hour, mday, mon, year, wday = 0, yday = 0, isdst = -1)
 	int		wday
 	int		yday
 	int		isdst
-    CODE:
+    ALIAS:
+	mktime = 1
+    PPCODE:
 	{
+	    dXSTARG;
 	    struct tm mytm;
-	    init_tm(&mytm);	/* XXX workaround - see init_tm() above */
+	    init_tm(&mytm);	/* XXX workaround - see init_tm() in core util.c */
 	    mytm.tm_sec = sec;
 	    mytm.tm_min = min;
 	    mytm.tm_hour = hour;
@@ -1875,10 +1620,20 @@ asctime(sec, min, hour, mday, mon, year, wday = 0, yday = 0, isdst = -1)
 	    mytm.tm_wday = wday;
 	    mytm.tm_yday = yday;
 	    mytm.tm_isdst = isdst;
-	    RETVAL = asctime(&mytm);
+	    if (ix) {
+	        const time_t result = mktime(&mytm);
+		if (result == (time_t)-1)
+		    SvOK_off(TARG);
+		else if (result == 0)
+		    sv_setpvn(TARG, "0 but true", 10);
+		else
+		    sv_setiv(TARG, (IV)result);
+	    } else {
+		sv_setpv(TARG, asctime(&mytm));
+	    }
+	    ST(0) = TARG;
+	    XSRETURN(1);
 	}
-    OUTPUT:
-	RETVAL
 
 long
 clock()
@@ -1905,35 +1660,6 @@ difftime(time1, time2)
 	Time_t		time1
 	Time_t		time2
 
-SysRetLong
-mktime(sec, min, hour, mday, mon, year, wday = 0, yday = 0, isdst = -1)
-	int		sec
-	int		min
-	int		hour
-	int		mday
-	int		mon
-	int		year
-	int		wday
-	int		yday
-	int		isdst
-    CODE:
-	{
-	    struct tm mytm;
-	    init_tm(&mytm);	/* XXX workaround - see init_tm() above */
-	    mytm.tm_sec = sec;
-	    mytm.tm_min = min;
-	    mytm.tm_hour = hour;
-	    mytm.tm_mday = mday;
-	    mytm.tm_mon = mon;
-	    mytm.tm_year = year;
-	    mytm.tm_wday = wday;
-	    mytm.tm_yday = yday;
-	    mytm.tm_isdst = isdst;
-	    RETVAL = (SysRetLong) mktime(&mytm);
-	}
-    OUTPUT:
-	RETVAL
-
 #XXX: if $xsubpp::WantOptimize is always the default
 #     sv_setpv(TARG, ...) could be used rather than
 #     ST(0) = sv_2mortal(newSVpv(...))
@@ -1951,7 +1677,14 @@ strftime(fmt, sec, min, hour, mday, mon, year, wday = -1, yday = -1, isdst = -1)
 	int		isdst
     CODE:
 	{
-	    char *buf = my_strftime(SvPV_nolen(fmt), sec, min, hour, mday, mon, year, wday, yday, isdst);
+	    char *buf;
+
+            /* allowing user-supplied (rather than literal) formats
+             * is normally frowned upon as a potential security risk;
+             * but this is part of the API so we have to allow it */
+            GCC_DIAG_IGNORE(-Wformat-nonliteral);
+	    buf = my_strftime(SvPV_nolen(fmt), sec, min, hour, mday, mon, year, wday, yday, isdst);
+            GCC_DIAG_RESTORE;
 	    if (buf) {
 		SV *const sv = sv_newmortal();
 		sv_usepvn_flags(sv, buf, strlen(buf), SV_HAS_TRAILING_NUL);
@@ -1973,11 +1706,6 @@ tzname()
 	EXTEND(SP,2);
 	PUSHs(newSVpvn_flags(tzname[0], strlen(tzname[0]), SVs_TEMP));
 	PUSHs(newSVpvn_flags(tzname[1], strlen(tzname[1]), SVs_TEMP));
-
-SysRet
-access(filename, mode)
-	char *		filename
-	Mode_t		mode
 
 char *
 ctermid(s = 0)
@@ -2019,28 +1747,24 @@ pathconf(filename, name)
 
 SysRet
 pause()
+    CLEANUP:
+    PERL_ASYNC_CHECK();
+
+unsigned int
+sleep(seconds)
+	unsigned int	seconds
+    CODE:
+	RETVAL = PerlProc_sleep(seconds);
+    OUTPUT:
+	RETVAL
 
 SysRet
 setgid(gid)
 	Gid_t		gid
-    CLEANUP:
-#ifndef WIN32
-	if (RETVAL >= 0) {
-	    PL_gid  = getgid();
-	    PL_egid = getegid();
-	}
-#endif
 
 SysRet
 setuid(uid)
 	Uid_t		uid
-    CLEANUP:
-#ifndef WIN32
-	if (RETVAL >= 0) {
-	    PL_uid  = getuid();
-	    PL_euid = geteuid();
-	}
-#endif
 
 SysRetLong
 sysconf(name)

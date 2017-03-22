@@ -1,8 +1,11 @@
 
 BEGIN {
-    unless ("A" eq pack('U', 0x41)) {
-	print "1..0 # Unicode::Collate " .
-	    "cannot stringify a Unicode code point\n";
+    unless ('A' eq pack('U', 0x41)) {
+	print "1..0 # Unicode::Collate cannot pack a Unicode code point\n";
+	exit 0;
+    }
+    unless (0x41 == unpack('U', 'A')) {
+	print "1..0 # Unicode::Collate cannot get a Unicode code point\n";
 	exit 0;
     }
     if ($ENV{PERL_CORE}) {
@@ -11,11 +14,19 @@ BEGIN {
     }
 }
 
-use Test;
-BEGIN { plan tests => 95 };
-
 use strict;
 use warnings;
+BEGIN { $| = 1; print "1..101\n"; }
+my $count = 0;
+sub ok ($;$) {
+    my $p = my $r = shift;
+    if (@_) {
+	my $x = shift;
+	$p = !defined $x ? !defined $r : !defined $r ? 0 : $r eq $x;
+    }
+    print $p ? "ok" : "not ok", ' ', ++$count, "\n";
+}
+
 use Unicode::Collate::Locale;
 
 ok(1);
@@ -49,7 +60,7 @@ $objNn->change(level => 1);
 ok($objNn->lt('z', $ae));
 ok($objNn->lt($ae, $ostk));
 ok($objNn->lt($ostk, $arng));
-ok($objNn->lt($arng, "\x{292}"));
+ok($objNn->lt($arng, "\x{1C0}"));
 
 # 6
 
@@ -62,8 +73,9 @@ ok($objNn->eq($auml, "\x{119}"));
 ok($objNn->eq($ostk, $ouml));
 ok($objNn->eq($ouml, "\x{151}"));
 ok($objNn->eq("\x{151}", "\x{153}"));
+ok($objNn->eq($arng, 'aa'));
 
-# 15
+# 16
 
 $objNn->change(level => 2);
 
@@ -76,8 +88,9 @@ ok($objNn->lt($auml, "\x{119}"));
 ok($objNn->lt($ostk, $ouml));
 ok($objNn->lt($ouml, "\x{151}"));
 ok($objNn->lt("\x{151}", "\x{153}"));
+ok($objNn->lt($arng, 'aa'));
 
-# 24
+# 26
 
 ok($objNn->eq("\x{111}", "\x{110}"));
 ok($objNn->eq($eth,  $ETH));
@@ -95,8 +108,10 @@ ok($objNn->eq($ouml, $Ouml));
 ok($objNn->eq("\x{151}", "\x{150}"));
 ok($objNn->eq("\x{153}", "\x{152}"));
 ok($objNn->eq($arng, $Arng));
+ok($objNn->eq('aa', 'Aa'));
+ok($objNn->eq('Aa', 'AA'));
 
-# 40
+# 44
 
 $objNn->change(level => 3);
 
@@ -116,8 +131,10 @@ ok($objNn->lt($ouml, $Ouml));
 ok($objNn->lt("\x{151}", "\x{150}"));
 ok($objNn->lt("\x{153}", "\x{152}"));
 ok($objNn->lt($arng, $Arng));
+ok($objNn->lt('aa', 'Aa'));
+ok($objNn->lt('Aa', 'AA'));
 
-# 56
+# 62
 
 ok($objNn->eq("d\x{335}", "\x{111}"));
 ok($objNn->eq("D\x{335}", "\x{110}"));
@@ -138,7 +155,7 @@ ok($objNn->eq("O\x{30B}", "\x{150}"));
 ok($objNn->eq("a\x{30A}", $arng));
 ok($objNn->eq("A\x{30A}", $Arng));
 
-# 74
+# 80
 
 ok($objNn->eq("u\x{308}\x{300}", "\x{1DC}"));
 ok($objNn->eq("U\x{308}\x{300}", "\x{1DB}"));
@@ -162,4 +179,4 @@ ok($objNn->eq("A\x{30A}", "\x{212B}"));
 ok($objNn->eq("a\x{30A}\x{301}", "\x{1FB}"));
 ok($objNn->eq("A\x{30A}\x{301}", "\x{1FA}"));
 
-# 95
+# 101

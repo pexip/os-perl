@@ -4,13 +4,7 @@
 #
 ################################################################################
 #
-#  $Revision: 65 $
-#  $Author: mhx $
-#  $Date: 2009/06/12 04:10:36 +0200 $
-#
-################################################################################
-#
-#  Version 3.x, Copyright (C) 2004-2009, Marcus Holland-Moritz.
+#  Version 3.x, Copyright (C) 2004-2013, Marcus Holland-Moritz.
 #  Version 2.x, Copyright (C) 2001, Paul Marquess.
 #  Version 1.x, Copyright (C) 1999, Kenneth Albanowski.
 #
@@ -37,7 +31,7 @@ $data =~ s{^\%(include)\s+(\w+)((?:[^\S\r\n]+.*?)?)\s*$}
 
 $data = expand($data);
 
-my @api = sort { lc $a cmp lc $b } keys %provides;
+my @api = sort { lc $a cmp lc $b or $a cmp $b } keys %provides;
 
 $data =~ s{^(.*)__PROVIDED_API__(\s*?)^}
           {join '', map "$1$_\n", @api}gem;
@@ -126,7 +120,7 @@ $data =~ s{^__UNSUPPORTED_API__(\s*?)^}
           {join "\n", @todo}gem;
 
 $data =~ s{__MIN_PERL__}{5.003}g;
-$data =~ s{__MAX_PERL__}{5.10.0}g;
+$data =~ s{__MAX_PERL__}{5.11.5}g;
 
 open FH, ">PPPort.pm" or die "PPPort.pm: $!\n";
 print FH $data;
@@ -372,13 +366,7 @@ __DATA__
 #
 ################################################################################
 #
-#  $Revision: 65 $
-#  $Author: mhx $
-#  $Date: 2009/06/12 04:10:36 +0200 $
-#
-################################################################################
-#
-#  Version 3.x, Copyright (C) 2004-2009, Marcus Holland-Moritz.
+#  Version 3.x, Copyright (C) 2004-2013, Marcus Holland-Moritz.
 #  Version 2.x, Copyright (C) 2001, Paul Marquess.
 #  Version 1.x, Copyright (C) 1999, Kenneth Albanowski.
 #
@@ -515,7 +503,7 @@ Version 3.x was ported back to CPAN by Marcus Holland-Moritz.
 
 =head1 COPYRIGHT
 
-Version 3.x, Copyright (C) 2004-2009, Marcus Holland-Moritz.
+Version 3.x, Copyright (C) 2004-2013, Marcus Holland-Moritz.
 
 Version 2.x, Copyright (C) 2001, Paul Marquess.
 
@@ -535,7 +523,7 @@ package Devel::PPPort;
 use strict;
 use vars qw($VERSION $data);
 
-$VERSION = do { my @r = '$Snapshot: /Devel-PPPort/3.19 $' =~ /(\d+\.\d+(?:_\d+)?)/; @r ? $r[0] : '9.99' };
+$VERSION = '3.21';
 
 sub _init_data
 {

@@ -42,7 +42,7 @@ delete $MM->{CFLAGS};
 
 # ExtUtils::MM_Cygwin::cflags() calls this, fake the output
 {
-    local $SIG{__WARN__} = sub { 
+    local $SIG{__WARN__} = sub {
         warn @_ unless $_[0] =~ /^Subroutine .* redefined/;
     };
     *ExtUtils::MM_Unix::cflags = sub { return $_[1] };
@@ -115,8 +115,10 @@ SKIP: {
 }
 
 # Our copy of Perl (with a unix-path) should always be executable.
-ok(MM->maybe_command($Config{perlpath}), qq{'$Config{perlpath}' should be executable});
-
+SKIP: {
+  skip "The Perl may not be installed yet when in core" if $ENV{PERL_CORE};
+  ok(MM->maybe_command($Config{perlpath}), qq{'$Config{perlpath}' should be executable});
+}
 
 package FakeOut;
 

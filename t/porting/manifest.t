@@ -1,19 +1,44 @@
 #!./perl -w
 
-# Test the well-formed-ness of the MANIFEST file.
+# What does this test?
+# This tests the well-formed-ness of the MANIFEST file.
+#
+# Why do we test this?
+# TK
+#
+# It's broken - how do I fix it?
+# If MANIFEST is not sorted properly, you will get this error output:
+#      got ''MANIFEST' is NOT sorted properly
+#      # '
+#      # expected /(?^:is sorted properly)/
+#
+# To correct this, run either:
+#
+#   ./perl -Ilib Porting/manisort -o MANIFEST MANIFEST
+#
+# which will output "'MANIFEST' is NOT sorted properly" but which will
+# correct the problem; or:
+#
+#   make manifest
+#
+# which will output "WARNING: re-sorting MANIFEST" but which will also
+# correct the problem.
 
+use Config;
 BEGIN {
-    chdir 't';
-    @INC = '../lib';
+    @INC = '..' if -f '../TestInit.pm';
 }
+use TestInit qw(T); # T is chdir to the top level
 
-use strict;
-use File::Spec;
-require './test.pl';
+require 't/test.pl';
+
+skip_all("Cross-compiling, the entire source might not be available")
+    if $Config{usecrosscompile};
+
 
 plan('no_plan');
 
-my $manifest = File::Spec->catfile(File::Spec->updir(), 'MANIFEST');
+my $manifest = 'MANIFEST';
 
 open my $m, '<', $manifest or die "Can't open '$manifest': $!";
 my @files;
@@ -29,8 +54,7 @@ while (<$m>) {
     push @files, $file;
 
     isnt($file, undef, "Line $. doesn't start with a blank") or next;
-    # Remember, we're running from t/
-    ok(-f "../$file", "File $file exists");
+    ok(-f $file, "File $file exists");
     if ($separator !~ tr/\t//c) {
 	# It's all tabs
 	next;
@@ -48,22 +72,22 @@ close $m or die $!;
 
 # Test that MANIFEST is properly sorted
 SKIP: {
-    skip("'Porting/manisort' not found", 1) if (! -f '../Porting/manisort');
+    skip("'Porting/manisort' not found", 1) if (! -f 'Porting/manisort');
 
-    my $result = runperl('progfile' => '../Porting/manisort',
-                         'args'     => [ '-c', '../MANIFEST' ],
-                         'stderr'   => 1);
+    my $result = runperl('progfile' => 'Porting/manisort',
+                         'args'     => [ '-c', $manifest ],
+                         'stderr'   => 1,
+                         'nolib'    => 1 );
 
     like($result, qr/is sorted properly/, 'MANIFEST sorted properly');
 }
 
 SKIP: {
-    chdir "..";
-    skip("not under git control", 3) unless -d '.git';
+    find_git_or_skip(6);
     chomp(my @repo= grep { !/\.gitignore$/ } `git ls-files`);
     skip("git ls-files didnt work",3)
         if !@repo;
-    is( 0+@repo, 0+@files, "git ls-files has a corresponding number of files as does MANIFEST");
+    is( 0+@repo, 0+@files, "git ls-files gives the same number of files as MANIFEST lists");
     my %repo= map { $_ => 1 } @repo;
     my %mani= map { $_ => 1 } @files;
     is( 0+keys %mani, 0+@files, "no duplicate files in MANIFEST");

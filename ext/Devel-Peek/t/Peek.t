@@ -6,6 +6,11 @@ BEGIN {
         print "1..0 # Skip: Devel::Peek was not built\n";
         exit 0;
     }
+    {
+    package t;
+       my $core = !!$ENV{PERL_CORE};
+       require($core ? '../../t/test.pl' : './t/test.pl');
+    }
 }
 
 use Test::More;
@@ -25,15 +30,30 @@ Good    @>>>>>
 $::mmmm
 .
 
+use constant thr => $Config{useithreads};
+
 sub do_test {
     my $todo = $_[3];
     my $repeat_todo = $_[4];
     my $pattern = $_[2];
+    my $do_eval = $_[5];
     if (open(OUT,">peek$$")) {
 	open(STDERR, ">&OUT") or die "Can't dup OUT: $!";
-	Dump($_[1]);
-        print STDERR "*****\n";
-        Dump($_[1]); # second dump to compare with the first to make sure nothing changed.
+        if ($do_eval) {
+            my $sub = eval "sub { Dump $_[1] }";
+            $sub->();
+            print STDERR "*****\n";
+            # second dump to compare with the first to make sure nothing
+            # changed.
+            $sub->();
+        }
+        else {
+            Dump($_[1]);
+            print STDERR "*****\n";
+            # second dump to compare with the first to make sure nothing
+            # changed.
+            Dump($_[1]);
+        }
 	open(STDERR, ">&SAVERR") or die "Can't restore STDERR: $!";
 	close(OUT);
 	if (open(IN, "peek$$")) {
@@ -54,11 +74,10 @@ sub do_test {
 	    # legitimate regexp, it still isn't true. Seems easier and clearer
 	    # things that look like comments.
 
-	    my $version_condition = qr/\$] [<>]=? 5\.\d\d\d/;
 	    # Could do this is in a s///mge but seems clearer like this:
 	    $pattern = join '', map {
 		# If we identify the version condition, take *it* out whatever
-		s/\s*# ($version_condition(?: && $version_condition)?)$//
+		s/\s*# (\$].*)$//
 		    ? (eval $1 ? $_ : '')
 		    : $_ # Didn't match, so this line is in
 	    } split /^/, $pattern;
@@ -72,7 +91,10 @@ sub do_test {
 	    $pattern =~ s/\$RV/
 		($] < 5.011) ? 'RV' : 'IV';
 	    /mge;
-
+	    $pattern =~ s/^\h+COW_REFCNT = .*\n//mg
+		if $Config{ccflags} =~
+			/-DPERL_(?:OLD_COPY_ON_WRITE|NO_COW)/
+			    || $] < 5.019003;
 	    print $pattern, "\n" if $DEBUG;
 	    my ($dump, $dump2) = split m/\*\*\*\*\*\n/, scalar <IN>;
 	    print $dump, "\n"    if $DEBUG;
@@ -107,20 +129,23 @@ do_test('assignment of immediate constant (string)',
 	$a = "foo",
 'SV = PV\\($ADDR\\) at $ADDR
   REFCNT = 1
-  FLAGS = \\(POK,pPOK\\)
+  FLAGS = \\(POK,(?:IsCOW,)?pPOK\\)
   PV = $ADDR "foo"\\\0
   CUR = 3
-  LEN = \\d+'
-       );
+  LEN = \\d+
+  COW_REFCNT = 1
+');
 
 do_test('immediate constant (string)',
         "bar",
 'SV = PV\\($ADDR\\) at $ADDR
   REFCNT = 1
-  FLAGS = \\(.*POK,READONLY,pPOK\\)
+  FLAGS = \\(.*POK,READONLY,(?:IsCOW,)?pPOK\\)
   PV = $ADDR "bar"\\\0
   CUR = 3
-  LEN = \\d+');
+  LEN = \\d+
+  COW_REFCNT = 0
+');
 
 do_test('assignment of immediate constant (integer)',
         $b = 123,
@@ -152,13 +177,17 @@ my $type = do_test('result of addition',
         $c + $d,
 'SV = ([NI])V\\($ADDR\\) at $ADDR
   REFCNT = 1
-  FLAGS = \\(PADTMP,\1OK,p\1OK\\)
+  FLAGS = \\(PADTMP,\1OK,p\1OK\\)		# $] < 5.019003
+  FLAGS = \\(\1OK,p\1OK\\)			# $] >=5.019003
   \1V = 456');
 
 ($d = "789") += 0.1;
 
 do_test('floating point value',
        $d,
+       $] < 5.019003
+        || $Config{ccflags} =~ /-DPERL_(?:NO_COW|OLD_COPY_ON_WRITE)/
+       ?
 'SV = PVNV\\($ADDR\\) at $ADDR
   REFCNT = 1
   FLAGS = \\(NOK,pNOK\\)
@@ -166,7 +195,14 @@ do_test('floating point value',
   NV = 789\\.(?:1(?:000+\d+)?|0999+\d+)
   PV = $ADDR "789"\\\0
   CUR = 3
-  LEN = \\d+');
+  LEN = \\d+'
+       :
+'SV = PVNV\\($ADDR\\) at $ADDR
+  REFCNT = 1
+  FLAGS = \\(NOK,pNOK\\)
+  IV = \d+
+  NV = 789\\.(?:1(?:000+\d+)?|0999+\d+)
+  PV = 0');
 
 do_test('integer constant',
         0xabcd,
@@ -178,8 +214,8 @@ do_test('integer constant',
 do_test('undef',
         undef,
 'SV = NULL\\(0x0\\) at $ADDR
-  REFCNT = 1
-  FLAGS = \\(\\)');
+  REFCNT = \d+
+  FLAGS = \\(READONLY\\)');
 
 do_test('reference to scalar',
         \$a,
@@ -189,10 +225,12 @@ do_test('reference to scalar',
   RV = $ADDR
   SV = PV\\($ADDR\\) at $ADDR
     REFCNT = 2
-    FLAGS = \\(POK,pPOK\\)
+    FLAGS = \\(POK,(?:IsCOW,)?pPOK\\)
     PV = $ADDR "foo"\\\0
     CUR = 3
-    LEN = \\d+');
+    LEN = \\d+
+    COW_REFCNT = 1
+');
 
 my $c_pattern;
 if ($type eq 'N') {
@@ -240,7 +278,7 @@ do_test('reference to hash',
   FLAGS = \\(ROK\\)
   RV = $ADDR
   SV = PVHV\\($ADDR\\) at $ADDR
-    REFCNT = 1
+    REFCNT = [12]
     FLAGS = \\(SHAREKEYS\\)
     IV = 1					# $] < 5.009
     NV = $FLOAT					# $] < 5.009
@@ -249,11 +287,10 @@ do_test('reference to hash',
     KEYS = 1
     FILL = 1
     MAX = 7
-    RITER = -1
-    EITER = 0x0
     Elt "123" HASH = $ADDR' . $c_pattern,
 	'',
-	$] > 5.009 && 'The hash iterator used in dump.c sets the OOK flag');
+	$] > 5.009 && $] < 5.015
+	 && 'The hash iterator used in dump.c sets the OOK flag');
 
 do_test('reference to anon sub with empty prototype',
         sub(){@_},
@@ -263,7 +300,8 @@ do_test('reference to anon sub with empty prototype',
   RV = $ADDR
   SV = PVCV\\($ADDR\\) at $ADDR
     REFCNT = 2
-    FLAGS = \\($PADMY,POK,pPOK,ANON,WEAKOUTSIDE,CVGV_RC\\)
+    FLAGS = \\($PADMY,POK,pPOK,ANON,WEAKOUTSIDE,CVGV_RC\\) # $] < 5.015 || !thr
+    FLAGS = \\($PADMY,POK,pPOK,ANON,WEAKOUTSIDE,CVGV_RC,DYNFILE\\) # $] >= 5.015 && thr
     IV = 0					# $] < 5.009
     NV = 0					# $] < 5.009
     PROTOTYPE = ""
@@ -278,7 +316,8 @@ do_test('reference to anon sub with empty prototype',
     MUTEXP = $ADDR
     OWNER = $ADDR)?
     FLAGS = 0x404				# $] < 5.009
-    FLAGS = 0x490				# $] >= 5.009
+    FLAGS = 0x490		# $] >= 5.009 && ($] < 5.015 || !thr)
+    FLAGS = 0x1490				# $] >= 5.015 && thr
     OUTSIDE_SEQ = \\d+
     PADLIST = $ADDR
     PADNAME = $ADDR\\($ADDR\\) PAD = $ADDR\\($ADDR\\)
@@ -292,7 +331,8 @@ do_test('reference to named subroutine without prototype',
   RV = $ADDR
   SV = PVCV\\($ADDR\\) at $ADDR
     REFCNT = (3|4)
-    FLAGS = \\(\\)
+    FLAGS = \\((?:HASEVAL)?\\)			# $] < 5.015 || !thr
+    FLAGS = \\(DYNFILE(?:,HASEVAL)?\\)		# $] >= 5.015 && thr
     IV = 0					# $] < 5.009
     NV = 0					# $] < 5.009
     COMP_STASH = $ADDR\\t"main"
@@ -302,17 +342,19 @@ do_test('reference to named subroutine without prototype',
     XSUBANY = 0					# $] < 5.009
     GVGV::GV = $ADDR\\t"main" :: "do_test"
     FILE = ".*\\b(?i:peek\\.t)"
-    DEPTH = 1
-(?:    MUTEXP = $ADDR
-    OWNER = $ADDR
-)?    FLAGS = 0x0
+    DEPTH = 1(?:
+    MUTEXP = $ADDR
+    OWNER = $ADDR)?
+    FLAGS = 0x(?:400)?0				# $] < 5.015 || !thr
+    FLAGS = 0x[145]000				# $] >= 5.015 && thr
     OUTSIDE_SEQ = \\d+
     PADLIST = $ADDR
     PADNAME = $ADDR\\($ADDR\\) PAD = $ADDR\\($ADDR\\)
        \\d+\\. $ADDR<\\d+> \\(\\d+,\\d+\\) "\\$todo"
        \\d+\\. $ADDR<\\d+> \\(\\d+,\\d+\\) "\\$repeat_todo"
        \\d+\\. $ADDR<\\d+> \\(\\d+,\\d+\\) "\\$pattern"
-      \\d+\\. $ADDR<\\d+> \\(\\d+,\\d+\\) "\\$version_condition"
+       \\d+\\. $ADDR<\\d+> \\(\\d+,\\d+\\) "\\$do_eval"
+      \\d+\\. $ADDR<\\d+> \\(\\d+,\\d+\\) "\\$sub"
       \\d+\\. $ADDR<\\d+> FAKE "\\$DEBUG"			# $] < 5.009
       \\d+\\. $ADDR<\\d+> FAKE "\\$DEBUG" flags=0x0 index=0	# $] >= 5.009
       \\d+\\. $ADDR<\\d+> \\(\\d+,\\d+\\) "\\$dump"
@@ -320,6 +362,7 @@ do_test('reference to named subroutine without prototype',
     OUTSIDE = $ADDR \\(MAIN\\)');
 
 if ($] >= 5.011) {
+# note the conditionals on ENGINE and INTFLAGS were introduced in 5.19.9
 do_test('reference to regexp',
         qr(tic),
 'SV = $RV\\($ADDR\\) at $ADDR
@@ -328,15 +371,18 @@ do_test('reference to regexp',
   RV = $ADDR
   SV = REGEXP\\($ADDR\\) at $ADDR
     REFCNT = 1
-    FLAGS = \\(OBJECT,POK,FAKE,pPOK\\)
+    FLAGS = \\(OBJECT,POK,FAKE,pPOK\\)		# $] < 5.017006
+    FLAGS = \\(OBJECT,FAKE\\)			# $] >= 5.017006
     PV = $ADDR "\\(\\?\\^:tic\\)"
     CUR = 8
-    LEN = 0
+    LEN = 0					# $] < 5.017006
     STASH = $ADDR\\t"Regexp"'
 . ($] < 5.013 ? '' :
 '
+    COMPFLAGS = 0x0 \(\)
     EXTFLAGS = 0x680000 \(CHECK_ALL,USE_INTUIT_NOML,USE_INTUIT_ML\)
-    INTFLAGS = 0x0
+(?:    ENGINE = $ADDR \(STANDARD\)
+)?    INTFLAGS = 0x0(?: \(\))?
     NPARENS = 0
     LASTPAREN = 0
     LASTCLOSEPAREN = 0
@@ -344,15 +390,47 @@ do_test('reference to regexp',
     MINLENRET = 3
     GOFS = 0
     PRE_PREFIX = 4
-    SEEN_EVALS = 0
     SUBLEN = 0
+    SUBOFFSET = 0
+    SUBCOFFSET = 0
     SUBBEG = 0x0
-    ENGINE = $ADDR
-    MOTHER_RE = $ADDR
+(?:    ENGINE = $ADDR
+)?    MOTHER_RE = $ADDR'
+. ($] < 5.019003 ? '' : '
+    SV = REGEXP\($ADDR\) at $ADDR
+      REFCNT = 2
+      FLAGS = \(\)
+      PV = $ADDR "\(\?\^:tic\)"
+      CUR = 8
+      COMPFLAGS = 0x0 \(\)
+      EXTFLAGS = 0x680000 \(CHECK_ALL,USE_INTUIT_NOML,USE_INTUIT_ML\)
+(?:      ENGINE = $ADDR \(STANDARD\)
+)?      INTFLAGS = 0x0(?: \(\))?
+      NPARENS = 0
+      LASTPAREN = 0
+      LASTCLOSEPAREN = 0
+      MINLEN = 3
+      MINLENRET = 3
+      GOFS = 0
+      PRE_PREFIX = 4
+      SUBLEN = 0
+      SUBOFFSET = 0
+      SUBCOFFSET = 0
+      SUBBEG = 0x0
+(?:    ENGINE = $ADDR
+)?      MOTHER_RE = 0x0
+      PAREN_NAMES = 0x0
+      SUBSTRS = $ADDR
+      PPRIVATE = $ADDR
+      OFFS = $ADDR
+      QR_ANONCV = 0x0(?:
+      SAVED_COPY = 0x0)?') . '
     PAREN_NAMES = 0x0
     SUBSTRS = $ADDR
     PPRIVATE = $ADDR
-    OFFS = $ADDR'
+    OFFS = $ADDR
+    QR_ANONCV = 0x0(?:
+    SAVED_COPY = 0x0)?'
 ));
 } else {
 do_test('reference to regexp',
@@ -383,7 +461,7 @@ do_test('reference to blessed hash',
   FLAGS = \\(ROK\\)
   RV = $ADDR
   SV = PVHV\\($ADDR\\) at $ADDR
-    REFCNT = 1
+    REFCNT = [12]
     FLAGS = \\(OBJECT,SHAREKEYS\\)
     IV = 0					# $] < 5.009
     NV = 0					# $] < 5.009
@@ -391,10 +469,11 @@ do_test('reference to blessed hash',
     ARRAY = 0x0
     KEYS = 0
     FILL = 0
-    MAX = 7
-    RITER = -1
-    EITER = 0x0', '',
-	$] > 5.009 ? 'The hash iterator used in dump.c sets the OOK flag'
+    MAX = 7', '',
+	$] > 5.009
+	? $] >= 5.015
+	     ? 0
+	     : 'The hash iterator used in dump.c sets the OOK flag'
 	: "Something causes the HV's array to become allocated");
 
 do_test('typeglob',
@@ -433,19 +512,25 @@ do_test('string with Unicode',
 	chr(256).chr(0).chr(512),
 'SV = PV\\($ADDR\\) at $ADDR
   REFCNT = 1
-  FLAGS = \\((?:$PADTMP,)?POK,READONLY,pPOK,UTF8\\)
+  FLAGS = \\((?:$PADTMP,)?POK,READONLY,pPOK,UTF8\\)	# $] < 5.019003
+  FLAGS = \\((?:$PADTMP,)?POK,(?:IsCOW,)?pPOK,UTF8\\)	# $] >=5.019003
   PV = $ADDR "\\\214\\\101\\\0\\\235\\\101"\\\0 \[UTF8 "\\\x\{100\}\\\x\{0\}\\\x\{200\}"\]
   CUR = 5
-  LEN = \\d+');
+  LEN = \\d+
+  COW_REFCNT = 1					# $] < 5.019007
+');
 } else {
 do_test('string with Unicode',
 	chr(256).chr(0).chr(512),
 'SV = PV\\($ADDR\\) at $ADDR
   REFCNT = 1
-  FLAGS = \\((?:$PADTMP,)?POK,READONLY,pPOK,UTF8\\)
+  FLAGS = \\((?:$PADTMP,)?POK,READONLY,pPOK,UTF8\\)	# $] < 5.019003
+  FLAGS = \\((?:$PADTMP,)?POK,(?:IsCOW,)?pPOK,UTF8\\)	# $] >=5.019003
   PV = $ADDR "\\\304\\\200\\\0\\\310\\\200"\\\0 \[UTF8 "\\\x\{100\}\\\x\{0\}\\\x\{200\}"\]
   CUR = 5
-  LEN = \\d+');
+  LEN = \\d+
+  COW_REFCNT = 1					# $] < 5.019007
+');
 }
 
 if (ord('A') == 193) {
@@ -456,7 +541,7 @@ do_test('reference to hash containing Unicode',
   FLAGS = \\(ROK\\)
   RV = $ADDR
   SV = PVHV\\($ADDR\\) at $ADDR
-    REFCNT = 1
+    REFCNT = [12]
     FLAGS = \\(SHAREKEYS,HASKFLAGS\\)
     UV = 1					# $] < 5.009
     NV = $FLOAT					# $] < 5.009
@@ -465,16 +550,19 @@ do_test('reference to hash containing Unicode',
     KEYS = 1
     FILL = 1
     MAX = 7
-    RITER = -1
-    EITER = $ADDR
     Elt "\\\214\\\101" \[UTF8 "\\\x\{100\}"\] HASH = $ADDR
     SV = PV\\($ADDR\\) at $ADDR
       REFCNT = 1
-      FLAGS = \\(POK,pPOK,UTF8\\)
+      FLAGS = \\(POK,(?:IsCOW,)?pPOK,UTF8\\)
       PV = $ADDR "\\\235\\\101"\\\0 \[UTF8 "\\\x\{200\}"\]
       CUR = 2
-      LEN = \\d+',
-	$] > 5.009 ? 'The hash iterator used in dump.c sets the OOK flag'
+      LEN = \\d+
+      COW_REFCNT = 1				# $] < 5.019007
+',      '',
+	$] > 5.009
+	? $] >= 5.015
+	    ?  0
+	    : 'The hash iterator used in dump.c sets the OOK flag'
 	: 'sv_length has been called on the element, and cached the result in MAGIC');
 } else {
 do_test('reference to hash containing Unicode',
@@ -484,7 +572,7 @@ do_test('reference to hash containing Unicode',
   FLAGS = \\(ROK\\)
   RV = $ADDR
   SV = PVHV\\($ADDR\\) at $ADDR
-    REFCNT = 1
+    REFCNT = [12]
     FLAGS = \\(SHAREKEYS,HASKFLAGS\\)
     UV = 1					# $] < 5.009
     NV = 0					# $] < 5.009
@@ -493,16 +581,19 @@ do_test('reference to hash containing Unicode',
     KEYS = 1
     FILL = 1
     MAX = 7
-    RITER = -1
-    EITER = $ADDR
     Elt "\\\304\\\200" \[UTF8 "\\\x\{100\}"\] HASH = $ADDR
     SV = PV\\($ADDR\\) at $ADDR
       REFCNT = 1
-      FLAGS = \\(POK,pPOK,UTF8\\)
+      FLAGS = \\(POK,(?:IsCOW,)?pPOK,UTF8\\)
       PV = $ADDR "\\\310\\\200"\\\0 \[UTF8 "\\\x\{200\}"\]
       CUR = 2
-      LEN = \\d+', '',
-	$] > 5.009 ? 'The hash iterator used in dump.c sets the OOK flag'
+      LEN = \\d+
+      COW_REFCNT = 1				# $] < 5.019007
+',      '',
+	$] > 5.009
+	? $] >= 5.015
+	    ?  0
+	    : 'The hash iterator used in dump.c sets the OOK flag'
 	: 'sv_length has been called on the element, and cached the result in MAGIC');
 }
 
@@ -512,30 +603,39 @@ do_test('scalar with pos magic',
         $x,
 'SV = PVMG\\($ADDR\\) at $ADDR
   REFCNT = 1
-  FLAGS = \\($PADMY,SMG,POK,pPOK\\)
-  IV = 0
+  FLAGS = \\($PADMY,SMG,POK,(?:IsCOW,)?pPOK\\)
+  IV = \d+
   NV = 0
   PV = $ADDR ""\\\0
   CUR = 0
   LEN = \d+
+  COW_REFCNT = [12]
   MAGIC = $ADDR
     MG_VIRTUAL = &PL_vtbl_mglob
     MG_TYPE = PERL_MAGIC_regex_global\\(g\\)
-    MG_FLAGS = 0x01
-      MINMATCH');
+    MG_FLAGS = 0x01					# $] < 5.019003
+    MG_FLAGS = 0x41					# $] >=5.019003
+      MINMATCH
+      BYTES						# $] >=5.019003
+');
 
 #
 # TAINTEDDIR is not set on: OS2, AMIGAOS, WIN32, MSDOS
 # environment variables may be invisibly case-forced, hence the (?i:PATH)
 # C<scalar(@ARGV)> is turned into an IV on VMS hence the (?:IV)?
+# Perl 5.18 ensures all env vars end up as strings only, hence the (?:,pIOK)?
+# Perl 5.18 ensures even magic vars have public OK, hence the (?:,POK)?
 # VMS is setting FAKE and READONLY flags.  What VMS uses for storing
 # ENV hashes is also not always null terminated.
 #
-do_test('tainted value in %ENV',
-        $ENV{PATH}=@ARGV,  # scalar(@ARGV) is a handy known tainted value
+if (${^TAINT}) {
+  # Save and restore PATH, since fresh_perl ends up using that in Windows.
+  my $path = $ENV{PATH};
+  do_test('tainted value in %ENV',
+          $ENV{PATH}=@ARGV,  # scalar(@ARGV) is a handy known tainted value
 'SV = PVMG\\($ADDR\\) at $ADDR
   REFCNT = 1
-  FLAGS = \\(GMG,SMG,RMG,pIOK,pPOK\\)
+  FLAGS = \\(GMG,SMG,RMG(?:,POK)?(?:,pIOK)?,pPOK\\)
   IV = 0
   NV = 0
   PV = $ADDR "0"\\\0
@@ -550,7 +650,7 @@ do_test('tainted value in %ENV',
     MG_PTR = $ADDR (?:"(?i:PATH)"|=> HEf_SVKEY
     SV = PV(?:IV)?\\($ADDR\\) at $ADDR
       REFCNT = \d+
-      FLAGS = \\(TEMP,POK,(?:FAKE,READONLY,)?pPOK\\)
+      FLAGS = \\((?:TEMP,)?POK,(?:FAKE,READONLY,)?pPOK\\)
 (?:      IV = 0
 )?      PV = $ADDR "(?i:PATH)"(?:\\\0)?
       CUR = \d+
@@ -558,6 +658,8 @@ do_test('tainted value in %ENV',
   MAGIC = $ADDR
     MG_VIRTUAL = &PL_vtbl_taint
     MG_TYPE = PERL_MAGIC_taint\\(t\\)');
+    $ENV{PATH} = $path;
+}
 
 do_test('blessed reference',
 	bless(\\undef, 'Foobar'),
@@ -591,7 +693,8 @@ do_test('constant subroutine',
   RV = $ADDR
   SV = PVCV\\($ADDR\\) at $ADDR
     REFCNT = (2)
-    FLAGS = \\(POK,pPOK,CONST,ISXSUB\\)
+    FLAGS = \\(POK,pPOK,CONST,ISXSUB\\)		# $] < 5.015
+    FLAGS = \\(POK,pPOK,CONST,DYNFILE,ISXSUB\\)	# $] >= 5.015
     IV = 0					# $] < 5.009
     NV = 0					# $] < 5.009
     PROTOTYPE = ""
@@ -601,10 +704,11 @@ do_test('constant subroutine',
     XSUBANY = $ADDR \\(CONST SV\\)
     SV = PV\\($ADDR\\) at $ADDR
       REFCNT = 1
-      FLAGS = \\(.*POK,READONLY,pPOK\\)
+      FLAGS = \\(.*POK,READONLY,(?:IsCOW,)?pPOK\\)
       PV = $ADDR "Perl rules"\\\0
       CUR = 10
       LEN = \\d+
+      COW_REFCNT = 0
     GVGV::GV = $ADDR\\t"main" :: "const"
     FILE = ".*\\b(?i:peek\\.t)"
     DEPTH = 0(?:
@@ -612,7 +716,8 @@ do_test('constant subroutine',
     OWNER = $ADDR)?
     FLAGS = 0x200				# $] < 5.009
     FLAGS = 0xc00				# $] >= 5.009 && $] < 5.013
-    FLAGS = 0xc					# $] >= 5.013
+    FLAGS = 0xc					# $] >= 5.013 && $] < 5.015
+    FLAGS = 0x100c				# $] >= 5.015
     OUTSIDE_SEQ = 0
     PADLIST = 0x0
     OUTSIDE = 0x0 \\(null\\)');	
@@ -660,7 +765,8 @@ do_test('FORMAT',
   RV = $ADDR
   SV = PVFM\\($ADDR\\) at $ADDR
     REFCNT = 2
-    FLAGS = \\(\\)
+    FLAGS = \\(\\)				# $] < 5.015 || !thr
+    FLAGS = \\(DYNFILE\\)			# $] >= 5.015 && thr
     IV = 0					# $] < 5.009
     NV = 0					# $] < 5.009
 (?:    PV = 0
@@ -670,13 +776,14 @@ do_test('FORMAT',
     XSUB = 0x0					# $] < 5.009
     XSUBANY = 0					# $] < 5.009
     GVGV::GV = $ADDR\\t"main" :: "PIE"
-    FILE = ".*\\b(?i:peek\\.t)"
-(?:    DEPTH = 0
+    FILE = ".*\\b(?i:peek\\.t)"(?:
+    DEPTH = 0)?(?:
     MUTEXP = $ADDR
-    OWNER = $ADDR
-)?    FLAGS = 0x0
+    OWNER = $ADDR)?
+    FLAGS = 0x0					# $] < 5.015 || !thr
+    FLAGS = 0x1000				# $] >= 5.015 && thr
     OUTSIDE_SEQ = \\d+
-    LINES = 0
+    LINES = 0					# $] < 5.017_003
     PADLIST = $ADDR
     PADNAME = $ADDR\\($ADDR\\) PAD = $ADDR\\($ADDR\\)
     OUTSIDE = $ADDR \\(MAIN\\)');
@@ -688,7 +795,7 @@ do_test('blessing to a class with embedded NUL characters',
   FLAGS = \\(ROK\\)
   RV = $ADDR
   SV = PVHV\\($ADDR\\) at $ADDR
-    REFCNT = 1
+    REFCNT = [12]
     FLAGS = \\(OBJECT,SHAREKEYS\\)
     IV = 0					# $] < 5.009
     NV = 0					# $] < 5.009
@@ -696,10 +803,11 @@ do_test('blessing to a class with embedded NUL characters',
     ARRAY = $ADDR
     KEYS = 0
     FILL = 0
-    MAX = 7
-    RITER = -1
-    EITER = 0x0', '',
-	$] > 5.009 ? 'The hash iterator used in dump.c sets the OOK flag'
+    MAX = 7', '',
+	$] > 5.009
+	? $] >= 5.015
+	    ?  0
+	    : 'The hash iterator used in dump.c sets the OOK flag'
 	: "Something causes the HV's array to become allocated");
 
 do_test('ENAME on a stash',
@@ -713,12 +821,14 @@ do_test('ENAME on a stash',
     FLAGS = \\(OOK,SHAREKEYS\\)
     IV = 1					# $] < 5.009
     NV = $FLOAT					# $] < 5.009
+    AUX_FLAGS = 0                               # $] > 5.019008
     ARRAY = $ADDR
     KEYS = 0
-    FILL = 0
+    FILL = 0 \(cached = 0\)
     MAX = 7
     RITER = -1
     EITER = 0x0
+    RAND = $ADDR
     NAME = "RWOM"
     ENAME = "RWOM"				# $] > 5.012
 ');
@@ -736,12 +846,14 @@ do_test('ENAMEs on a stash',
     FLAGS = \\(OOK,SHAREKEYS\\)
     IV = 1					# $] < 5.009
     NV = $FLOAT					# $] < 5.009
+    AUX_FLAGS = 0                               # $] > 5.019008
     ARRAY = $ADDR
     KEYS = 0
-    FILL = 0
+    FILL = 0 \(cached = 0\)
     MAX = 7
     RITER = -1
     EITER = 0x0
+    RAND = $ADDR
     NAME = "RWOM"
     NAMECOUNT = 2				# $] > 5.012
     ENAME = "RWOM", "KLANK"			# $] > 5.012
@@ -757,17 +869,690 @@ do_test('ENAMEs on a stash with no NAME',
   RV = $ADDR
   SV = PVHV\\($ADDR\\) at $ADDR
     REFCNT = 3
-    FLAGS = \\(OOK,SHAREKEYS\\)
+    FLAGS = \\(OOK,SHAREKEYS\\)			# $] < 5.017
+    FLAGS = \\(OOK,OVERLOAD,SHAREKEYS\\)	# $] >=5.017
     IV = 1					# $] < 5.009
     NV = $FLOAT					# $] < 5.009
+    AUX_FLAGS = 0                               # $] > 5.019008
     ARRAY = $ADDR
     KEYS = 0
-    FILL = 0
+    FILL = 0 \(cached = 0\)
     MAX = 7
     RITER = -1
     EITER = 0x0
+    RAND = $ADDR
     NAMECOUNT = -3				# $] > 5.012
     ENAME = "RWOM", "KLANK"			# $] > 5.012
 ');
+
+my %small = ("Perl", "Rules", "Beer", "Foamy");
+my $b = %small;
+do_test('small hash',
+        \%small,
+'SV = $RV\\($ADDR\\) at $ADDR
+  REFCNT = 1
+  FLAGS = \\(ROK\\)
+  RV = $ADDR
+  SV = PVHV\\($ADDR\\) at $ADDR
+    REFCNT = 2
+    FLAGS = \\(PADMY,SHAREKEYS\\)
+    IV = 1					# $] < 5.009
+    NV = $FLOAT					# $] < 5.009
+    ARRAY = $ADDR  \\(0:[67],.*\\)
+    hash quality = [0-9.]+%
+    KEYS = 2
+    FILL = [12]
+    MAX = 7
+(?:    Elt "(?:Perl|Beer)" HASH = $ADDR
+    SV = PV\\($ADDR\\) at $ADDR
+      REFCNT = 1
+      FLAGS = \\(POK,(?:IsCOW,)?pPOK\\)
+      PV = $ADDR "(?:Rules|Foamy)"\\\0
+      CUR = \d+
+      LEN = \d+
+      COW_REFCNT = 1
+){2}');
+
+$b = keys %small;
+
+do_test('small hash after keys',
+        \%small,
+'SV = $RV\\($ADDR\\) at $ADDR
+  REFCNT = 1
+  FLAGS = \\(ROK\\)
+  RV = $ADDR
+  SV = PVHV\\($ADDR\\) at $ADDR
+    REFCNT = 2
+    FLAGS = \\(PADMY,OOK,SHAREKEYS\\)
+    IV = 1					# $] < 5.009
+    NV = $FLOAT					# $] < 5.009
+    AUX_FLAGS = 0                               # $] > 5.019008
+    ARRAY = $ADDR  \\(0:[67],.*\\)
+    hash quality = [0-9.]+%
+    KEYS = 2
+    FILL = [12] \\(cached = 0\\)
+    MAX = 7
+    RITER = -1
+    EITER = 0x0
+    RAND = $ADDR
+(?:    Elt "(?:Perl|Beer)" HASH = $ADDR
+    SV = PV\\($ADDR\\) at $ADDR
+      REFCNT = 1
+      FLAGS = \\(POK,(?:IsCOW,)?pPOK\\)
+      PV = $ADDR "(?:Rules|Foamy)"\\\0
+      CUR = \d+
+      LEN = \d+
+      COW_REFCNT = 1
+){2}');
+
+$b = %small;
+
+do_test('small hash after keys and scalar',
+        \%small,
+'SV = $RV\\($ADDR\\) at $ADDR
+  REFCNT = 1
+  FLAGS = \\(ROK\\)
+  RV = $ADDR
+  SV = PVHV\\($ADDR\\) at $ADDR
+    REFCNT = 2
+    FLAGS = \\(PADMY,OOK,SHAREKEYS\\)
+    IV = 1					# $] < 5.009
+    NV = $FLOAT					# $] < 5.009
+    AUX_FLAGS = 0                               # $] > 5.019008
+    ARRAY = $ADDR  \\(0:[67],.*\\)
+    hash quality = [0-9.]+%
+    KEYS = 2
+    FILL = ([12]) \\(cached = \1\\)
+    MAX = 7
+    RITER = -1
+    EITER = 0x0
+    RAND = $ADDR
+(?:    Elt "(?:Perl|Beer)" HASH = $ADDR
+    SV = PV\\($ADDR\\) at $ADDR
+      REFCNT = 1
+      FLAGS = \\(POK,(?:IsCOW,)?pPOK\\)
+      PV = $ADDR "(?:Rules|Foamy)"\\\0
+      CUR = \d+
+      LEN = \d+
+      COW_REFCNT = 1
+){2}');
+
+# This should immediately start with the FILL cached correctly.
+my %large = (0..1999);
+$b = %large;
+do_test('large hash',
+        \%large,
+'SV = $RV\\($ADDR\\) at $ADDR
+  REFCNT = 1
+  FLAGS = \\(ROK\\)
+  RV = $ADDR
+  SV = PVHV\\($ADDR\\) at $ADDR
+    REFCNT = 2
+    FLAGS = \\(PADMY,OOK,SHAREKEYS\\)
+    IV = 1					# $] < 5.009
+    NV = $FLOAT					# $] < 5.009
+    AUX_FLAGS = 0                               # $] > 5.019008
+    ARRAY = $ADDR  \\(0:\d+,.*\\)
+    hash quality = \d+\\.\d+%
+    KEYS = 1000
+    FILL = (\d+) \\(cached = \1\\)
+    MAX = 1023
+    RITER = -1
+    EITER = 0x0
+    RAND = $ADDR
+    Elt .*
+');
+
+# Dump with arrays, hashes, and operator return values
+@array = 1..3;
+do_test('Dump @array', '@array', <<'ARRAY', '', '', 1);
+SV = PVAV\($ADDR\) at $ADDR
+  REFCNT = 1
+  FLAGS = \(\)
+  ARRAY = $ADDR
+  FILL = 2
+  MAX = 3
+  ARYLEN = 0x0
+  FLAGS = \(REAL\)
+  Elt No. 0
+  SV = IV\($ADDR\) at $ADDR
+    REFCNT = 1
+    FLAGS = \(IOK,pIOK\)
+    IV = 1
+  Elt No. 1
+  SV = IV\($ADDR\) at $ADDR
+    REFCNT = 1
+    FLAGS = \(IOK,pIOK\)
+    IV = 2
+  Elt No. 2
+  SV = IV\($ADDR\) at $ADDR
+    REFCNT = 1
+    FLAGS = \(IOK,pIOK\)
+    IV = 3
+ARRAY
+%hash = 1..2;
+do_test('Dump %hash', '%hash', <<'HASH', '', '', 1);
+SV = PVHV\($ADDR\) at $ADDR
+  REFCNT = 1
+  FLAGS = \(SHAREKEYS\)
+  ARRAY = $ADDR  \(0:7, 1:1\)
+  hash quality = 100.0%
+  KEYS = 1
+  FILL = 1
+  MAX = 7
+  Elt "1" HASH = $ADDR
+  SV = IV\($ADDR\) at $ADDR
+    REFCNT = 1
+    FLAGS = \(IOK,pIOK\)
+    IV = 2
+HASH
+$_ = "hello";
+do_test('rvalue substr', 'substr $_, 1, 2', <<'SUBSTR', '', '', 1);
+SV = PV\($ADDR\) at $ADDR
+  REFCNT = 1
+  FLAGS = \(PADTMP,POK,pPOK\)
+  PV = $ADDR "el"\\0
+  CUR = 2
+  LEN = \d+
+SUBSTR
+
+# Dump with no arguments
+eval 'Dump';
+like $@, qr/^Not enough arguments for Devel::Peek::Dump/, 'Dump;';
+eval 'Dump()';
+like $@, qr/^Not enough arguments for Devel::Peek::Dump/, 'Dump()';
+
+SKIP: {
+    skip "Not built with usemymalloc", 2
+      unless $Config{usemymalloc} eq 'y';
+    my $x = __PACKAGE__;
+    ok eval { fill_mstats($x); 1 }, 'fill_mstats on COW scalar'
+     or diag $@;
+    my $y;
+    ok eval { fill_mstats($y); 1 }, 'fill_mstats on undef scalar';
+}
+
+# This is more a test of fbm_compile/pp_study (non) interaction than dumping
+# prowess, but short of duplicating all the gubbins of this file, I can't see
+# a way to make a better place for it:
+
+use constant {
+    perl => 'rules',
+    beer => 'foamy',
+};
+
+unless ($Config{useithreads}) {
+    # These end up as copies in pads under ithreads, which rather defeats the
+    # the point of what we're trying to test here.
+
+    do_test('regular string constant', perl,
+'SV = PV\\($ADDR\\) at $ADDR
+  REFCNT = 5
+  FLAGS = \\(PADMY,POK,READONLY,(?:IsCOW,)?pPOK\\)
+  PV = $ADDR "rules"\\\0
+  CUR = 5
+  LEN = \d+
+  COW_REFCNT = 0
+');
+
+    eval 'index "", perl';
+
+    # FIXME - really this shouldn't say EVALED. It's a false posistive on
+    # 0x40000000 being used for several things, not a flag for "I'm in a string
+    # eval"
+
+    do_test('string constant now an FBM', perl,
+'SV = PVMG\\($ADDR\\) at $ADDR
+  REFCNT = 5
+  FLAGS = \\(PADMY,SMG,POK,READONLY,(?:IsCOW,)?pPOK,VALID,EVALED\\)
+  PV = $ADDR "rules"\\\0
+  CUR = 5
+  LEN = \d+
+  COW_REFCNT = 0
+  MAGIC = $ADDR
+    MG_VIRTUAL = &PL_vtbl_regexp
+    MG_TYPE = PERL_MAGIC_bm\\(B\\)
+    MG_LEN = 256
+    MG_PTR = $ADDR "(?:\\\\\d){256}"
+  RARE = \d+					# $] < 5.019002
+  PREVIOUS = 1					# $] < 5.019002
+  USEFUL = 100
+');
+
+    is(study perl, '', "Not allowed to study an FBM");
+
+    do_test('string constant still an FBM', perl,
+'SV = PVMG\\($ADDR\\) at $ADDR
+  REFCNT = 5
+  FLAGS = \\(PADMY,SMG,POK,READONLY,(?:IsCOW,)?pPOK,VALID,EVALED\\)
+  PV = $ADDR "rules"\\\0
+  CUR = 5
+  LEN = \d+
+  COW_REFCNT = 0
+  MAGIC = $ADDR
+    MG_VIRTUAL = &PL_vtbl_regexp
+    MG_TYPE = PERL_MAGIC_bm\\(B\\)
+    MG_LEN = 256
+    MG_PTR = $ADDR "(?:\\\\\d){256}"
+  RARE = \d+					# $] < 5.019002
+  PREVIOUS = 1					# $] < 5.019002
+  USEFUL = 100
+');
+
+    do_test('regular string constant', beer,
+'SV = PV\\($ADDR\\) at $ADDR
+  REFCNT = 6
+  FLAGS = \\(PADMY,POK,READONLY,(?:IsCOW,)?pPOK\\)
+  PV = $ADDR "foamy"\\\0
+  CUR = 5
+  LEN = \d+
+  COW_REFCNT = 0
+');
+
+    is(study beer, 1, "Our studies were successful");
+
+    do_test('string constant quite unaffected', beer, 'SV = PV\\($ADDR\\) at $ADDR
+  REFCNT = 6
+  FLAGS = \\(PADMY,POK,READONLY,(?:IsCOW,)?pPOK\\)
+  PV = $ADDR "foamy"\\\0
+  CUR = 5
+  LEN = \d+
+  COW_REFCNT = 0
+');
+
+    my $want = 'SV = PVMG\\($ADDR\\) at $ADDR
+  REFCNT = 6
+  FLAGS = \\(PADMY,SMG,POK,READONLY,(?:IsCOW,)?pPOK,VALID,EVALED\\)
+  PV = $ADDR "foamy"\\\0
+  CUR = 5
+  LEN = \d+
+  COW_REFCNT = 0
+  MAGIC = $ADDR
+    MG_VIRTUAL = &PL_vtbl_regexp
+    MG_TYPE = PERL_MAGIC_bm\\(B\\)
+    MG_LEN = 256
+    MG_PTR = $ADDR "(?:\\\\\d){256}"
+  RARE = \d+					# $] < 5.019002
+  PREVIOUS = \d+				# $] < 5.019002
+  USEFUL = 100
+';
+
+    is (eval 'index "not too foamy", beer', 8, 'correct index');
+
+    do_test('string constant now FBMed', beer, $want);
+
+    my $pie = 'good';
+
+    is(study $pie, 1, "Our studies were successful");
+
+    do_test('string constant still FBMed', beer, $want);
+
+    do_test('second string also unaffected', $pie, 'SV = PV\\($ADDR\\) at $ADDR
+  REFCNT = 1
+  FLAGS = \\(PADMY,POK,(?:IsCOW,)?pPOK\\)
+  PV = $ADDR "good"\\\0
+  CUR = 4
+  LEN = \d+
+  COW_REFCNT = 1
+');
+}
+
+# (One block of study tests removed when study was made a no-op.)
+
+{
+    open(OUT,">peek$$") or die "Failed to open peek $$: $!";
+    open(STDERR, ">&OUT") or die "Can't dup OUT: $!";
+    DeadCode();
+    open(STDERR, ">&SAVERR") or die "Can't restore STDERR: $!";
+    pass "no crash with DeadCode";
+    close OUT;
+}
+# note the conditionals on ENGINE and INTFLAGS were introduced in 5.19.9
+do_test('UTF-8 in a regular expression',
+        qr/\x{100}/,
+'SV = IV\($ADDR\) at $ADDR
+  REFCNT = 1
+  FLAGS = \(ROK\)
+  RV = $ADDR
+  SV = REGEXP\($ADDR\) at $ADDR
+    REFCNT = 1
+    FLAGS = \(OBJECT,FAKE,UTF8\)
+    PV = $ADDR "\(\?\^u:\\\\\\\\x\{100\}\)" \[UTF8 "\(\?\^u:\\\\\\\\x\{100\}\)"\]
+    CUR = 13
+    STASH = $ADDR	"Regexp"
+    COMPFLAGS = 0x0 \(\)
+    EXTFLAGS = 0x680040 \(CHECK_ALL,USE_INTUIT_NOML,USE_INTUIT_ML\)
+(?:    ENGINE = $ADDR \(STANDARD\)
+)?    INTFLAGS = 0x0(?: \(\))?
+    NPARENS = 0
+    LASTPAREN = 0
+    LASTCLOSEPAREN = 0
+    MINLEN = 1
+    MINLENRET = 1
+    GOFS = 0
+    PRE_PREFIX = 5
+    SUBLEN = 0
+    SUBOFFSET = 0
+    SUBCOFFSET = 0
+    SUBBEG = 0x0
+(?:    ENGINE = $ADDR
+)?    MOTHER_RE = $ADDR'
+. ($] < 5.019003 ? '' : '
+    SV = REGEXP\($ADDR\) at $ADDR
+      REFCNT = 2
+      FLAGS = \(UTF8\)
+      PV = $ADDR "\(\?\^u:\\\\\\\\x\{100\}\)" \[UTF8 "\(\?\^u:\\\\\\\\x\{100\}\)"\]
+      CUR = 13
+      COMPFLAGS = 0x0 \(\)
+      EXTFLAGS = 0x680040 \(CHECK_ALL,USE_INTUIT_NOML,USE_INTUIT_ML\)
+(?:      ENGINE = $ADDR \(STANDARD\)
+)?      INTFLAGS = 0x0(?: \(\))?
+      NPARENS = 0
+      LASTPAREN = 0
+      LASTCLOSEPAREN = 0
+      MINLEN = 1
+      MINLENRET = 1
+      GOFS = 0
+      PRE_PREFIX = 5
+      SUBLEN = 0
+      SUBOFFSET = 0
+      SUBCOFFSET = 0
+      SUBBEG = 0x0
+(?:    ENGINE = $ADDR
+)?      MOTHER_RE = 0x0
+      PAREN_NAMES = 0x0
+      SUBSTRS = $ADDR
+      PPRIVATE = $ADDR
+      OFFS = $ADDR
+      QR_ANONCV = 0x0(?:
+      SAVED_COPY = 0x0)?') . '
+    PAREN_NAMES = 0x0
+    SUBSTRS = $ADDR
+    PPRIVATE = $ADDR
+    OFFS = $ADDR
+    QR_ANONCV = 0x0(?:
+    SAVED_COPY = 0x0)?
+');
+
+{ # perl #117793: Extend SvREFCNT* to work on any perl variable type
+  my %hash;
+  my $base_count = Devel::Peek::SvREFCNT(%hash);
+  my $ref = \%hash;
+  is(Devel::Peek::SvREFCNT(%hash), $base_count + 1, "SvREFCNT on non-scalar");
+  ok(!eval { &Devel::Peek::SvREFCNT(1) }, "requires prototype");
+}
+{
+# utf8 tests
+use utf8;
+
+sub _dump {
+   open(OUT,">peek$$") or die $!;
+   open(STDERR, ">&OUT") or die "Can't dup OUT: $!";
+   Dump($_[0]);
+   open(STDERR, ">&SAVERR") or die "Can't restore STDERR: $!";
+   close(OUT);
+   open(IN, "peek$$") or die $!;
+   my $dump = do { local $/; <IN> };
+   close(IN);
+   1 while unlink "peek$$";
+   return $dump;
+}
+
+sub _get_coderef {
+   my $x = $_[0];
+   utf8::upgrade($x);
+   eval "sub $x {}; 1" or die $@;
+   return *{$x}{CODE};
+}
+
+like(
+   _dump(_get_coderef("\x{df}::\xdf")),
+   qr/GVGV::GV = 0x[[:xdigit:]]+\s+\Q"\xdf" :: "\xdf"/,
+   "GVGV's are correctly escaped for latin1 :: latin1",
+);
+
+like(
+   _dump(_get_coderef("\x{30cd}::\x{30cd}")),
+   qr/GVGV::GV = 0x[[:xdigit:]]+\s+\Q"\x{30cd}" :: "\x{30cd}"/,
+   "GVGV's are correctly escaped for UTF8 :: UTF8",
+);
+
+like(
+   _dump(_get_coderef("\x{df}::\x{30cd}")),
+   qr/GVGV::GV = 0x[[:xdigit:]]+\s+\Q"\xdf" :: "\x{30cd}"/,
+   "GVGV's are correctly escaped for latin1 :: UTF8",
+);
+
+like(
+   _dump(_get_coderef("\x{30cd}::\x{df}")),
+   qr/GVGV::GV = 0x[[:xdigit:]]+\s+\Q"\x{30cd}" :: "\xdf"/,
+   "GVGV's are correctly escaped for UTF8 :: latin1",
+);
+
+like(
+   _dump(_get_coderef("\x{30cb}::\x{df}::\x{30cd}")),
+   qr/GVGV::GV = 0x[[:xdigit:]]+\s+\Q"\x{30cb}::\x{df}" :: "\x{30cd}"/,
+   "GVGV's are correctly escaped for UTF8 :: latin 1 :: UTF8",
+);
+
+my $dump = _dump(*{"\x{30cb}::\x{df}::\x{30dc}"});
+
+like(
+   $dump,
+   qr/NAME = \Q"\x{30dc}"/,
+   "NAME is correctly escaped for UTF8 globs",
+);
+
+like(
+   $dump,
+   qr/GvSTASH = 0x[[:xdigit:]]+\s+\Q"\x{30cb}::\x{df}"/,
+   "GvSTASH is correctly escaped for UTF8 globs"
+);
+
+like(
+   $dump,
+   qr/EGV = 0x[[:xdigit:]]+\s+\Q"\x{30dc}"/,
+   "EGV is correctly escaped for UTF8 globs"
+);
+
+$dump = _dump(*{"\x{df}::\x{30cc}"});
+
+like(
+   $dump,
+   qr/NAME = \Q"\x{30cc}"/,
+   "NAME is correctly escaped for UTF8 globs with latin1 stashes",
+);
+
+like(
+   $dump,
+   qr/GvSTASH = 0x[[:xdigit:]]+\s+\Q"\xdf"/,
+   "GvSTASH is correctly escaped for UTF8 globs with latin1 stashes"
+);
+
+like(
+   $dump,
+   qr/EGV = 0x[[:xdigit:]]+\s+\Q"\x{30cc}"/,
+   "EGV is correctly escaped for UTF8 globs with latin1 stashes"
+);
+
+like(
+   _dump(bless {}, "\0::\1::\x{30cd}"),
+   qr/STASH = 0x[[:xdigit:]]+\s+\Q"\0::\x{01}::\x{30cd}"/,
+   "STASH for blessed hashrefs is correct"
+);
+
+BEGIN { $::{doof} = "\0\1\x{30cd}" }
+like(
+   _dump(\&doof),
+   qr/PROTOTYPE = \Q"\0\x{01}\x{30cd}"/,
+   "PROTOTYPE is escaped correctly"
+);
+
+{
+    my $coderef = eval <<"EOP";
+    use feature 'lexical_subs';
+    no warnings 'experimental::lexical_subs';
+    my sub bar (\$\x{30cd}) {1}; \\&bar
+EOP
+    like(
+       _dump($coderef),
+       qr/PROTOTYPE = "\$\Q\x{30cd}"/,
+       "PROTOTYPE works on lexical subs"
+    )
+}
+
+sub get_outside {
+   eval "sub $_[0] { my \$x; \$x++; return sub { eval q{\$x} } } $_[0]()";
+}
+sub basic { my $x; return eval q{sub { eval q{$x} }} }
+like(
+    _dump(basic()),
+    qr/OUTSIDE = 0x[[:xdigit:]]+\s+\Q(basic)/,
+    'OUTSIDE works'
+);
+
+like(
+    _dump(get_outside("\x{30ce}")),
+    qr/OUTSIDE = 0x[[:xdigit:]]+\s+\Q(\x{30ce})/,
+    'OUTSIDE + UTF8 works'
+);
+
+# TODO AUTOLOAD = stashname, which requires using a XS autoload
+# and calling Dump() on the cv
+
+
+
+sub test_utf8_stashes {
+   my ($stash_name, $test) = @_;
+
+   $dump = _dump(\%{"${stash_name}::"});
+
+   my $format = utf8::is_utf8($stash_name) ? '\x{%2x}' : '\x%2x';
+   $escaped_stash_name = join "", map {
+         $_ eq ':' ? $_ : sprintf $format, ord $_
+   } split //, $stash_name;
+
+   like(
+      $dump,
+      qr/\QNAME = "$escaped_stash_name"/,
+      "NAME is correct escaped for $test"
+   );
+
+   like(
+      $dump,
+      qr/\QENAME = "$escaped_stash_name"/,
+      "ENAME is correct escaped for $test"
+   );
+}
+
+for my $test (
+  [ "\x{30cd}", "UTF8 stashes" ],
+   [ "\x{df}", "latin 1 stashes" ],
+   [ "\x{df}::\x{30cd}", "latin1 + UTF8 stashes" ],
+   [ "\x{30cd}::\x{df}", "UTF8 + latin1 stashes" ],
+) {
+   test_utf8_stashes(@$test);
+}
+
+}
+
+sub test_DumpProg {
+    my ($prog, $expected, $name, $test) = @_;
+    $test ||= 'like';
+
+    my $u = 'use Devel::Peek "DumpProg"; DumpProg();';
+
+    # Interface between Test::Builder & test.pl
+    my $builder = Test::More->builder();
+    t::curr_test($builder->current_test() + 1);
+
+    utf8::encode($prog);
+    
+    if ( $test eq 'is' ) {
+        t::fresh_perl_is($prog . $u, $expected, undef, $name)
+    }
+    else {
+        t::fresh_perl_like($prog . $u, $expected, undef, $name)
+    }
+
+    $builder->current_test(t::curr_test() - 1);
+}
+
+my $threads = $Config{'useithreads'};
+
+for my $test (
+[
+    "package test;",
+    qr/PACKAGE = "test"/,
+    "DumpProg() + package declaration"
+],
+[
+    "use utf8; package \x{30cd};",
+    qr/PACKAGE = "\\x\Q{30cd}"/,
+    "DumpProg() + UTF8 package declaration"
+],
+[
+    "use utf8; sub \x{30cc}::\x{30cd} {1}; \x{30cc}::\x{30cd};",
+    ($threads ? qr/PADIX = \d+/ : qr/GV = \Q\x{30cc}::\x{30cd}\E/)
+],
+[
+    "use utf8; \x{30cc}: { last \x{30cc} }",
+    qr/LABEL = \Q"\x{30cc}"/
+],
+)
+{
+   test_DumpProg(@$test);
+}
+
+my $e = <<'EODUMP';
+dumpindent is 4 at - line 1.
+{
+1   TYPE = leave  ===> NULL
+    TARG = 1
+    FLAGS = (VOID,KIDS,PARENS,SLABBED)
+    PRIVATE = (REFCOUNTED)
+    REFCNT = 1
+    {
+2       TYPE = enter  ===> 3
+        FLAGS = (UNKNOWN,SLABBED)
+    }
+    {
+3       TYPE = nextstate  ===> 4
+        FLAGS = (VOID,SLABBED)
+        LINE = 1
+        PACKAGE = "t"
+    }
+    {
+5       TYPE = entersub  ===> 1
+        TARG = TARGS_REPLACE
+        FLAGS = (VOID,KIDS,STACKED,SLABBED)
+        PRIVATE = (HASTARG)
+        {
+6           TYPE = null  ===> (5)
+              (was list)
+            FLAGS = (UNKNOWN,KIDS,SLABBED)
+            {
+4               TYPE = pushmark  ===> 7
+                FLAGS = (SCALAR,SLABBED)
+            }
+            {
+8               TYPE = null  ===> (6)
+                  (was rv2cv)
+                FLAGS = (SCALAR,KIDS,SLABBED)
+                {
+7                   TYPE = gv  ===> 5
+                    FLAGS = (SCALAR,SLABBED)
+                    GV_OR_PADIX
+                }
+            }
+        }
+    }
+}
+EODUMP
+
+$e =~ s/TARGS_REPLACE/$threads ? 3 : 1/e;
+$e =~ s/GV_OR_PADIX/$threads ? "PADIX = 2" : "GV = t::DumpProg"/e;
+
+test_DumpProg("package t;", $e, "DumpProg() has no 'Attempt to free X prematurely' warning", "is" );
 
 done_testing();

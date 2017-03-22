@@ -10,8 +10,7 @@ perliol - C API for Perl's implementation of IO in Layers.
 =head1 DESCRIPTION
 
 This document describes the behavior and implementation of the PerlIO
-abstraction described in L<perlapio> when C<USE_PERLIO> is defined (and
-C<USE_SFIO> is not).
+abstraction described in L<perlapio> when C<USE_PERLIO> is defined.
 
 =head2 History and Background
 
@@ -99,7 +98,7 @@ The basic data structure is a PerlIOl:
 	{
 	 PerlIOl *	next;       /* Lower layer */
 	 PerlIO_funcs *	tab;        /* Functions for this layer */
-	 IV		flags;      /* Various flags for state */
+	 U32		flags;      /* Various flags for state */
 	};
 
 A C<PerlIOl *> is a pointer to the struct, and the I<application>
@@ -685,7 +684,7 @@ Returns 0 on end-of-file, 1 if not end-of-file, -1 on error.
 
 Return error indicator. C<PerlIOBase_error()> is normally sufficient.
 
-Returns 1 if there is an error (usually when C<PERLIO_F_ERROR> is set,
+Returns 1 if there is an error (usually when C<PERLIO_F_ERROR> is set),
 0 otherwise.
 
 =item  Clearerr
@@ -923,7 +922,7 @@ which do not need to do anything special for a particular method.
 
 =head2 Extension Layers
 
-Layers can made available by extension modules. When an unknown layer
+Layers can be made available by extension modules. When an unknown layer
 is encountered the PerlIO code will perform the equivalent of :
 
    use PerlIO 'layer';

@@ -7,6 +7,7 @@ use Test::More 'no_plan';
 
 use Cwd             qw[cwd];
 use File::Basename  qw[basename];
+use File::Path      qw[rmtree];
 use Data::Dumper;
 
 use_ok('File::Fetch');
@@ -14,6 +15,8 @@ use_ok('File::Fetch');
 ### optionally set debugging ###
 $File::Fetch::DEBUG = $File::Fetch::DEBUG   = 1 if $ARGV[0];
 $IPC::Cmd::DEBUG    = $IPC::Cmd::DEBUG      = 1 if $ARGV[0];
+
+$File::Fetch::FORCEIPV4=1;
 
 unless( $ENV{PERL_CORE} ) {
     warn qq[
@@ -35,16 +38,18 @@ to no fault of the module itself.
 ### show us the tools IPC::Cmd will use to run binary programs
 if( $File::Fetch::DEBUG ) {
     ### stupid 'used only once' warnings ;(
-    diag( "IPC::Run enabled: " . 
+    diag( "IPC::Run enabled: " .
             $IPC::Cmd::USE_IPC_RUN || $IPC::Cmd::USE_IPC_RUN );
     diag( "IPC::Run available: " . IPC::Cmd->can_use_ipc_run );
     diag( "IPC::Run vesion: $IPC::Run::VERSION" );
-    diag( "IPC::Open3 enabled: " . 
+    diag( "IPC::Open3 enabled: " .
             $IPC::Cmd::USE_IPC_OPEN3 || $IPC::Cmd::USE_IPC_OPEN3 );
     diag( "IPC::Open3 available: " . IPC::Cmd->can_use_ipc_open3 );
     diag( "IPC::Open3 vesion: $IPC::Open3::VERSION" );
 }
 
+### Heuristics
+my %heuristics = map { $_ => 1 } qw(http ftp rsync file git);
 ### _parse_uri tests
 ### these go on all platforms
 my @map = (
@@ -60,17 +65,23 @@ my @map = (
         path	=> '/CPAN/',
         file	=> 'MIRRORING.FROM',
     },
+    {	uri	    => 'git://github.com/jib/file-fetch.git',
+        scheme	=> 'git',
+        host	=> 'github.com',
+        path	=> '/jib/',
+        file	=> 'file-fetch.git',
+    },
     {   uri     => 'http://localhost/tmp/index.txt',
         scheme  => 'http',
-        host    => 'localhost',          # host is empty only on 'file://' 
+        host    => 'localhost',          # host is empty only on 'file://'
         path    => '/tmp/',
         file    => 'index.txt',
-    },  
-    
+    },
+
     ### only test host part, the rest is OS dependant
     {   uri     => 'file://localhost/tmp/index.txt',
         host    => '',                  # host should be empty on 'file://'
-    },        
+    },
 );
 
 ### these only if we're not on win32/vms
@@ -86,7 +97,7 @@ push @map, (
         host    => 'hostname',
         path    => '/tmp/',
         file    => 'foo.txt',
-    },    
+    },
 ) if not &File::Fetch::ON_WIN and not &File::Fetch::ON_VMS;
 
 ### these only on win32
@@ -104,25 +115,25 @@ push @map, (
         vol     => 'D:',
         path    => '/tmp/',
         file    => 'foo.txt',
-    },    
+    },
     {   uri     => 'file:///D|/tmp/foo.txt',
         scheme  => 'file',
         host    => '',
         vol     => 'D:',
         path    => '/tmp/',
         file    => 'foo.txt',
-    },    
+    },
 ) if &File::Fetch::ON_WIN;
 
 
 ### sanity tests
-{   
+{
     no warnings;
     like( $File::Fetch::USER_AGENT, qr/$File::Fetch::VERSION/,
                                 "User agent contains version" );
     like( $File::Fetch::FROM_EMAIL, qr/@/,
                                 q[Email contains '@'] );
-}                                
+}
 
 ### parse uri tests ###
 for my $entry (@map ) {
@@ -162,6 +173,13 @@ for my $entry (@map) {
     }
 }
 
+### Heuristics
+{
+  require IO::Socket::INET;
+  my $sock = IO::Socket::INET->new( PeerAddr => 'ftp.funet.fi', PeerPort => 21, Timeout => 20 )
+     or $heuristics{ftp} = 0;
+}
+
 ### ftp:// tests ###
 {   my $uri = 'ftp://ftp.funet.fi/pub/CPAN/index.html';
     for (qw[lwp netftp wget curl lftp fetch ncftp]) {
@@ -172,6 +190,13 @@ for my $entry (@map) {
 
         _fetch_uri( ftp => $uri, $_ );
     }
+}
+
+### Heuristics
+{
+  require IO::Socket::INET;
+  my $sock = IO::Socket::INET->new( PeerAddr => 'www.cpan.org', PeerPort => 80, Timeout => 20 )
+     or $heuristics{http} = 0;
 }
 
 ### http:// tests ###
@@ -185,11 +210,33 @@ for my $entry (@map) {
     }
 }
 
+### Heuristics
+{
+  require IO::Socket::INET;
+  my $sock = IO::Socket::INET->new( PeerAddr => 'cpan.pair.com', PeerPort => 873, Timeout => 20 )
+     or $heuristics{rsync} = 0;
+}
+
 ### rsync:// tests ###
 {   my $uri = 'rsync://cpan.pair.com/CPAN/MIRRORING.FROM';
 
     for (qw[rsync]) {
         _fetch_uri( rsync => $uri, $_ );
+    }
+}
+
+### Heuristics
+{
+  require IO::Socket::INET;
+  my $sock = IO::Socket::INET->new( PeerAddr => 'github.com', PeerPort => 9418, Timeout => 20 )
+     or $heuristics{git} = 0;
+}
+
+### git:// tests ###
+{   my $uri = 'git://github.com/jib/file-fetch.git';
+
+    for (qw[git]) {
+        _fetch_uri( git => $uri, $_ );
     }
 }
 
@@ -201,47 +248,50 @@ sub _fetch_uri {
     SKIP: {
         skip "'$method' fetching tests disabled under perl core", 4
                 if $ENV{PERL_CORE};
-    
+
+        skip "'$type' fetching tests disabled due to heuristic failure", 4
+                unless $heuristics{ $type };
+
         ### stupid warnings ###
         $File::Fetch::METHODS =
         $File::Fetch::METHODS = { $type => [$method] };
-    
+
         ### fetch regularly
         my $ff  = File::Fetch->new( uri => $uri );
-        
+
         ok( $ff,                "FF object for $uri (fetch with $method)" );
-        
+
         for my $to ( 'tmp', do { \my $o } ) { SKIP: {
-        
-            
-            my $how     = ref $to ? 'slurp' : 'file';
+
+
+            my $how     = ref $to && $type ne 'git' ? 'slurp' : 'file';
             my $skip    = ref $to ? 4       : 3;
-        
+
             ok( 1,              "   Fetching '$uri' in $how mode" );
-         
+
             my $file = $ff->fetch( to => $to );
-        
+
             skip "You do not have '$method' installed/available", $skip
                 if $File::Fetch::METHOD_FAIL->{$method} &&
                    $File::Fetch::METHOD_FAIL->{$method};
-                
-            ### if the file wasn't fetched, it may be a network/firewall issue                
-            skip "Fetch failed; no network connectivity for '$type'?", $skip 
+
+            ### if the file wasn't fetched, it may be a network/firewall issue
+            skip "Fetch failed; no network connectivity for '$type'?", $skip
                 unless $file;
-                
+
             ok( $file,          "   File ($file) fetched with $method ($uri)" );
 
             ### check we got some contents if we were meant to slurp
-            if( ref $to ) {
+            if( ref $to && $type ne 'git' ) {
                 ok( $$to,       "   Contents slurped" );
             }
 
-            ok( $file && -s $file,   
+            ok( $file && -s $file,
                                 "   File has size" );
             is( $file && basename($file), $ff->output_file,
                                 "   File has expected name" );
-    
-            unlink $file;
+
+            rmtree $file;
         }}
     }
 }

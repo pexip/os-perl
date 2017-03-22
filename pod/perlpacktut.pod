@@ -73,20 +73,19 @@ remains.
 The inverse operation - packing byte contents from a string of hexadecimal
 digits - is just as easily written. For instance:
 
-   my $s = pack( 'H2' x 10, map { "3$_" } ( 0..9 ) );
+   my $s = pack( 'H2' x 10, 30..39 );
    print "$s\n";
 
 Since we feed a list of ten 2-digit hexadecimal strings to C<pack>, the
 pack template should contain ten pack codes. If this is run on a computer
 with ASCII character coding, it will print C<0123456789>.
 
-
 =head1 Packing Text
 
 Let's suppose you've got to read in a data file like this:
 
     Date      |Description                | Income|Expenditure
-    01/24/2001 Ahmed's Camel Emporium                  1147.99
+    01/24/2001 Zed's Camel Emporium                    1147.99
     01/28/2001 Flea spray                                24.99
     01/29/2001 Camel rides to tourists      235.00
 
@@ -177,7 +176,8 @@ template doesn't match the incoming data, Perl will scream and die.
 
 Hence, putting it all together:
 
-    my($date,$description,$income,$expend) = unpack("A10xA27xA7xA*", $_);
+    my ($date, $description, $income, $expend) =
+        unpack("A10xA27xA7xA*", $_);
 
 Now, that's our data parsed. I suppose what we might want to do now is
 total up our income and expenditure, and add another line to the end of
@@ -185,7 +185,8 @@ our ledger - in the same format - saying how much we've brought in and
 how much we've spent:
 
     while (<>) {
-        my($date, $desc, $income, $expend) = unpack("A10xA27xA7xA*", $_);
+        my ($date, $desc, $income, $expend) =
+            unpack("A10xA27xA7xA*", $_);
         $tot_income += $income;
         $tot_expend += $expend;
     }
@@ -197,11 +198,12 @@ how much we've spent:
 
     # OK, let's go:
 
-    print pack("A10xA27xA7xA*", $date, "Totals", $tot_income, $tot_expend);
+    print pack("A10xA27xA7xA*", $date, "Totals",
+        $tot_income, $tot_expend);
 
 Oh, hmm. That didn't quite work. Let's see what happened:
 
-    01/24/2001 Ahmed's Camel Emporium                   1147.99
+    01/24/2001 Zed's Camel Emporium                     1147.99
     01/28/2001 Flea spray                                 24.99
     01/29/2001 Camel rides to tourists     1235.00
     03/23/2001Totals                     1235.001172.98
@@ -220,13 +222,14 @@ What we actually need to do is expand the width of the fields. The C<A>
 format pads any non-existent characters with spaces, so we can use the
 additional spaces to line up our fields, like this:
 
-    print pack("A11 A28 A8 A*", $date, "Totals", $tot_income, $tot_expend);
+    print pack("A11 A28 A8 A*", $date, "Totals",
+        $tot_income, $tot_expend);
 
 (Note that you can put spaces in the template to make it more readable,
 but they don't translate to spaces in the output.) Here's what we got
 this time:
 
-    01/24/2001 Ahmed's Camel Emporium                   1147.99
+    01/24/2001 Zed's Camel Emporium                     1147.99
     01/28/2001 Flea spray                                 24.99
     01/29/2001 Camel rides to tourists     1235.00
     03/23/2001 Totals                      1235.00 1172.98
@@ -239,7 +242,8 @@ can get C<sprintf> to do it:
     $tot_income = sprintf("%.2f", $tot_income); 
     $tot_expend = sprintf("%12.2f", $tot_expend);
     $date = POSIX::strftime("%m/%d/%Y", localtime); 
-    print pack("A11 A28 A8 A*", $date, "Totals", $tot_income, $tot_expend);
+    print pack("A11 A28 A8 A*", $date, "Totals",
+        $tot_income, $tot_expend);
 
 This time we get the right answer:
 
@@ -563,7 +567,7 @@ last 4 bits can be ignored anyway.
 
 =head2 Uuencoding
 
-Another odd-man-out in the template alphabet is C<u>, which packs an
+Another odd-man-out in the template alphabet is C<u>, which packs a
 "uuencoded string". ("uu" is short for Unix-to-Unix.) Chances are that
 you won't ever need this encoding technique which was invented to overcome
 the shortcomings of old-fashioned transmission mediums that do not support
@@ -792,7 +796,8 @@ C</> is not implemented in Perls before 5.6, so if your code is required to
 work on older Perls you'll need to C<unpack( 'Z* Z* C')> to get the length,
 then use it to make a new unpack string. For example
 
-   # pack a message: ASCIIZ, ASCIIZ, length, string, byte (5.005 compatible)
+   # pack a message: ASCIIZ, ASCIIZ, length, string, byte
+   # (5.005 compatible)
    my $msg = pack( 'Z* Z* C A* C', $src, $dst, length $sm, $sm, $prio );
 
    # unpack
@@ -1137,7 +1142,7 @@ where a pointer is expected. The read(2) system call comes to mind:
 After reading L<perlfunc> explaining how to use C<syscall> we can write
 this Perl function copying a file to standard output:
 
-    require 'syscall.ph';
+    require 'syscall.ph'; # run h2ph to generate this file
     sub cat($){
         my $path = shift();
         my $size = -s $path;

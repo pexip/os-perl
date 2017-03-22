@@ -6,7 +6,7 @@ use vars qw(@ISA);
 use CPAN::HTTP::Credentials;
 use HTTP::Tiny 0.005;
 
-$CPAN::HTTP::Client::VERSION = $CPAN::HTTP::Client::VERSION = "1.9600";
+$CPAN::HTTP::Client::VERSION = $CPAN::HTTP::Client::VERSION = "1.9601";
 
 # CPAN::HTTP::Client is adapted from parts of cpanm by Tatsuhiko Miyagawa
 # and parts of LWP by Gisle Aas
@@ -31,8 +31,8 @@ sub mirror {
     my($self, $uri, $path) = @_;
 
     my $want_proxy = $self->_want_proxy($uri);
-    my $http = HTTP::Tiny->new( 
-        $want_proxy ? (proxy => $self->{proxy}) : () 
+    my $http = HTTP::Tiny->new(
+        $want_proxy ? (proxy => $self->{proxy}) : ()
     );
 
     my ($response, %headers);
@@ -78,7 +78,7 @@ sub _auth_headers {
 
     # Get user credentials for mode
     my $cred_method = "get_" . ($mode ? "proxy" : "non_proxy") ."_credentials";
-    my ($user, $pass) = return CPAN::HTTP::Credentials->$cred_method;
+    my ($user, $pass) = CPAN::HTTP::Credentials->$cred_method;
 
     # Generate the header for the mode & type
     my $header = $mode eq 'proxy' ? 'Proxy-Authorization' : 'Authorization';
@@ -112,7 +112,7 @@ sub _get_challenge {
     my $auth_list = $response->{headers}(lc $auth_header);
     return unless defined $auth_list;
     $auth_list = [$auth_list] unless ref $auth_list;
-    
+
     for my $challenge (@$auth_list) {
         $challenge =~ tr/,/;/;  # "," is used to separate auth-params!!
         ($challenge) = $self->split_header_words($challenge);

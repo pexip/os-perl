@@ -45,8 +45,9 @@ S_mro_get_linear_isa_c3(pTHX_ HV* stash, U32 level)
       Perl_croak(aTHX_ "Can't linearize anonymous symbol table");
 
     if (level > 100)
-        Perl_croak(aTHX_ "Recursive inheritance detected in package '%s'",
-		   HEK_KEY(stashhek));
+        Perl_croak(aTHX_ "Recursive inheritance detected in package '%"HEKf
+                         "'",
+                          HEKfARG(stashhek));
 
     meta = HvMROMETA(stash);
 
@@ -77,11 +78,12 @@ S_mro_get_linear_isa_c3(pTHX_ HV* stash, U32 level)
            The members of @seqs are the MROs of
            the members of @ISA, followed by @ISA itself.
         */
-        I32 items = AvFILLp(isa) + 1;
+        SSize_t items = AvFILLp(isa) + 1;
         SV** isa_ptr = AvARRAY(isa);
         while(items--) {
-            SV* const isa_item = *isa_ptr++;
+            SV* const isa_item = *isa_ptr ? *isa_ptr : &PL_sv_undef;
             HV* const isa_item_stash = gv_stashsv(isa_item, 0);
+            isa_ptr++;
             if(!isa_item_stash) {
                 /* if no stash, make a temporary fake MRO
                    containing just itself */
@@ -253,9 +255,11 @@ S_mro_get_linear_isa_c3(pTHX_ HV* stash, U32 level)
                 SV *errmsg;
                 I32 i;
 
-                errmsg = newSVpvf("Inconsistent hierarchy during C3 merge of class '%s':\n\t"
-                                  "current merge results [\n", HEK_KEY(stashhek));
-                for (i = 0; i <= av_len(retval); i++) {
+                errmsg = newSVpvf(
+                           "Inconsistent hierarchy during C3 merge of class '%"HEKf"':\n\t"
+                            "current merge results [\n",
+                            HEKfARG(stashhek));
+                for (i = 0; i <= av_tindex(retval); i++) {
                     SV **elem = av_fetch(retval, i, 0);
                     sv_catpvf(errmsg, "\t\t%"SVf",\n", SVfARG(*elem));
                 }
@@ -468,13 +472,14 @@ mro__nextcan(...)
   PREINIT:
     SV* self = ST(0);
     const I32 throw_nomethod = SvIVX(ST(1));
-    register I32 cxix = cxstack_ix;
-    register const PERL_CONTEXT *ccstack = cxstack;
+    I32 cxix = cxstack_ix;
+    const PERL_CONTEXT *ccstack = cxstack;
     const PERL_SI *top_si = PL_curstackinfo;
     HV* selfstash;
     SV *stashname;
     const char *fq_subname;
     const char *subname;
+    bool subname_utf8 = 0;
     STRLEN stashname_len;
     STRLEN subname_len;
     SV* sv;
@@ -550,6 +555,7 @@ mro__nextcan(...)
 		fq_subname = SvPVX(sv);
 		fq_subname_len = SvCUR(sv);
 
+                subname_utf8 = SvUTF8(sv) ? 1 : 0;
 		subname = strrchr(fq_subname, ':');
 	    } else {
 		subname = NULL;
@@ -583,7 +589,11 @@ mro__nextcan(...)
 	    SV* const val = HeVAL(cache_entry);
 	    if(val == &PL_sv_undef) {
 		if(throw_nomethod)
-		    Perl_croak(aTHX_ "No next::method '%s' found for %s", subname, hvname);
+		    Perl_croak(aTHX_
+                       "No next::method '%"SVf"' found for %"HEKf,
+                        SVfARG(newSVpvn_flags(subname, subname_len,
+                                SVs_TEMP | ( subname_utf8 ? SVf_UTF8 : 0 ) )),
+                        HEKfARG( HvNAME_HEK(selfstash) ));
                 XSRETURN_EMPTY;
 	    }
 	    mXPUSHs(newRV_inc(val));
@@ -594,7 +604,8 @@ mro__nextcan(...)
     /* beyond here is just for cache misses, so perf isn't as critical */
 
     stashname_len = subname - fq_subname - 2;
-    stashname = newSVpvn_flags(fq_subname, stashname_len, SVs_TEMP);
+    stashname = newSVpvn_flags(fq_subname, stashname_len,
+                                SVs_TEMP | (subname_utf8 ? SVf_UTF8 : 0));
 
     /* has ourselves at the top of the list */
     linear_av = S_mro_get_linear_isa_c3(aTHX_ selfstash, 0);
@@ -626,21 +637,25 @@ mro__nextcan(...)
 
             if (!curstash) {
                 if (ckWARN(WARN_SYNTAX))
-                    Perl_warner(aTHX_ packWARN(WARN_SYNTAX), "Can't locate package %"SVf" for @%s::ISA",
-                        (void*)linear_sv, hvname);
+                    Perl_warner(aTHX_ packWARN(WARN_SYNTAX),
+                       "Can't locate package %"SVf" for @%"HEKf"::ISA",
+                        (void*)linear_sv,
+                        HEKfARG( HvNAME_HEK(selfstash) ));
                 continue;
             }
 
             assert(curstash);
 
-            gvp = (GV**)hv_fetch(curstash, subname, subname_len, 0);
+            gvp = (GV**)hv_fetch(curstash, subname,
+                                    subname_utf8 ? -(I32)subname_len : (I32)subname_len, 0);
             if (!gvp) continue;
 
             candidate = *gvp;
             assert(candidate);
 
             if (SvTYPE(candidate) != SVt_PVGV)
-                gv_init(candidate, curstash, subname, subname_len, TRUE);
+                gv_init_pvn(candidate, curstash, subname, subname_len,
+                                GV_ADDMULTI|(subname_utf8 ? SVf_UTF8 : 0));
 
             /* Notably, we only look for real entries, not method cache
                entries, because in C3 the method cache of a parent is not
@@ -656,7 +671,10 @@ mro__nextcan(...)
 
     (void)hv_store_ent(nmcache, sv, &PL_sv_undef, 0);
     if(throw_nomethod)
-        Perl_croak(aTHX_ "No next::method '%s' found for %s", subname, hvname);
+        Perl_croak(aTHX_ "No next::method '%"SVf"' found for %"HEKf,
+                         SVfARG(newSVpvn_flags(subname, subname_len,
+                                SVs_TEMP | ( subname_utf8 ? SVf_UTF8 : 0 ) )),
+                        HEKfARG( HvNAME_HEK(selfstash) ));
     XSRETURN_EMPTY;
 
 BOOT:

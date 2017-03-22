@@ -278,7 +278,7 @@ toke_cflags='optimize=-O2'
 esac
 
 # The patch 23787
-# http://public.activestate.com/cgi-bin/perlbrowse?patch=23787
+# http://perl5.git.perl.org/perl.git/commit/73cb726371990cd489597c4fee405a9815abf4da
 # broke things for gcc (at least gcc 3.3) so that many of the pack()
 # checksum tests for formats L, j, J, especially when combined
 # with the < and > specifiers, started to fail if compiled with plain -O3.
@@ -528,7 +528,6 @@ gcc)   ;;
        # -readonly_strings moves string constants into read-only section
        #  which hopefully means that modifying them leads into segmentation
        #  faults.
-       #
        for i in -trapuv -readonly_strings
        do
                case "$ccflags" in
@@ -537,6 +536,25 @@ gcc)   ;;
                esac
        done
        ;;
+esac
+
+# In Tru64 several slightly incompatible socket APIs are supported,
+# which one applies is chosen with a set of defines:
+# -D_SOCKADDR_LEN enables 4.4BSD and IPv6 interfaces
+# -D_POSIX_PII_SOCKET enables socklen_t instead of size_t
+for i in -D_SOCKADDR_LEN -D_POSIX_PII_SOCKET
+do
+    case "$ccflags" in
+    *$i*) ;;
+    *) ccflags="$ccflags $i" ;;
+    esac
+done
+# For OSF/1 3.2, however, defining _SOCKADDR_LEN would be
+# a bad idea since it breaks send() and recv().
+case "$ccflags" in
+*DEC_OSF1_3_X*SOCKADDR_LEN*)
+ ccflags=`echo " $ccflags " | sed -e 's/ -D_SOCKADDR_LEN / /'`
+ ;;
 esac
 
 #

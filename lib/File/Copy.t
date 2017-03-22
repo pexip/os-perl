@@ -14,9 +14,9 @@ use Test::More;
 
 my $TB = Test::More->builder;
 
-plan tests => 463;
+plan tests => 466;
 
-# We're going to override rename() later on but Perl has to see an override
+# We are going to override rename() later on but Perl has to see an override
 # at compile time to honor it.
 BEGIN { *CORE::GLOBAL::rename = sub { CORE::rename($_[0], $_[1]) }; }
 
@@ -139,7 +139,7 @@ for my $cross_partition_test (0..1) {
   { 
     my $warnings = '';
     local $SIG{__WARN__} = sub { $warnings .= join '', @_ };
-    ok copy("file-$$", "file-$$"), 'copy(fn, fn) succeeds';
+    ok !copy("file-$$", "file-$$"), 'copy to itself fails';
 
     like $warnings, qr/are identical/, 'but warns';
     ok -s "file-$$", 'contents preserved';
@@ -207,7 +207,7 @@ for my $cross_partition_test (0..1) {
   local $SIG{__WARN__} = sub { push @warnings, join '', @_ };
 
   # pie-$$ so that we force a non-constant, else the numeric conversion (of 0)
-  # is cached and we don't get a warning the second time round
+  # is cached and we do not get a warning the second time round
   is eval { copy("file-$$", "copy-$$", "pie-$$"); 1 }, undef,
     "a bad buffer size fails to copy";
   like $@, qr/Bad buffer size for copy/, "with a helpful error message";
@@ -265,6 +265,11 @@ SKIP: {
           if $^O eq 'VMS';
     skip "Copy doesn't set file permissions correctly on Win32.",  $skips
           if $^O eq "MSWin32";
+    skip "Copy maps POSIX permissions to VOS permissions.", $skips
+          if $^O eq "vos";
+    skip "There be dragons here with DragonflyBSD.", $skips
+         if $^O eq 'dragonfly';
+
 
     # Just a sub to get better failure messages.
     sub __ ($) {
@@ -301,7 +306,7 @@ SKIP: {
     foreach my $test (@tests) {
         foreach my $id (0 .. 7) {
             my ($umask, $s_perm, $c_perm1, $c_perm3) = @$test;
-            # Make sure the copies doesn't exist.
+            # Make sure the copies do not exist.
             ! -e $_ or unlink $_ or die $! for $copy1, $copy2, $copy4, $copy5;
 
             $s_perm  |= $id << 9;
@@ -409,7 +414,7 @@ SKIP: {
 	foreach my $right (qw(plain object1 object2)) {
 	    @warnings = ();
 	    $! = 0;
-	    is eval {copy $what{$left}, $what{$right}}, 1, "copy $left $right";
+	    is eval {copy $what{$left}, $what{$right}}, 0, "copy $left $right";
 	    is $@, '', 'No croaking';
 	    is $!, '', 'No system call errors';
 	    is @warnings, 1, 'Exactly 1 warning';
@@ -470,7 +475,45 @@ SKIP: {
     close($IN);
 }
 
+use File::Temp qw(tempdir);
+use File::Spec;
+
+SKIP: {
+    # RT #111126: File::Copy copy() zeros file when copying a file
+    # into the same directory it is stored in
+
+    my $temp_dir = tempdir( CLEANUP => 1 );
+    my $temp_file = File::Spec->catfile($temp_dir, "somefile");
+
+    open my $fh, ">", $temp_file
+	or skip "Cannot create $temp_file: $!", 2;
+    print $fh "Just some data";
+    close $fh
+	or skip "Cannot close $temp_file: $!", 2;
+
+    my $warn_message = "";
+    local $SIG{__WARN__} = sub { $warn_message .= "@_" };
+    ok(!copy($temp_file, $temp_dir),
+       "Copy of foo/file to foo/ should fail");
+    like($warn_message, qr/^\Q'$temp_file' and '$temp_file'\E are identical.*Copy\.t/i,
+	 "error message should describe the problem");
+    1 while unlink $temp_file;
+}
+
+{
+  open(my $F, '>', "file-$$") or die $!;
+  binmode $F; # for DOSISH platforms
+  printf $F "ok\n";
+  close $F;
+
+  my $buffer = (1024 * 1024 * 2) + 1;
+  is eval {copy "file-$$", "copy-$$", $buffer}, 1,
+    "copy with buffer above normal size";
+}
+
+
 END {
+    1 while unlink "copy-$$";
     1 while unlink "file-$$";
     1 while unlink "lib/file-$$";
 }

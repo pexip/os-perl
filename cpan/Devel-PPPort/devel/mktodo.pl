@@ -5,13 +5,7 @@
 #
 ################################################################################
 #
-#  $Revision: 16 $
-#  $Author: mhx $
-#  $Date: 2009/01/18 14:10:51 +0100 $
-#
-################################################################################
-#
-#  Version 3.x, Copyright (C) 2004-2009, Marcus Holland-Moritz.
+#  Version 3.x, Copyright (C) 2004-2013, Marcus Holland-Moritz.
 #  Version 2.x, Copyright (C) 2001, Paul Marquess.
 #  Version 1.x, Copyright (C) 1999, Kenneth Albanowski.
 #
@@ -52,6 +46,22 @@ chomp $fullperl;
 $ENV{SKIP_SLOW_TESTS} = 1;
 
 regen_all();
+
+my %stdsym = map { ($_ => 1) } qw (
+  strlen
+  snprintf
+  strcmp
+  memcpy
+  strncmp
+  memmove
+  memcmp
+  tolower
+  exit
+  memset
+  vsnprintf
+  siglongjmp
+  sprintf
+);
 
 my %sym;
 for (`$Config{nm} $fullperl`) {
@@ -154,35 +164,35 @@ retry:
 if ($opt{check}) {
   my $ifmt = '%' . length(scalar @recheck) . 'd';
   my $t0 = [gettimeofday];
-  
+
   RECHECK: for my $i (0 .. $#recheck) {
     my $sym = $recheck[$i];
     my $cur = delete $all{$sym};
-  
+
     sym('chk', $sym, $cur, sprintf(" [$ifmt/$ifmt, ETA %s]",
                $i + 1, scalar @recheck, eta($t0, $i, scalar @recheck)));
-  
+
     write_todo($opt{todo}, $opt{version}, \%all);
-  
+
     if ($cur eq "E (Perl_$sym)") {
       # we can try a shortcut here
       regen_apicheck($sym);
-  
+
       my $r = run(qw(make test));
-  
+
       if (!$r->{didnotrun} && $r->{status} == 0) {
         sym('del', $sym, $cur);
         next RECHECK;
       }
     }
-  
+
     # run the full test
     regen_all();
-  
+
     my $r = run(qw(make test));
-  
+
     $r->{didnotrun} and die "couldn't run make test: $!\n";
-  
+
     if ($r->{status} == 0) {
       sym('del', $sym, $cur);
     }
@@ -283,7 +293,7 @@ sub find_undefined_symbols
   for my $sym (keys %$ls) {
     unless (exists $ps->{$sym}) {
       if ($sym !~ /\@/ and $sym !~ /^_/) {
-        push @undefined, $sym;
+        push @undefined, $sym unless $stdsym{$sym};
       }
     }
   }
@@ -316,10 +326,28 @@ sub read_sym
 
 sub get_apicheck_symbol_map
 {
-  my $r = run(qw(make apicheck.i));
-  
-  if ($r->{didnotrun} or $r->{status}) {
-    die "cannot run make apicheck.i";
+  my $r;
+
+  while (1) {
+    $r = run(qw(make apicheck.i));
+
+    last unless $r->{didnotrun} or $r->{status};
+
+    my %sym = map { /error: macro "(\w+)" (?:requires|passed) \d+ argument/ ? ($1 => 'A') : () }
+              @{$r->{stderr}};
+
+    if (keys %sym) {
+      for my $s (sort keys %sym) {
+        sym('new', $s, $sym{$s});
+        $all{$s} = $sym{$s};
+      }
+      write_todo($opt{todo}, $opt{version}, \%all);
+      regen_apicheck();
+    }
+    else {
+      die "cannot run make apicheck.i ($r->{didnotrun} / $r->{status}):\n".
+          join('', @{$r->{stdout}})."\n---\n".join('', @{$r->{stderr}});
+    }
   }
 
   my $fh = IO::File->new('apicheck.i')

@@ -14,7 +14,7 @@ use Fcntl;
 
 $Is_Dosish = ($^O eq 'amigaos' || $^O eq 'MSWin32' ||
 	      $^O eq 'NetWare' || $^O eq 'dos' ||
-	      $^O eq 'os2' || $^O eq 'mint' ||
+	      $^O eq 'os2' ||
 	      $^O eq 'cygwin');
 
 my $filename = "Any_dbmx$$";
@@ -35,7 +35,7 @@ SKIP:
                       if $Is_Dosish;
     ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,$atime,$mtime,$ctime,
      $blksize,$blocks) = stat($Dfile);
-    ok(($mode & 0777) == ($^O eq 'vos' ? 0750 : 0640) , "File permissions");
+    ok(($mode & 0777) == 0640 , "File permissions");
 }
 
 while (($key,$value) = each(%h)) {

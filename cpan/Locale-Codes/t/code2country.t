@@ -16,7 +16,7 @@ if ( -f "t/testfunc.pl" ) {
 }
 
 unshift(@INC,$dir);
-use Locale::Country;
+use Locale::Codes::Country;
 
 %type = ( "LOCALE_CODE_ALPHA_2" => LOCALE_CODE_ALPHA_2,
           "LOCALE_CODE_ALPHA_3" => LOCALE_CODE_ALPHA_3,
@@ -59,7 +59,7 @@ LOCALE_CODE_ALPHA_2
 bol
 LOCALE_CODE_ALPHA_3
    ~
-   Bolivia (Plurinational State of)
+   Bolivia, Plurinational State of
 
 pk ~ Pakistan
 
@@ -124,6 +124,10 @@ LOCALE_CODE_NUMERIC
    _undef_
 
 rou LOCALE_CODE_ALPHA_3 ~ Romania
+
+zr  ~ _undef_
+
+zr retired  ~ Zaire
 
 ";
 

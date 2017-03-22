@@ -196,7 +196,7 @@ INLINE_LITERAL_TEXT
       $iflag='i',           next if $arg eq '-i';       ## ignore case
       $norc=1,              next if $arg eq '-norc';    ## don't load rc file
       $showrc=1,            next if $arg eq '-showrc';  ## show rc file
-      $underlineOK=1,       next if $arg eq '-u';       ## look throuh underln.
+      $underlineOK=1,       next if $arg eq '-u';       ## look through underln.
       $words=1,             next if $arg eq '-w';       ## match "words" only
       &strip                     if $arg eq '-strip';   ## dump this program
       last                       if $arg eq '-e';
@@ -464,7 +464,7 @@ sub prepare_to_search
 	  ##
 	  if ($underlineOK) {
 	     if ($regex =~ m/[?*+{}()\\.|^\$[]/) {
-		warn "$0: warning, can't underline-safe ``$regex''.\n";
+		warn "$0: warning, can't underline-safe '$regex'.\n";
 	     } else {
 		$regex = join($underline_glue, split(//, $regex));
 	     }
