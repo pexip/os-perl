@@ -1,3 +1,11 @@
+perl (5.20.2-3+deb8u7) jessie-security; urgency=high
+
+  * [CVE-2017-6512] Fix file permissions race condition in File-Path;
+    patch from John Lightsey (Closes: #863870)
+  * Also fix test logic in ExtUtils-MakeMaker required for the above
+
+ -- Dominic Hargreaves <dom@earth.li>  Sat, 03 Jun 2017 13:11:53 +0100
+
 perl (5.20.2-3+deb8u6) jessie-security; urgency=high
 
   [ Niko Tyni ]
