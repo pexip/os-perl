@@ -1,3 +1,17 @@
+perl (5.20.2-3+deb8u7pexip1) pexip; urgency=low
+
+  * New upstream release
+
+ -- John-Mark Bell <jmb@pexip.com>  Mon, 05 Jun 2017 18:47:14 +0100
+
+perl (5.20.2-3+deb8u7) jessie-security; urgency=high
+
+  * [CVE-2017-6512] Fix file permissions race condition in File-Path;
+    patch from John Lightsey (Closes: #863870)
+  * Also fix test logic in ExtUtils-MakeMaker required for the above
+
+ -- Dominic Hargreaves <dom@earth.li>  Sat, 03 Jun 2017 13:11:53 +0100
+
 perl (5.20.2-3+deb8u6pexip1) pexip; urgency=low
 
   * Migrate to Jessie
