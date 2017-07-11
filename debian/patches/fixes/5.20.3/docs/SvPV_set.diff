@@ -16,7 +16,7 @@ Patch-Name: fixes/5.20.3/docs/SvPV_set.diff
  1 file changed, 8 insertions(+), 3 deletions(-)
 
 diff --git a/sv.h b/sv.h
-index b129225..15163e4 100644
+index b129225bd..15163e439 100644
 --- a/sv.h
 +++ b/sv.h
 @@ -792,13 +792,18 @@ C<SvIV_set> instead of the lvalue assignment to C<SvIVX>.

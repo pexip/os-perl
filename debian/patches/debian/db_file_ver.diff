@@ -13,7 +13,7 @@ Patch-Name: debian/db_file_ver.diff
  1 file changed, 2 insertions(+)
 
 diff --git a/cpan/DB_File/version.c b/cpan/DB_File/version.c
-index e01f6f6..544e6ee 100644
+index e01f6f6fa..544e6ee8f 100644
 --- a/cpan/DB_File/version.c
 +++ b/cpan/DB_File/version.c
 @@ -48,6 +48,7 @@ __getBerkeleyDBInfo()

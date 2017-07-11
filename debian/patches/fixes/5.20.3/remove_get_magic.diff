@@ -29,7 +29,7 @@ Patch-Name: fixes/5.20.3/remove_get_magic.diff
  1 file changed, 1 insertion(+), 2 deletions(-)
 
 diff --git a/mg.c b/mg.c
-index 79aa81a..01b3cdc 100644
+index 79aa81acf..01b3cdc63 100644
 --- a/mg.c
 +++ b/mg.c
 @@ -1077,9 +1077,7 @@ Perl_magic_get(pTHX_ SV *sv, MAGIC *mg)

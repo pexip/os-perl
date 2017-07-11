@@ -14,7 +14,7 @@ Patch-Name: debian/skip-upstream-git-tests.diff
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/t/test.pl b/t/test.pl
-index 30db88c..0fdc4f4 100644
+index 30db88ced..0fdc4f42a 100644
 --- a/t/test.pl
 +++ b/t/test.pl
 @@ -159,7 +159,7 @@ sub skip_all_without_config {

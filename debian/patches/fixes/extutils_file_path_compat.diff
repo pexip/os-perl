@@ -19,7 +19,7 @@ Patch-Name: fixes/extutils_file_path_compat.diff
  1 file changed, 7 insertions(+), 6 deletions(-)
 
 diff --git a/dist/ExtUtils-Command/t/eu_command.t b/dist/ExtUtils-Command/t/eu_command.t
-index aa9fcb8..8ec142d 100644
+index aa9fcb80b..8ec142d32 100644
 --- a/dist/ExtUtils-Command/t/eu_command.t
 +++ b/dist/ExtUtils-Command/t/eu_command.t
 @@ -151,20 +151,21 @@ BEGIN {

@@ -28,7 +28,7 @@ Patch-Name: fixes/perldb-threads.diff
  1 file changed, 1 insertion(+)
 
 diff --git a/lib/perl5db.pl b/lib/perl5db.pl
-index 6ac4d36..f962fb8 100644
+index 6ac4d36f3..f962fb8e0 100644
 --- a/lib/perl5db.pl
 +++ b/lib/perl5db.pl
 @@ -866,6 +866,7 @@ BEGIN {

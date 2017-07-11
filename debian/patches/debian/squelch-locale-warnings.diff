@@ -20,7 +20,7 @@ Patch-Name: debian/squelch-locale-warnings.diff
  2 files changed, 12 insertions(+)
 
 diff --git a/locale.c b/locale.c
-index 27225f3..c451b33 100644
+index 27225f3d1..c451b3373 100644
 --- a/locale.c
 +++ b/locale.c
 @@ -512,6 +512,10 @@ Perl_init_i18nl10n(pTHX_ int printwarn)
@@ -35,7 +35,7 @@ index 27225f3..c451b33 100644
      bool done = FALSE;
      const char *system_default_locale = NULL;
 diff --git a/pod/perllocale.pod b/pod/perllocale.pod
-index 40fc3e6..96a63e8 100644
+index 40fc3e640..96a63e85f 100644
 --- a/pod/perllocale.pod
 +++ b/pod/perllocale.pod
 @@ -1148,6 +1148,14 @@ B<NOTE>: C<PERL_BADLANG> only gives you a way to hide the warning message.

@@ -17,7 +17,7 @@ Patch-Name: fixes/5.20.3/docs/ook_example.diff
  1 file changed, 28 insertions(+), 10 deletions(-)
 
 diff --git a/pod/perlguts.pod b/pod/perlguts.pod
-index d845010..61468bc 100644
+index d845010e7..61468bc51 100644
 --- a/pod/perlguts.pod
 +++ b/pod/perlguts.pod
 @@ -323,22 +323,40 @@ Hence, at this point, the start of the buffer that we allocated lives

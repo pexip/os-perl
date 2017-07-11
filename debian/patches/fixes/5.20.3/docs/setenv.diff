@@ -14,7 +14,7 @@ Patch-Name: fixes/5.20.3/docs/setenv.diff
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/pod/perlclib.pod b/pod/perlclib.pod
-index 0cdee24..2e20784 100644
+index 0cdee2491..2e2078439 100644
 --- a/pod/perlclib.pod
 +++ b/pod/perlclib.pod
 @@ -222,7 +222,7 @@ everywhere by now.

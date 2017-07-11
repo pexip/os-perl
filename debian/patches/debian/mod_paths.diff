@@ -22,7 +22,7 @@ Patch-Name: debian/mod_paths.diff
  1 file changed, 58 insertions(+)
 
 diff --git a/perl.c b/perl.c
-index 5000d79..67d32ce 100644
+index 5000d7981..67d32ce9a 100644
 --- a/perl.c
 +++ b/perl.c
 @@ -4367,6 +4367,11 @@ S_init_perllib(pTHX)

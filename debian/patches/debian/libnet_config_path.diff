@@ -10,7 +10,7 @@ Patch-Name: debian/libnet_config_path.diff
  1 file changed, 3 insertions(+), 4 deletions(-)
 
 diff --git a/cpan/libnet/Net/Config.pm b/cpan/libnet/Net/Config.pm
-index ba16332..4b1ea19 100644
+index ba1633218..4b1ea1931 100644
 --- a/cpan/libnet/Net/Config.pm
 +++ b/cpan/libnet/Net/Config.pm
 @@ -57,9 +57,8 @@ my %nc = (

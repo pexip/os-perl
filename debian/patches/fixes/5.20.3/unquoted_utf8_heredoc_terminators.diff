@@ -34,7 +34,7 @@ Patch-Name: fixes/5.20.3/unquoted_utf8_heredoc_terminators.diff
  2 files changed, 18 insertions(+), 3 deletions(-)
 
 diff --git a/t/lib/warnings/toke b/t/lib/warnings/toke
-index 6764ae6..aabdda0 100644
+index 6764ae619..aabdda0ed 100644
 --- a/t/lib/warnings/toke
 +++ b/t/lib/warnings/toke
 @@ -1520,3 +1520,14 @@ my @array = (0);
@@ -53,7 +53,7 @@ index 6764ae6..aabdda0 100644
 +EXPECT
 +Comme ca!
 diff --git a/toke.c b/toke.c
-index b112cde..c4657eb 100644
+index b112cde5b..c4657ebb5 100644
 --- a/toke.c
 +++ b/toke.c
 @@ -10060,10 +10060,14 @@ S_scan_heredoc(pTHX_ char *s)

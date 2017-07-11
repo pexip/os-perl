@@ -19,7 +19,7 @@ Patch-Name: fixes/pod_man_reproducible_date.diff
  2 files changed, 72 insertions(+), 26 deletions(-)
 
 diff --git a/cpan/podlators/lib/Pod/Man.pm b/cpan/podlators/lib/Pod/Man.pm
-index 72ca9ff..0536662 100644
+index 72ca9ff1d..053666289 100644
 --- a/cpan/podlators/lib/Pod/Man.pm
 +++ b/cpan/podlators/lib/Pod/Man.pm
 @@ -876,25 +876,42 @@ sub devise_title {
@@ -128,7 +128,7 @@ index 72ca9ff..0536662 100644
  
  Encoding handling assumes that PerlIO is available and does not work
 diff --git a/cpan/podlators/t/devise-date.t b/cpan/podlators/t/devise-date.t
-index 3cce9f5..c610dd9 100644
+index 3cce9f5b0..c610dd95c 100644
 --- a/cpan/podlators/t/devise-date.t
 +++ b/cpan/podlators/t/devise-date.t
 @@ -1,15 +1,28 @@

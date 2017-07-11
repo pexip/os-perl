@@ -93,3 +93,5 @@ fixes/xsloader-eval.diff
 fixes/file_path_chmod_race.diff
 fixes/extutils_file_path_compat.diff
 debian/customized_file_path.diff
+debian/CVE-2016-1238/base-pm-amends-pt1.diff
+debian/CVE-2016-1238/base-pm-amends-pt2.diff

@@ -14,7 +14,7 @@ Patch-Name: fixes/5.20.3/test_count_base_rs.diff
  1 file changed, 1 insertion(+), 2 deletions(-)
 
 diff --git a/t/base/rs.t b/t/base/rs.t
-index 0035cc5..8e84ad0 100644
+index 0035cc528..8e84ad041 100644
 --- a/t/base/rs.t
 +++ b/t/base/rs.t
 @@ -1,7 +1,7 @@

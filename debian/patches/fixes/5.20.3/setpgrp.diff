@@ -22,7 +22,7 @@ Patch-Name: fixes/5.20.3/setpgrp.diff
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/pp_sys.c b/pp_sys.c
-index 9de4dff..967b1dd 100644
+index 9de4dfff7..967b1dd06 100644
 --- a/pp_sys.c
 +++ b/pp_sys.c
 @@ -4324,7 +4324,7 @@ PP(pp_setpgrp)

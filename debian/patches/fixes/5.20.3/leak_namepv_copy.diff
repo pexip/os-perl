@@ -11,7 +11,7 @@ Patch-Name: fixes/5.20.3/leak_namepv_copy.diff
  1 file changed, 3 insertions(+), 1 deletion(-)
 
 diff --git a/pad.c b/pad.c
-index fed2892..f22c3c5 100644
+index fed28922e..f22c3c526 100644
 --- a/pad.c
 +++ b/pad.c
 @@ -976,8 +976,10 @@ Perl_pad_findmy_pvn(pTHX_ const char *namepv, STRLEN namelen, U32 flags)

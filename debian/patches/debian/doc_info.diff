@@ -11,7 +11,7 @@ Patch-Name: debian/doc_info.diff
  1 file changed, 10 insertions(+), 2 deletions(-)
 
 diff --git a/pod/perl.pod b/pod/perl.pod
-index 9473daf..a334862 100644
+index 9473daffa..a334862d9 100644
 --- a/pod/perl.pod
 +++ b/pod/perl.pod
 @@ -278,8 +278,16 @@ aux a2p c2ph h2ph h2xs perlbug pl2pm pod2html pod2man s2p splain xsubpp

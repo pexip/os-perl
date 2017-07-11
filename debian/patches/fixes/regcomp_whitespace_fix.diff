@@ -15,7 +15,7 @@ Patch-Name: fixes/regcomp_whitespace_fix.diff
  1 file changed, 12 insertions(+), 16 deletions(-)
 
 diff --git a/regcomp.c b/regcomp.c
-index 7d1aa28..84af011 100644
+index 7d1aa28c9..84af01134 100644
 --- a/regcomp.c
 +++ b/regcomp.c
 @@ -16490,22 +16490,18 @@ Perl_save_re_context(pTHX)

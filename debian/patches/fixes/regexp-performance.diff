@@ -70,7 +70,7 @@ Patch-Name: fixes/regexp-performance.diff
  1 file changed, 45 insertions(+), 79 deletions(-)
 
 diff --git a/regexec.c b/regexec.c
-index 5edac3f..66f6e04 100644
+index 5edac3f4f..66f6e0496 100644
 --- a/regexec.c
 +++ b/regexec.c
 @@ -756,7 +756,7 @@ Perl_re_intuit_start(pTHX_

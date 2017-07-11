@@ -12,7 +12,7 @@ Patch-Name: fixes/net_smtp_docs.diff
  1 file changed, 1 insertion(+)
 
 diff --git a/cpan/libnet/Net/SMTP.pm b/cpan/libnet/Net/SMTP.pm
-index 705b5c5..17c1d21 100644
+index 705b5c5ab..17c1d21ec 100644
 --- a/cpan/libnet/Net/SMTP.pm
 +++ b/cpan/libnet/Net/SMTP.pm
 @@ -637,6 +637,7 @@ Net::SMTP will attempt to extract the address from the value passed.

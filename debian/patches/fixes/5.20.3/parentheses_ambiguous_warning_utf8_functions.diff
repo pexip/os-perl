@@ -27,7 +27,7 @@ Patch-Name: fixes/5.20.3/parentheses_ambiguous_warning_utf8_functions.diff
  2 files changed, 11 insertions(+), 1 deletion(-)
 
 diff --git a/t/lib/warnings/toke b/t/lib/warnings/toke
-index aabdda0..c880f07 100644
+index aabdda0ed..c880f0799 100644
 --- a/t/lib/warnings/toke
 +++ b/t/lib/warnings/toke
 @@ -1531,3 +1531,13 @@ EnFraçais
@@ -45,7 +45,7 @@ index aabdda0..c880f07 100644
 +EXPECT
 +Warning: Use of "𝛃" without parentheses is ambiguous at - line 7.
 diff --git a/toke.c b/toke.c
-index c4657eb..899712b 100644
+index c4657ebb5..899712b8a 100644
 --- a/toke.c
 +++ b/toke.c
 @@ -1997,7 +1997,7 @@ S_check_uni(pTHX)

@@ -13,7 +13,7 @@ Patch-Name: fixes/respect_umask.diff
  2 files changed, 18 insertions(+), 18 deletions(-)
 
 diff --git a/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm b/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm
-index 4140432..8fdb67c 100644
+index 4140432bc..8fdb67c1d 100644
 --- a/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm
 +++ b/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm
 @@ -2075,7 +2075,7 @@ doc__install : doc_site_install
@@ -77,7 +77,7 @@ index 4140432..8fdb67c 100644
  		"installed into" "$(INSTALLVENDORLIB)" \
  		LINKTYPE "$(LINKTYPE)" \
 diff --git a/dist/ExtUtils-Install/lib/ExtUtils/Install.pm b/dist/ExtUtils-Install/lib/ExtUtils/Install.pm
-index eec57aa..06cc530 100644
+index eec57aa8b..06cc53072 100644
 --- a/dist/ExtUtils-Install/lib/ExtUtils/Install.pm
 +++ b/dist/ExtUtils-Install/lib/ExtUtils/Install.pm
 @@ -450,7 +450,7 @@ sub _can_write_dir {

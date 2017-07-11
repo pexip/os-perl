@@ -33,7 +33,7 @@ Patch-Name: fixes/5.20.3/yylex_loop.diff
  2 files changed, 17 insertions(+), 5 deletions(-)
 
 diff --git a/t/op/lex.t b/t/op/lex.t
-index ac094f8..cbb72ef 100644
+index ac094f8d5..cbb72efaf 100644
 --- a/t/op/lex.t
 +++ b/t/op/lex.t
 @@ -4,7 +4,7 @@ use warnings;
@@ -76,7 +76,7 @@ index ac094f8..cbb72ef 100644
 +  '"@{" [perl #123712]'
 +);
 diff --git a/toke.c b/toke.c
-index f59f913..50e2d59 100644
+index f59f91348..50e2d5919 100644
 --- a/toke.c
 +++ b/toke.c
 @@ -5198,7 +5198,8 @@ Perl_yylex(pTHX)

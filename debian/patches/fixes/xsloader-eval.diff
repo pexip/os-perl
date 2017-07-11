@@ -47,7 +47,7 @@ Patch-Name: fixes/xsloader-eval.diff
  2 files changed, 51 insertions(+), 1 deletion(-)
 
 diff --git a/dist/XSLoader/XSLoader_pm.PL b/dist/XSLoader/XSLoader_pm.PL
-index e382058..c494005 100644
+index e382058a0..c49400559 100644
 --- a/dist/XSLoader/XSLoader_pm.PL
 +++ b/dist/XSLoader/XSLoader_pm.PL
 @@ -86,6 +86,31 @@ print OUT <<'EOT';
@@ -83,7 +83,7 @@ index e382058..c494005 100644
  
  my $dl_dlext = quotemeta($Config::Config{'dlext'});
 diff --git a/dist/XSLoader/t/XSLoader.t b/dist/XSLoader/t/XSLoader.t
-index 20ca32b..d254f19 100644
+index 20ca32bb4..d254f199f 100644
 --- a/dist/XSLoader/t/XSLoader.t
 +++ b/dist/XSLoader/t/XSLoader.t
 @@ -33,7 +33,7 @@ my %modules = (

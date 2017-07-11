@@ -14,7 +14,7 @@ Patch-Name: fixes/5.20.3/docs/encoding.diff
  1 file changed, 9 insertions(+), 3 deletions(-)
 
 diff --git a/pod/perlpodspec.pod b/pod/perlpodspec.pod
-index 67f74b6..f2af63e 100644
+index 67f74b629..f2af63e2c 100644
 --- a/pod/perlpodspec.pod
 +++ b/pod/perlpodspec.pod
 @@ -633,15 +633,21 @@ UTF-16.  If the file begins with the three literal byte values

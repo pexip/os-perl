@@ -53,7 +53,7 @@ Patch-Name: fixes/memoize_storable_nstore.diff
  2 files changed, 21 insertions(+), 5 deletions(-)
 
 diff --git a/cpan/Memoize/Memoize/Storable.pm b/cpan/Memoize/Memoize/Storable.pm
-index 1314797..87876f2 100644
+index 131479729..87876f227 100644
 --- a/cpan/Memoize/Memoize/Storable.pm
 +++ b/cpan/Memoize/Memoize/Storable.pm
 @@ -55,7 +55,7 @@ sub DESTROY {
@@ -66,7 +66,7 @@ index 1314797..87876f2 100644
    } else {
      Storable::store($self->{H}, $self->{FILENAME});
 diff --git a/cpan/Memoize/t/tie_storable.t b/cpan/Memoize/t/tie_storable.t
-index de3b8dc..a624238 100644
+index de3b8dc26..a62423850 100644
 --- a/cpan/Memoize/t/tie_storable.t
 +++ b/cpan/Memoize/t/tie_storable.t
 @@ -31,18 +31,34 @@ if ($@) {

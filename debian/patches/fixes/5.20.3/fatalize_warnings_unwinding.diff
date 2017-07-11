@@ -13,7 +13,7 @@ Patch-Name: fixes/5.20.3/fatalize_warnings_unwinding.diff
  1 file changed, 4 insertions(+), 1 deletion(-)
 
 diff --git a/util.c b/util.c
-index 5a3c077..fede576 100644
+index 5a3c07702..fede576d8 100644
 --- a/util.c
 +++ b/util.c
 @@ -1877,7 +1877,10 @@ Perl_vwarner(pTHX_ U32  err, const char* pat, va_list* args)

@@ -20,7 +20,7 @@ Patch-Name: fixes/5.20.3/speed_up_scalar_g.diff
  create mode 100644 t/perf/taint.t
 
 diff --git a/MANIFEST b/MANIFEST
-index 09fbabd..3032f8d 100644
+index 09fbabde4..3032f8d85 100644
 --- a/MANIFEST
 +++ b/MANIFEST
 @@ -5360,6 +5360,7 @@ t/op/warn.t			See if warn works
@@ -32,7 +32,7 @@ index 09fbabd..3032f8d 100644
  t/porting/args_assert.t		Check that all PERL_ARGS_ASSERT* macros are used
  t/porting/authors.t		Check that all authors have been acknowledged
 diff --git a/embed.fnc b/embed.fnc
-index 88f03c2..1eec6b1 100644
+index 88f03c212..1eec6b111 100644
 --- a/embed.fnc
 +++ b/embed.fnc
 @@ -1407,6 +1407,7 @@ Apd	|void	|sv_magic	|NN SV *const sv|NULLOK SV *const obj|const int how \
@@ -44,7 +44,7 @@ index 88f03c2..1eec6b1 100644
  EXp	|MAGIC *|sv_magicext_mglob|NN SV *sv
  ApdbamR	|SV*	|sv_mortalcopy	|NULLOK SV *const oldsv
 diff --git a/embed.h b/embed.h
-index a6e3b9d..6f773f6 100644
+index a6e3b9d18..6f773f626 100644
 --- a/embed.h
 +++ b/embed.h
 @@ -877,6 +877,7 @@
@@ -56,7 +56,7 @@ index a6e3b9d..6f773f6 100644
  #define vivify_defelem(a)	Perl_vivify_defelem(aTHX_ a)
  #define yylex()			Perl_yylex(aTHX)
 diff --git a/inline.h b/inline.h
-index 0fe8a0e..916f557 100644
+index 0fe8a0eee..916f5571c 100644
 --- a/inline.h
 +++ b/inline.h
 @@ -323,6 +323,30 @@ S_is_safe_syscall(pTHX_ const char *pv, STRLEN len, const char *what, const char
@@ -91,7 +91,7 @@ index 0fe8a0e..916f557 100644
   * c-indentation-style: bsd
   * c-basic-offset: 4
 diff --git a/mg.h b/mg.h
-index 81ed296..cd5c647 100644
+index 81ed296f8..cd5c647bb 100644
 --- a/mg.h
 +++ b/mg.h
 @@ -63,7 +63,7 @@ struct magic {
@@ -104,7 +104,7 @@ index 81ed296..cd5c647 100644
  	: ((mg)->mg_len = DO_UTF8(sv)			     \
  	    ? (SSize_t)utf8_length((U8 *)(pv), (U8 *)(pv)+(off)) \
 diff --git a/proto.h b/proto.h
-index 6532ba8..96003a8 100644
+index 6532ba8af..96003a8b0 100644
 --- a/proto.h
 +++ b/proto.h
 @@ -4252,6 +4252,11 @@ PERL_CALLCONV NV	Perl_sv_nv(pTHX_ SV* sv)
@@ -121,7 +121,7 @@ index 6532ba8..96003a8 100644
  			__attribute__nonnull__(pTHX_2);
 diff --git a/t/perf/taint.t b/t/perf/taint.t
 new file mode 100644
-index 0000000..386d97e
+index 000000000..386d97e58
 --- /dev/null
 +++ b/t/perf/taint.t
 @@ -0,0 +1,42 @@

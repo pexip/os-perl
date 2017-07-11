@@ -31,7 +31,7 @@ Patch-Name: fixes/5.20.3/multidimensional_arrays_utf8.diff
  2 files changed, 11 insertions(+), 1 deletion(-)
 
 diff --git a/t/lib/warnings/toke b/t/lib/warnings/toke
-index 92e94ad..6764ae6 100644
+index 92e94adf8..6764ae619 100644
 --- a/t/lib/warnings/toke
 +++ b/t/lib/warnings/toke
 @@ -1510,3 +1510,13 @@ Use of literal control characters in variable names is deprecated at (eval 2) li
@@ -49,7 +49,7 @@ index 92e94ad..6764ae6 100644
 +   $v = $array[ $𝛃 + 0 ];
 +EXPECT
 diff --git a/toke.c b/toke.c
-index 906d56c..b112cde 100644
+index 906d56c10..b112cde5b 100644
 --- a/toke.c
 +++ b/toke.c
 @@ -6621,7 +6621,7 @@ Perl_yylex(pTHX)

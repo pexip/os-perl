@@ -14,7 +14,7 @@ Patch-Name: debian/debugperl-compat-fix.diff
  1 file changed, 3 insertions(+), 1 deletion(-)
 
 diff --git a/perl.h b/perl.h
-index 1325de9..8f19b28 100644
+index 1325de9b9..8f19b2895 100644
 --- a/perl.h
 +++ b/perl.h
 @@ -176,7 +176,9 @@
