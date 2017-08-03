@@ -98,3 +98,4 @@ debian/CVE-2016-1238/base-pm-amends-pt2.diff
 fixes/benchmark-calibration.diff
 fixes/benchmark-marginal-tests.diff
 fixes/time-failures.diff
+fixes/getppid_in_container.diff
