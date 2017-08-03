@@ -13,7 +13,7 @@ Patch-Name: debian/extutils_set_libperl_path.diff
  2 files changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm b/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm
-index 8b86a24..f977476 100644
+index 8b86a24ab..f9774767c 100644
 --- a/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm
 +++ b/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm
 @@ -2462,7 +2462,7 @@ MAP_PRELIBS   = $Config{perllibs} $Config{cryptlib}
@@ -26,7 +26,7 @@ index 8b86a24..f977476 100644
  	$libperl ||= "libperl$self->{LIB_EXT}";
  	$libperl   = "$dir/$libperl";
 diff --git a/pp.c b/pp.c
-index 4ec6887..a44c137 100644
+index 4ec6887df..a44c1373a 100644
 --- a/pp.c
 +++ b/pp.c
 @@ -1,4 +1,4 @@

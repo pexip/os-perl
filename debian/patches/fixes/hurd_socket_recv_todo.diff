@@ -11,7 +11,7 @@ Patch-Name: fixes/hurd_socket_recv_todo.diff
  1 file changed, 11 insertions(+), 4 deletions(-)
 
 diff --git a/t/io/socket.t b/t/io/socket.t
-index 345d196..b51079a 100644
+index 345d196b9..b51079a4a 100644
 --- a/t/io/socket.t
 +++ b/t/io/socket.t
 @@ -101,9 +101,15 @@ SKIP: {

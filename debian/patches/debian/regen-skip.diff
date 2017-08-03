@@ -13,7 +13,7 @@ Patch-Name: debian/regen-skip.diff
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/regen/lib_cleanup.pl b/regen/lib_cleanup.pl
-index c9d6e43..fece1ed 100644
+index c9d6e434b..fece1ed5e 100644
 --- a/regen/lib_cleanup.pl
 +++ b/regen/lib_cleanup.pl
 @@ -159,7 +159,7 @@ foreach ('win32/Makefile', 'win32/makefile.mk') {

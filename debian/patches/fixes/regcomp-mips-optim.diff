@@ -22,7 +22,7 @@ Patch-Name: fixes/regcomp-mips-optim.diff
  1 file changed, 5 insertions(+)
 
 diff --git a/cflags.SH b/cflags.SH
-index 54ce74c..0c39d18 100755
+index 54ce74c99..0c39d18f1 100755
 --- a/cflags.SH
 +++ b/cflags.SH
 @@ -292,6 +292,11 @@ for file do

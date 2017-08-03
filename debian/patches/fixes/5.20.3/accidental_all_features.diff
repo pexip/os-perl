@@ -39,7 +39,7 @@ Patch-Name: fixes/5.20.3/accidental_all_features.diff
  2 files changed, 10 insertions(+), 1 deletion(-)
 
 diff --git a/hv.c b/hv.c
-index ef686ab..fe4947b 100644
+index ef686ab70..fe4947b8c 100644
 --- a/hv.c
 +++ b/hv.c
 @@ -3154,7 +3154,7 @@ Perl_refcounted_he_fetch_pvn(pTHX_ const struct refcounted_he *chain,
@@ -60,7 +60,7 @@ index ef686ab..fe4947b 100644
  }
  
 diff --git a/t/lib/feature/bundle b/t/lib/feature/bundle
-index 429e68e..a40aba4 100644
+index 429e68ebd..a40aba4a1 100644
 --- a/t/lib/feature/bundle
 +++ b/t/lib/feature/bundle
 @@ -117,3 +117,11 @@ EXPECT

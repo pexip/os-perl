@@ -12,7 +12,7 @@ Patch-Name: fixes/io_uncompress_gunzip_inmemory.diff
  2 files changed, 27 insertions(+), 3 deletions(-)
 
 diff --git a/cpan/IO-Compress/lib/IO/Uncompress/Base.pm b/cpan/IO-Compress/lib/IO/Uncompress/Base.pm
-index 4d1b780..c3ff842 100644
+index 4d1b78028..c3ff842e7 100644
 --- a/cpan/IO-Compress/lib/IO/Uncompress/Base.pm
 +++ b/cpan/IO-Compress/lib/IO/Uncompress/Base.pm
 @@ -756,7 +756,8 @@ sub _rd2
@@ -26,7 +26,7 @@ index 4d1b780..c3ff842 100644
                  ${ $x->{buff} } = '' ;
              }
 diff --git a/cpan/IO-Compress/t/compress/oneshot.pl b/cpan/IO-Compress/t/compress/oneshot.pl
-index 1e56b56..43d9c02 100644
+index 1e56b5672..43d9c02f6 100644
 --- a/cpan/IO-Compress/t/compress/oneshot.pl
 +++ b/cpan/IO-Compress/t/compress/oneshot.pl
 @@ -16,7 +16,7 @@ BEGIN {

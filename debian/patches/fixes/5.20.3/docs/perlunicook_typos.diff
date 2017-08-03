@@ -12,7 +12,7 @@ Patch-Name: fixes/5.20.3/docs/perlunicook_typos.diff
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/pod/perlunicook.pod b/pod/perlunicook.pod
-index 7fd8f14..3e5496e 100644
+index 7fd8f141e..3e5496ec0 100644
 --- a/pod/perlunicook.pod
 +++ b/pod/perlunicook.pod
 @@ -440,7 +440,7 @@ convert such strings manually.

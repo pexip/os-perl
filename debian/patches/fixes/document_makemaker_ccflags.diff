@@ -15,7 +15,7 @@ Patch-Name: fixes/document_makemaker_ccflags.diff
  1 file changed, 4 insertions(+)
 
 diff --git a/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MakeMaker.pm b/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MakeMaker.pm
-index d2fabf6..fabb021 100644
+index d2fabf6b2..fabb0215a 100644
 --- a/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MakeMaker.pm
 +++ b/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MakeMaker.pm
 @@ -1716,6 +1716,10 @@ currently used by MakeMaker but may be handy in Makefile.PLs.

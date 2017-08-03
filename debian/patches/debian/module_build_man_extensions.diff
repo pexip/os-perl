@@ -12,7 +12,7 @@ Patch-Name: debian/module_build_man_extensions.diff
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/cpan/Module-Build/lib/Module/Build/Base.pm b/cpan/Module-Build/lib/Module/Build/Base.pm
-index 84e137f..4422cd4 100644
+index 84e137fb4..4422cd432 100644
 --- a/cpan/Module-Build/lib/Module/Build/Base.pm
 +++ b/cpan/Module-Build/lib/Module/Build/Base.pm
 @@ -3226,7 +3226,7 @@ sub manify_bin_pods {

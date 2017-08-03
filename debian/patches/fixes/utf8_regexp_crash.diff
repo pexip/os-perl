@@ -60,7 +60,7 @@ Patch-Name: fixes/utf8_regexp_crash.diff
  create mode 100644 t/porting/re_context.t
 
 diff --git a/MANIFEST b/MANIFEST
-index 6896854..09fbabd 100644
+index 689685447..09fbabde4 100644
 --- a/MANIFEST
 +++ b/MANIFEST
 @@ -5386,6 +5386,7 @@ t/porting/perlfunc.t		Test that Functions_pm.PL can parse perlfunc.pod
@@ -72,7 +72,7 @@ index 6896854..09fbabd 100644
  t/porting/ss_dup.t		Check that sv.c:ss_dup handle everything
  t/porting/test_bootstrap.t	Test that the instructions for test bootstrapping aren't accidentally overlooked.
 diff --git a/regcomp.c b/regcomp.c
-index 573072a..7d1aa28 100644
+index 573072aa2..7d1aa28c9 100644
 --- a/regcomp.c
 +++ b/regcomp.c
 @@ -16471,13 +16471,28 @@ void
@@ -109,7 +109,7 @@ index 573072a..7d1aa28 100644
                                                 "%lu", (long)i);
 diff --git a/t/porting/re_context.t b/t/porting/re_context.t
 new file mode 100644
-index 0000000..5467b93
+index 000000000..5467b93ba
 --- /dev/null
 +++ b/t/porting/re_context.t
 @@ -0,0 +1,43 @@
@@ -157,7 +157,7 @@ index 0000000..5467b93
 +
 +exit 0;
 diff --git a/t/re/pat_advanced.t b/t/re/pat_advanced.t
-index 4fd9f91..77a0f0e 100644
+index 4fd9f9113..77a0f0e6f 100644
 --- a/t/re/pat_advanced.t
 +++ b/t/re/pat_advanced.t
 @@ -2255,6 +2255,19 @@ EOP

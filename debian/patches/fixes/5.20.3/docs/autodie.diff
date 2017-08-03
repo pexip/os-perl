@@ -12,7 +12,7 @@ Patch-Name: fixes/5.20.3/docs/autodie.diff
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/pod/perlunicook.pod b/pod/perlunicook.pod
-index 44a4571..f6e6225 100644
+index 44a457128..f6e622507 100644
 --- a/pod/perlunicook.pod
 +++ b/pod/perlunicook.pod
 @@ -33,7 +33,7 @@ This I<does> make even Unix programmers C<binmode> your binary streams,

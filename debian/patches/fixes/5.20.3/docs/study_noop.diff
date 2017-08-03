@@ -12,7 +12,7 @@ Patch-Name: fixes/5.20.3/docs/study_noop.diff
  1 file changed, 6 insertions(+), 2 deletions(-)
 
 diff --git a/pod/perlfunc.pod b/pod/perlfunc.pod
-index 802b990..272a6cd 100644
+index 802b99080..272a6cd0a 100644
 --- a/pod/perlfunc.pod
 +++ b/pod/perlfunc.pod
 @@ -7671,14 +7671,18 @@ X<study>

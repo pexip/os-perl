@@ -26,7 +26,7 @@ Patch-Name: debian/perlivp.diff
  1 file changed, 1 insertion(+)
 
 diff --git a/utils/perlivp.PL b/utils/perlivp.PL
-index c2f0a11..cc49f96 100644
+index c2f0a11f1..cc49f964b 100644
 --- a/utils/perlivp.PL
 +++ b/utils/perlivp.PL
 @@ -153,6 +153,7 @@ my $INC_total = 0;

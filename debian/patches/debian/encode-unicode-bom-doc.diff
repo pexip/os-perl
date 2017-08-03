@@ -10,7 +10,7 @@ Patch-Name: debian/encode-unicode-bom-doc.diff
  1 file changed, 3 insertions(+), 1 deletion(-)
 
 diff --git a/cpan/Encode/Unicode/Unicode.pm b/cpan/Encode/Unicode/Unicode.pm
-index 9b197d9..c72d85b 100644
+index 9b197d97e..c72d85b7c 100644
 --- a/cpan/Encode/Unicode/Unicode.pm
 +++ b/cpan/Encode/Unicode/Unicode.pm
 @@ -182,7 +182,9 @@ what the BOM says.

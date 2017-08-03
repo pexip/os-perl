@@ -15,7 +15,7 @@ Patch-Name: fixes/encode-unicode-bom.diff
  2 files changed, 20 insertions(+), 4 deletions(-)
 
 diff --git a/cpan/Encode/Unicode/Unicode.pm b/cpan/Encode/Unicode/Unicode.pm
-index 6b35cb7..9b197d9 100644
+index 6b35cb756..9b197d97e 100644
 --- a/cpan/Encode/Unicode/Unicode.pm
 +++ b/cpan/Encode/Unicode/Unicode.pm
 @@ -176,7 +176,13 @@ simply treated as a normal character (ZERO WIDTH NO-BREAK SPACE).
@@ -34,7 +34,7 @@ index 6b35cb7..9b197d9 100644
  =item *
  
 diff --git a/cpan/Encode/Unicode/Unicode.xs b/cpan/Encode/Unicode/Unicode.xs
-index cf42ab8..831708c 100644
+index cf42ab867..831708c2c 100644
 --- a/cpan/Encode/Unicode/Unicode.xs
 +++ b/cpan/Encode/Unicode/Unicode.xs
 @@ -164,9 +164,19 @@ CODE:

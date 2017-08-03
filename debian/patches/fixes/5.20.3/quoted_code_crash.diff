@@ -40,7 +40,7 @@ Patch-Name: fixes/5.20.3/quoted_code_crash.diff
  2 files changed, 12 insertions(+), 2 deletions(-)
 
 diff --git a/t/op/lex.t b/t/op/lex.t
-index b33f0ef..35d4d9c 100644
+index b33f0efc9..35d4d9c3d 100644
 --- a/t/op/lex.t
 +++ b/t/op/lex.t
 @@ -4,7 +4,7 @@ use warnings;
@@ -65,7 +65,7 @@ index b33f0ef..35d4d9c 100644
 +  '/$a[/<<a with no newline [perl #123712]'
 +);
 diff --git a/toke.c b/toke.c
-index 51408a1..90642b2 100644
+index 51408a18d..90642b25e 100644
 --- a/toke.c
 +++ b/toke.c
 @@ -1301,7 +1301,7 @@ buffer has reached the end of the input text.

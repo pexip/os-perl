@@ -14,7 +14,7 @@ Patch-Name: debian/prune_libs.diff
  1 file changed, 2 insertions(+), 3 deletions(-)
 
 diff --git a/Configure b/Configure
-index 2f91ba1..e11d46f 100755
+index 2f91ba1b7..e11d46f72 100755
 --- a/Configure
 +++ b/Configure
 @@ -1387,8 +1387,7 @@ libswanted_uselargefiles=''

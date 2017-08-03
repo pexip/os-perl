@@ -17,7 +17,7 @@ Patch-Name: debian/skip-kfreebsd-crash.diff
  1 file changed, 4 insertions(+)
 
 diff --git a/t/op/threads.t b/t/op/threads.t
-index 6fb2410..67b5f4a 100644
+index 6fb241088..67b5f4a71 100644
 --- a/t/op/threads.t
 +++ b/t/op/threads.t
 @@ -376,6 +376,9 @@ EOF

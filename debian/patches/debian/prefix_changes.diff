@@ -17,7 +17,7 @@ Patch-Name: debian/prefix_changes.diff
  4 files changed, 13 insertions(+), 16 deletions(-)
 
 diff --git a/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Any.pm b/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Any.pm
-index 2066311..0a1fb49 100644
+index 20663111e..0a1fb494f 100644
 --- a/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Any.pm
 +++ b/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Any.pm
 @@ -765,8 +765,6 @@ all POD files in MAN1PODS and MAN3PODS.
@@ -54,7 +54,7 @@ index 2066311..0a1fb49 100644
  
      my $arch    = $Config{archname};
 diff --git a/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm b/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm
-index 0a6797f..c19a5f9 100644
+index 0a6797fb5..c19a5f9cc 100644
 --- a/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm
 +++ b/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm
 @@ -3029,8 +3029,7 @@ sub prefixify {
@@ -68,7 +68,7 @@ index 0a6797f..c19a5f9 100644
  
          warn "    cannot prefix, using default.\n" if $Verbose >= 2;
 diff --git a/cpan/ExtUtils-MakeMaker/t/INST.t b/cpan/ExtUtils-MakeMaker/t/INST.t
-index 91058bb..e399ced 100644
+index 91058bb74..e399ced46 100644
 --- a/cpan/ExtUtils-MakeMaker/t/INST.t
 +++ b/cpan/ExtUtils-MakeMaker/t/INST.t
 @@ -65,9 +65,7 @@ isa_ok( $mm, 'ExtUtils::MakeMaker' );
@@ -83,7 +83,7 @@ index 91058bb..e399ced 100644
  is( !!$mm->{PERL_CORE}, !!$ENV{PERL_CORE}, 'PERL_CORE' );
  
 diff --git a/cpan/ExtUtils-MakeMaker/t/INST_PREFIX.t b/cpan/ExtUtils-MakeMaker/t/INST_PREFIX.t
-index e8de7c6..3fb3f12 100644
+index e8de7c6cb..3fb3f1296 100644
 --- a/cpan/ExtUtils-MakeMaker/t/INST_PREFIX.t
 +++ b/cpan/ExtUtils-MakeMaker/t/INST_PREFIX.t
 @@ -10,7 +10,7 @@ BEGIN {

@@ -14,7 +14,7 @@ Patch-Name: fixes/5.20.3/docs/op.diff
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/op.h b/op.h
-index 9d9dd58..ff45354 100644
+index 9d9dd58d8..ff45354ae 100644
 --- a/op.h
 +++ b/op.h
 @@ -1005,7 +1005,7 @@ For custom ops the type is returned from the registration, and it is up

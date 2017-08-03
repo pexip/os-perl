@@ -41,7 +41,7 @@ Patch-Name: fixes/5.20.3/checking_sub_inwhat.diff
  2 files changed, 10 insertions(+), 4 deletions(-)
 
 diff --git a/t/op/lex.t b/t/op/lex.t
-index 35d4d9c..ac094f8 100644
+index 35d4d9c3d..ac094f8d5 100644
 --- a/t/op/lex.t
 +++ b/t/op/lex.t
 @@ -4,7 +4,7 @@ use warnings;
@@ -65,7 +65,7 @@ index 35d4d9c..ac094f8 100644
 +  '/$a[m||/<<a with no newline [perl #123712]'
 +);
 diff --git a/toke.c b/toke.c
-index 90642b2..f59f913 100644
+index 90642b25e..f59f91348 100644
 --- a/toke.c
 +++ b/toke.c
 @@ -1315,7 +1315,7 @@ Perl_lex_next_chunk(pTHX_ U32 flags)

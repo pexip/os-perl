@@ -40,7 +40,7 @@ Patch-Name: fixes/5.20.3/eval_label_crash.diff
  2 files changed, 4 insertions(+), 1 deletion(-)
 
 diff --git a/op.c b/op.c
-index 7337f23..7038526 100644
+index 7337f23c8..703852621 100644
 --- a/op.c
 +++ b/op.c
 @@ -8865,7 +8865,7 @@ Perl_ck_eval(pTHX_ OP *o)
@@ -53,7 +53,7 @@ index 7337f23..7038526 100644
  #ifdef PERL_MAD
  	    OP* const oldo = o;
 diff --git a/t/comp/parser.t b/t/comp/parser.t
-index 584a473..755b5c5 100644
+index 584a473f6..755b5c527 100644
 --- a/t/comp/parser.t
 +++ b/t/comp/parser.t
 @@ -502,6 +502,9 @@ like $@, "^No such class a1b at ", 'TYPE of my of for statement';

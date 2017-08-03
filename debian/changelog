@@ -1,3 +1,16 @@
+perl (5.20.2-3+deb8u8pexip1) pexip; urgency=low
+
+  * New upstream release
+
+ -- John-Mark Bell <jmb@pexip.com>  Thu, 03 Aug 2017 13:50:28 +0100
+
+perl (5.20.2-3+deb8u8) jessie; urgency=medium
+
+  * Apply upstream base.pm no-dot-in-inc fix (from 5.24.2-RC1)
+    (Closes: #867170)
+
+ -- Dominic Hargreaves <dom@earth.li>  Tue, 11 Jul 2017 17:05:53 +0100
+
 perl (5.20.2-3+deb8u7pexip1) pexip; urgency=low
 
   * New upstream release

@@ -16,7 +16,7 @@ Patch-Name: debian/makemaker-pasthru.diff
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm b/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm
-index c19a5f9..6328e26 100644
+index c19a5f9cc..6328e26f5 100644
 --- a/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm
 +++ b/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm
 @@ -2745,7 +2745,7 @@ sub pasthru {

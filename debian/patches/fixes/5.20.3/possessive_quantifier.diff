@@ -21,7 +21,7 @@ Patch-Name: fixes/5.20.3/possessive_quantifier.diff
  3 files changed, 3 insertions(+), 4 deletions(-)
 
 diff --git a/regcomp.c b/regcomp.c
-index 84af011..606b337 100644
+index 84af01134..606b3373b 100644
 --- a/regcomp.c
 +++ b/regcomp.c
 @@ -10455,9 +10455,7 @@ S_regpiece(pTHX_ RExC_state_t *pRExC_state, I32 *flagp, U32 depth)
@@ -36,7 +36,7 @@ index 84af011..606b337 100644
                  if (SIZE_ONLY) {
                      ckWARN2reg(RExC_parse + 1,
 diff --git a/t/re/re_tests b/t/re/re_tests
-index d883add..11c4125 100644
+index d883add8f..11c412507 100644
 --- a/t/re/re_tests
 +++ b/t/re/re_tests
 @@ -1887,5 +1887,7 @@ A+(*PRUNE)BC(?{})	AAABC	y	$&	AAABC
@@ -48,7 +48,7 @@ index d883add..11c4125 100644
  # Keep these lines at the end of the file
  # vim: softtabstop=0 noexpandtab
 diff --git a/t/re/reg_mesg.t b/t/re/reg_mesg.t
-index 55eda18..77f7aa1 100644
+index 55eda189d..77f7aa10d 100644
 --- a/t/re/reg_mesg.t
 +++ b/t/re/reg_mesg.t
 @@ -382,7 +382,6 @@ my @warning = (

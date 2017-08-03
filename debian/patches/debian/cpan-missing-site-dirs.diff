@@ -18,7 +18,7 @@ Patch-Name: debian/cpan-missing-site-dirs.diff
  1 file changed, 27 insertions(+), 4 deletions(-)
 
 diff --git a/cpan/CPAN/lib/CPAN/FirstTime.pm b/cpan/CPAN/lib/CPAN/FirstTime.pm
-index 4416072..187f5c4 100644
+index 441607298..187f5c4a5 100644
 --- a/cpan/CPAN/lib/CPAN/FirstTime.pm
 +++ b/cpan/CPAN/lib/CPAN/FirstTime.pm
 @@ -2045,11 +2045,34 @@ sub _print_urllist {

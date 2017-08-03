@@ -27,7 +27,7 @@ Patch-Name: fixes/5.20.3/leftbracket_XTERMORDORDOR.diff
  2 files changed, 4 insertions(+)
 
 diff --git a/t/base/lex.t b/t/base/lex.t
-index 01ab208..3c612ec 100644
+index 01ab2088b..3c612ec9e 100644
 --- a/t/base/lex.t
 +++ b/t/base/lex.t
 @@ -434,3 +434,6 @@ print "ok $test - y <comment> <newline> ...\n"; $test++;
@@ -38,7 +38,7 @@ index 01ab208..3c612ec 100644
 +# Used to crash [perl #123711]
 +0-5x-l{0};
 diff --git a/toke.c b/toke.c
-index 899712b..51408a1 100644
+index 899712b8a..51408a18d 100644
 --- a/toke.c
 +++ b/toke.c
 @@ -6107,6 +6107,7 @@ Perl_yylex(pTHX)

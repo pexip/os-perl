@@ -19,7 +19,7 @@ Patch-Name: fixes/5.20.3/h2ph_hex_constants.diff
  1 file changed, 18 insertions(+), 1 deletion(-)
 
 diff --git a/utils/h2ph.PL b/utils/h2ph.PL
-index 9a8b14d..d082f22 100644
+index 9a8b14dca..d082f2272 100644
 --- a/utils/h2ph.PL
 +++ b/utils/h2ph.PL
 @@ -769,7 +769,7 @@ sub inc_dirs

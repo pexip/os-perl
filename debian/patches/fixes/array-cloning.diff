@@ -19,7 +19,7 @@ Patch-Name: fixes/array-cloning.diff
  2 files changed, 8 insertions(+), 2 deletions(-)
 
 diff --git a/sv.c b/sv.c
-index af393bd..06db7d9 100644
+index af393bdea..06db7d9b2 100644
 --- a/sv.c
 +++ b/sv.c
 @@ -12698,7 +12698,7 @@ S_sv_dup_common(pTHX_ const SV *const sstr, CLONE_PARAMS *const param)
@@ -32,7 +32,7 @@ index af393bd..06db7d9 100644
  		}
  		else {
 diff --git a/t/op/threads.t b/t/op/threads.t
-index 67b5f4a..bec210b 100644
+index 67b5f4a71..bec210b9d 100644
 --- a/t/op/threads.t
 +++ b/t/op/threads.t
 @@ -9,7 +9,7 @@ BEGIN {

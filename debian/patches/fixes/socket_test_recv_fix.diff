@@ -11,7 +11,7 @@ Patch-Name: fixes/socket_test_recv_fix.diff
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/t/io/socket.t b/t/io/socket.t
-index b723e3c..345d196 100644
+index b723e3c6e..345d196b9 100644
 --- a/t/io/socket.t
 +++ b/t/io/socket.t
 @@ -102,7 +102,7 @@ SKIP: {

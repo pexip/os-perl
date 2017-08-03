@@ -30,7 +30,7 @@ Patch-Name: fixes/failed_require_diagnostics.diff
  1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/pp_ctl.c b/pp_ctl.c
-index 11314ec..ce51abc 100644
+index 11314ecea..ce51abcb3 100644
 --- a/pp_ctl.c
 +++ b/pp_ctl.c
 @@ -4050,7 +4050,8 @@ PP(pp_require)

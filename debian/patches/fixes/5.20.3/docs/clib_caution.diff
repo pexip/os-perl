@@ -12,7 +12,7 @@ Patch-Name: fixes/5.20.3/docs/clib_caution.diff
  1 file changed, 33 insertions(+)
 
 diff --git a/pod/perlhacktips.pod b/pod/perlhacktips.pod
-index f2f2e6c..5544b5d 100644
+index f2f2e6c32..5544b5d2d 100644
 --- a/pod/perlhacktips.pod
 +++ b/pod/perlhacktips.pod
 @@ -560,6 +560,39 @@ temporarily try the following:
