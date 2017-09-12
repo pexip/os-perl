@@ -95,3 +95,6 @@ fixes/extutils_file_path_compat.diff
 debian/customized_file_path.diff
 debian/CVE-2016-1238/base-pm-amends-pt1.diff
 debian/CVE-2016-1238/base-pm-amends-pt2.diff
+fixes/CVE-2017-12837.diff
+fixes/CVE-2017-12883.diff
+fixes/CVE-2017-12883-5.20.diff
