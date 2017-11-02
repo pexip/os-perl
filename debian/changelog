@@ -1,3 +1,9 @@
+perl (5.20.2-3+deb8u9pexip1) pexip; urgency=low
+
+  * New upstream security release
+
+ -- Vincent Sanders <vince@pexip.com>  Thu, 02 Nov 2017 14:05:28 +0100
+
 perl (5.20.2-3+deb8u9) jessie-security; urgency=high
 
   * Update upstream base.pm no-dot-in-inc fix patch description.
