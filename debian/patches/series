@@ -98,3 +98,5 @@ debian/CVE-2016-1238/base-pm-amends-pt2.diff
 fixes/CVE-2017-12837.diff
 fixes/CVE-2017-12883.diff
 fixes/CVE-2017-12883-5.20.diff
+fixes/CVE-2018-6913.diff
+fixes/CVE-2018-12015-Archive-Tar-directory-traversal.diff

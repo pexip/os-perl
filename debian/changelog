@@ -1,3 +1,16 @@
+perl (5.20.2-3+deb8u11) jessie-security; urgency=high
+
+  * [SECURITY] CVE-2018-12015: fix directory traversal vulnerability
+    in Archive-Tar (Closes: #900834)
+
+ -- Dominic Hargreaves <dom@earth.li>  Sun, 10 Jun 2018 18:40:37 +0100
+
+perl (5.20.2-3+deb8u10) jessie-security; urgency=high
+
+  * [SECURITY] CVE-2018-6913: heap buffer overflow with large data blocks.
+
+ -- Niko Tyni <ntyni@debian.org>  Sat, 10 Mar 2018 20:36:19 +0200
+
 perl (5.20.2-3+deb8u9) jessie-security; urgency=high
 
   * Update upstream base.pm no-dot-in-inc fix patch description.
