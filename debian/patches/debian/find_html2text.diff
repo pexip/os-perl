@@ -1,4 +1,4 @@
-From 9dd0717f9a28111873e21d9e04110c90006e88d5 Mon Sep 17 00:00:00 2001
+From f29982eb4835d19d1223b1293253c68f95a0aae4 Mon Sep 17 00:00:00 2001
 From: Andreas Marschke <andreas.marschke@googlemail.com>
 Date: Sat, 17 Sep 2011 11:38:42 +0100
 Subject: Configure CPAN::Distribution with correct name of html2text
@@ -21,10 +21,10 @@ functionality].
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/cpan/CPAN/lib/CPAN/Distribution.pm b/cpan/CPAN/lib/CPAN/Distribution.pm
-index 9a0870717d..332a627943 100644
+index 092b781ac2..5c2bae1c8f 100644
 --- a/cpan/CPAN/lib/CPAN/Distribution.pm
 +++ b/cpan/CPAN/lib/CPAN/Distribution.pm
-@@ -4031,7 +4031,7 @@ sub _display_url {
+@@ -4099,7 +4099,7 @@ sub _display_url {
        if $CPAN::DEBUG;
  
      # should we define it in the config instead?

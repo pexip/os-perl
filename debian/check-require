@@ -21,6 +21,7 @@ BEGIN {
 $| = 1;
 
 # supported input format variations:
+#  ./usr/share/perl/5.12/Tie/Hash.pm
 #  usr/share/perl/5.12/Tie/Hash.pm
 #  usr/*/perl/*/Tie/Hash.pm
 #  Tie::Hash
@@ -33,6 +34,9 @@ $| = 1;
 
 sub canonicalize {
 	local $_ = shift;
+
+	s|^\./||;
+
 	/\*/ and do {
     		my @files = glob;
     		die("no files globbed by $_") if !@files;
@@ -47,6 +51,7 @@ sub canonicalize {
 
 	s|usr/share/perl/[^/]+/||;
 	s|usr/lib/[^/]+/perl/[^/]+/||;
+	s|usr/lib/[^/]+/perl-base/||;
 
 	s|/|::|g if s/\.pm$//;
 	return ($_);

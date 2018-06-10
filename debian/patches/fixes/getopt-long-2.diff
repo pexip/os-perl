@@ -1,0 +1,57 @@
+From 9ac9f053dcb547dd401e02c360bea416889ced4a Mon Sep 17 00:00:00 2001
+From: Johan Vromans <jvromans@squirrel.nl>
+Date: Wed, 22 Feb 2017 12:10:34 +0100
+Subject: Withdraw part of commit 5d9947fb445327c7299d8beb009d609bc70066c0,
+ which tries to implement more GNU getopt_long campatibility. GNU
+ getopt_long() does not accept the (optional) argument to be passed to the
+ option without = sign. However, we do, since not doing so breaks existing
+ scripts.
+
+Origin: backport, https://github.com/sciurius/perl-Getopt-Long/commit/258074ddb2f8960eb1c74a5b20d6ea7263c3bb13
+Bug: https://rt.cpan.org/Public/Bug/Display.html?id=120300
+Patch-Name: fixes/getopt-long-2.diff
+---
+ cpan/Getopt-Long/lib/Getopt/Long.pm | 19 +++++++++++++++----
+ 1 file changed, 15 insertions(+), 4 deletions(-)
+
+diff --git a/cpan/Getopt-Long/lib/Getopt/Long.pm b/cpan/Getopt-Long/lib/Getopt/Long.pm
+index 631912bf91..68f090bee7 100644
+--- a/cpan/Getopt-Long/lib/Getopt/Long.pm
++++ b/cpan/Getopt-Long/lib/Getopt/Long.pm
+@@ -1110,9 +1110,17 @@ sub FindOption ($$$$$) {
+ 
+     # Check if there is an option argument available.
+     if ( $gnu_compat ) {
+-	my $optargtype = 0; # 0 = none, 1 = empty, 2 = nonempty
+-	$optargtype = ( !defined($optarg) ? 0 : ( (length($optarg) == 0) ? 1 : 2 ) );
+-    return (1, $opt, $ctl, defined($ctl->[CTL_DEFAULT]) ? $ctl->[CTL_DEFAULT] : undef)
++	my $optargtype = 0; # none, 1 = empty, 2 = nonempty, 3 = aux
++	if ( defined($optarg) ) {
++	    $optargtype = (length($optarg) == 0) ? 1 : 2;
++	}
++	elsif ( defined $rest || @$argv > 0 ) {
++	    # GNU getopt_long() does not accept the (optional)
++	    # argument to be passed to the option without = sign.
++	    # We do, since not doing so breaks existing scripts.
++	    $optargtype = 3;
++	}
++	return (1, $opt, $ctl, $ctl->[CTL_DEFAULT])
+ 	  if (($optargtype == 0) && !$mand);
+ 	return (1, $opt, $ctl, $type eq 's' ? '' : 0)
+ 	  if $optargtype == 1;  # --foo=  -> return nothing
+@@ -2322,11 +2330,14 @@ do. Without C<gnu_compat>, C<--opt=> gives an error. With C<gnu_compat>,
+ C<--opt=> will give option C<opt> and empty value.
+ This is the way GNU getopt_long() does it.
+ 
++Note that C<--opt value> is still accepted, even though GNU
++getopt_long() doesn't.
++
+ =item gnu_getopt
+ 
+ This is a short way of setting C<gnu_compat> C<bundling> C<permute>
+ C<no_getopt_compat>. With C<gnu_getopt>, command line handling should be
+-fully compatible with GNU getopt_long().
++reasonably compatible with GNU getopt_long().
+ 
+ =item require_order
+ 

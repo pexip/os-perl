@@ -1,4 +1,0 @@
-# see #522827
-usr-share-doc-symlink-without-dependency perl
-# Deliberately empty on some architectures
-empty-binary-package

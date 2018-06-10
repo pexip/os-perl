@@ -1,4 +1,4 @@
-From 5cc13e8a57ca7f2a5b3178427eb6ebec8e0f9a6b Mon Sep 17 00:00:00 2001
+From a6079ee06378db211f3371b51f9871e576ef0dcd Mon Sep 17 00:00:00 2001
 From: Brendan O'Dea <bod@debian.org>
 Date: Fri, 18 Mar 2005 22:22:25 +1100
 Subject: Prune the list of libraries wanted to what we actually need.
@@ -14,20 +14,20 @@ Patch-Name: debian/prune_libs.diff
  1 file changed, 2 insertions(+), 3 deletions(-)
 
 diff --git a/Configure b/Configure
-index 2f91ba1b78..e11d46f725 100755
+index 5a353d6de4..a00df640e4 100755
 --- a/Configure
 +++ b/Configure
-@@ -1387,8 +1387,7 @@ libswanted_uselargefiles=''
- : set usesocks on the Configure command line to enable socks.
+@@ -1479,8 +1479,7 @@ archname=''
+ usereentrant='undef'
  : List of libraries we want.
  : If anyone needs extra -lxxx, put those in a hint file.
--libswanted="socket bind inet nsl nm ndbm gdbm dbm db malloc dl ld sun"
--libswanted="$libswanted m crypt sec util c cposix posix ucb bsd BSD"
+-libswanted="cl pthread socket bind inet nsl ndbm gdbm dbm db malloc dl ld"
+-libswanted="$libswanted sun m crypt sec util c cposix posix ucb bsd BSD"
 +libswanted='gdbm gdbm_compat db dl m c crypt'
  : We probably want to search /usr/shlib before most other libraries.
  : This is only used by the lib/ExtUtils/MakeMaker.pm routine extliblist.
  glibpth=`echo " $glibpth " | sed -e 's! /usr/shlib ! !'`
-@@ -22793,7 +22792,7 @@ sunos*X4*)
+@@ -24007,7 +24006,7 @@ sunos*X4*)
      ;;
  *) case "$usedl" in
      $define|true|[yY]*)

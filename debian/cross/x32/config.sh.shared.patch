@@ -1,0 +1,24 @@
+--- config.sh.static	2017-01-06 16:22:28.640447217 +0200
++++ config.sh.shared	2017-01-06 16:22:28.632447063 +0200
+@@ -17 +17 @@
+-config_args='-Dusethreads -Duselargefiles -Dcc=x86_64-linux-gnux32-gcc -Dcpp=x86_64-linux-gnux32-cpp -Dld=x86_64-linux-gnux32-gcc -Dccflags=-DDEBIAN -Wdate-time -D_FORTIFY_SOURCE=2 -g -O2 -fdebug-prefix-map=/build/perl-vMOM6q/perl-5.24.1~rc5=. -specs=/usr/share/dpkg/pie-compile.specs -fstack-protector-strong -Wformat -Werror=format-security -Dldflags= -specs=/usr/share/dpkg/pie-link.specs -Wl,-z,relro -Dlddlflags=-shared -specs=/usr/share/dpkg/pie-link.specs -Wl,-z,relro -Dcccdlflags=-fPIC -Darchname=x86_64-linux-gnux32 -Dprefix=/usr -Dprivlib=/usr/share/perl/5.24 -Darchlib=/usr/lib/x86_64-linux-gnux32/perl/5.24 -Dvendorprefix=/usr -Dvendorlib=/usr/share/perl5 -Dvendorarch=/usr/lib/x86_64-linux-gnux32/perl5/5.24 -Dsiteprefix=/usr/local -Dsitelib=/usr/local/share/perl/5.24.1 -Dsitearch=/usr/local/lib/x86_64-linux-gnux32/perl/5.24.1 -Dman1dir=/usr/share/man/man1 -Dman3dir=/usr/share/man/man3 -Dsiteman1dir=/usr/local/man/man1 -Dsiteman3dir=/usr/local/man/man3 -Dusesitecustomize -Duse64bitint -Dman1ext=1 -Dman3ext=3perl -Dpager=/usr/bin/sensible-pager -Uafs -Ud_csh -Ud_ualarm -Uusesfio -Uusenm -Ui_libutil -Uversiononly -DDEBUGGING=-g -Doptimize=-O2 -dEs -Uuseshrplib -Dotherlibdirs=/usr/lib/x86_64-linux-gnux32/perl-base'
++config_args='-Dusethreads -Duselargefiles -Dcc=x86_64-linux-gnux32-gcc -Dcpp=x86_64-linux-gnux32-cpp -Dld=x86_64-linux-gnux32-gcc -Dccflags=-DDEBIAN -Wdate-time -D_FORTIFY_SOURCE=2 -g -O2 -fdebug-prefix-map=/build/perl-vMOM6q/perl-5.24.1~rc5=. -specs=/usr/share/dpkg/pie-compile.specs -fstack-protector-strong -Wformat -Werror=format-security -Dldflags= -specs=/usr/share/dpkg/pie-link.specs -Wl,-z,relro -Dlddlflags=-shared -specs=/usr/share/dpkg/pie-link.specs -Wl,-z,relro -Dcccdlflags=-fPIC -Darchname=x86_64-linux-gnux32 -Dprefix=/usr -Dprivlib=/usr/share/perl/5.24 -Darchlib=/usr/lib/x86_64-linux-gnux32/perl/5.24 -Dvendorprefix=/usr -Dvendorlib=/usr/share/perl5 -Dvendorarch=/usr/lib/x86_64-linux-gnux32/perl5/5.24 -Dsiteprefix=/usr/local -Dsitelib=/usr/local/share/perl/5.24.1 -Dsitearch=/usr/local/lib/x86_64-linux-gnux32/perl/5.24.1 -Dman1dir=/usr/share/man/man1 -Dman3dir=/usr/share/man/man3 -Dsiteman1dir=/usr/local/man/man1 -Dsiteman3dir=/usr/local/man/man3 -Dusesitecustomize -Duse64bitint -Dman1ext=1 -Dman3ext=3perl -Dpager=/usr/bin/sensible-pager -Uafs -Ud_csh -Ud_ualarm -Uusesfio -Uusenm -Ui_libutil -Uversiononly -DDEBUGGING=-g -Doptimize=-O2 -dEs -Duseshrplib -Dlibperl=libperl.so.5.24.1'
+@@ -57,2 +57,2 @@
+-config_arg39='-Uuseshrplib'
+-config_arg40='-Dotherlibdirs=/usr/lib/x86_64-linux-gnux32/perl-base'
++config_arg39='-Duseshrplib'
++config_arg40='-Dlibperl=libperl.so.5.24.1'
+@@ -458 +458 @@
+-d_perl_otherlibdirs='define'
++d_perl_otherlibdirs='undef'
+@@ -913 +913 @@
+-libperl='libperl.a'
++libperl='libperl.so.5.24.1'
+@@ -996 +996 @@
+-otherlibdirs='/usr/lib/x86_64-linux-gnux32/perl-base'
++otherlibdirs=' '
+@@ -1197 +1197 @@
+-useshrplib='false'
++useshrplib='true'
+@@ -1251 +1250,0 @@
+-# Extracted from Debian package version 5.24.1~rc5-1

@@ -12,16 +12,21 @@ set -e
 #
 # The output format is designed to be included into Perl's patchlevel.h,
 # which eventually controls what 'perl -V' prints.
+#
+# When called with the '-d' option, outputs the timestamp of the newest
+# patch, for the purposes of getting $patchlevel_date in perlbug right
 
 prefix="DEBPKG:"
 version=""
 patchdir=debian/patches
+showdate=false
 
-while getopts p:v: f
+while getopts p:v:d f
 do
     case $f in
     p) prefix=$OPTARG;;
     v) version=$OPTARG;;
+    d) showdate=true
     esac
 done
 shift `expr $OPTIND - 1`
@@ -32,17 +37,26 @@ if [ -n "$version" ]; then
     version=" for $version"
 fi
 
+newest_mtime=0
 while read patch strip
 do
+    if $showdate; then
+        mtime=$(stat --format='%Y' $patchdir/$patch)
+        if [ "$mtime" -gt "$newest_mtime" ]; then
+            newest_mtime="$mtime"
+        fi
+        continue
+    fi
+
     patchname=$(echo $patch | sed 's/\.diff$//')
     < $patchdir/$patch sed -e '/^Subject:/ { N; s/\n / / }' | sed -n -e '
 
     # massage the patch headers
     s|^Bug: .*https\?://rt\.perl\.org/.*id=\(.*\).*|[perl #\1]|; tprepend;
     s|^Bug: .*https\?://rt\.cpan\.org/.*id=\(.*\).*|[rt.cpan.org #\1]|; tprepend;
-    s|^Bug-Debian: [^0-9]*\([0-9]\{5,\}\)|http://bugs.debian.org/\1|; tprepend;
+    s|^Bug-Debian: [^0-9]*\([0-9]\{5,\}\)|https://bugs.debian.org/\1|; tprepend;
     s/^\(Subject\|Description\): //; tappend;
-    s|^Origin: .*http://perl5\.git\.perl\.org/perl\.git/commit\(diff\)\?/\(.......\).*|[\2]|; tprepend;
+    s|^Origin: .*https\?://perl5\.git\.perl\.org/perl\.git/commit\(diff\)\?/\(.......\).*|[\2]|; tprepend;
 
     # post-process at the end of input
     $ { x;
@@ -67,3 +81,6 @@ do
     :prepend x; H; d;
     '
 done < $in
+if $showdate; then
+    echo $newest_mtime
+fi

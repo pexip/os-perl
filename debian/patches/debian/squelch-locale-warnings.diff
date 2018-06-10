@@ -1,4 +1,4 @@
-From 35533e0b026619307735d82e89b6ab4c500ef75c Mon Sep 17 00:00:00 2001
+From 67ab405a04466d16ccc7718f19a2011cd0f0f0df Mon Sep 17 00:00:00 2001
 From: Niko Tyni <ntyni@debian.org>
 Date: Sun, 3 Oct 2010 21:36:17 +0300
 Subject: Squelch locale warnings in Debian package maintainer scripts
@@ -15,30 +15,31 @@ the warning will be triggered normally again at that point.
 
 Patch-Name: debian/squelch-locale-warnings.diff
 ---
- locale.c           | 4 ++++
+ locale.c           | 5 ++++-
  pod/perllocale.pod | 8 ++++++++
- 2 files changed, 12 insertions(+)
+ 2 files changed, 12 insertions(+), 1 deletion(-)
 
 diff --git a/locale.c b/locale.c
-index 27225f3d1a..c451b3373e 100644
+index bf8713a665..d43ad160be 100644
 --- a/locale.c
 +++ b/locale.c
-@@ -512,6 +512,10 @@ Perl_init_i18nl10n(pTHX_ int printwarn)
-     char *p;
-     const bool locwarn = (printwarn > 1 ||
-                     (printwarn &&
-+
-+                     /* Debian specific change - see http://bugs.debian.org/508764 */
-+                     (!PerlEnv_getenv("DPKG_RUNNING_VERSION")) &&
-+
-                      (!(p = PerlEnv_getenv("PERL_BADLANG")) || atoi(p))));
-     bool done = FALSE;
-     const char *system_default_locale = NULL;
+@@ -760,7 +760,10 @@ Perl_init_i18nl10n(pTHX_ int printwarn)
+ 
+     const bool locwarn = (printwarn > 1
+                           || (printwarn
+-                              && (! bad_lang_use_once
++                              &&
++                                 /* Debian specific change - see http://bugs.debian.org/508764 */
++                                 (!PerlEnv_getenv("DPKG_RUNNING_VERSION")) &&
++                                 (! bad_lang_use_once
+                                   || (
+                                     /* disallow with "" or "0" */
+                                     *bad_lang_use_once
 diff --git a/pod/perllocale.pod b/pod/perllocale.pod
-index 40fc3e6405..96a63e85fc 100644
+index 018f916231..59b4efc2d3 100644
 --- a/pod/perllocale.pod
 +++ b/pod/perllocale.pod
-@@ -1148,6 +1148,14 @@ B<NOTE>: C<PERL_BADLANG> only gives you a way to hide the warning message.
+@@ -1209,6 +1209,14 @@ B<NOTE>: C<PERL_BADLANG> only gives you a way to hide the warning message.
  The message tells about some problem in your system's locale support,
  and you should investigate what the problem is.
  

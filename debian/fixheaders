@@ -6,7 +6,6 @@
 
 use strict;
 use File::Find;
-use Config;
 
 my @args = @ARGV;
 @ARGV = ();
@@ -14,10 +13,11 @@ find sub { push @ARGV, $File::Find::name if -f and /\.ph$/ }, @args;
 
 $^I = '';
 
+die "$0: no headers under @args?\n" unless @ARGV;
 while (<>)
 {
     # discard casts
-    s/(?<!\$sizeof{)(&__const\s+)?\\'struct[^\\']+\\'[^;]*;/1;/g;
+    s/(?<!\$sizeof\{)(&__const\s+)?\\'struct[^\\']+\\'[^;]*;/1;/g;
     s/'char'\[\d+\]/1/g;
 
     print;

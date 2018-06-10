@@ -1,4 +1,4 @@
-From 570dc5a820960ac91b28e7ac21d0bede5840d0ff Mon Sep 17 00:00:00 2001
+From 6a5c9e5996e946e1ce67e481c3d8de9f121693d7 Mon Sep 17 00:00:00 2001
 From: Dominic Hargreaves <dom@earth.li>
 Date: Mon, 17 May 2010 13:23:07 +0300
 Subject: Point users to Debian packages of deprecated core modules
@@ -16,14 +16,14 @@ separate packages instead.
 
 Patch-Name: debian/deprecate-with-apt.diff
 ---
- lib/deprecate.pm | 25 ++++++++++++++++++++++++-
- 1 file changed, 24 insertions(+), 1 deletion(-)
+ lib/deprecate.pm | 15 ++++++++++++++-
+ 1 file changed, 14 insertions(+), 1 deletion(-)
 
 diff --git a/lib/deprecate.pm b/lib/deprecate.pm
-index 47bc11253e..742c06ddeb 100644
+index 47bc11253e..b0c61dfb05 100644
 --- a/lib/deprecate.pm
 +++ b/lib/deprecate.pm
-@@ -7,6 +7,23 @@ our $VERSION = 0.03;
+@@ -7,6 +7,13 @@ our $VERSION = 0.03;
  our %Config;
  unless (%Config) { require Config; *Config = \%Config::Config; }
  
@@ -31,23 +31,13 @@ index 47bc11253e..742c06ddeb 100644
 +# deprecated modules where available
 +
 +our %DEBIAN_PACKAGES = (
-+    'CGI' => 'libcgi-pm-perl',
-+    'CGI::Apache' => 'libcgi-pm-perl',
-+    'CGI::Carp' => 'libcgi-pm-perl',
-+    'CGI::Cookie' => 'libcgi-pm-perl',
-+    'CGI::Fast' => 'libcgi-fast-perl',
-+    'CGI::Pretty' => 'libcgi-pm-perl',
-+    'CGI::Push' => 'libcgi-pm-perl',
-+    'CGI::Switch' => 'libcgi-pm-perl',
-+    'CGI::Util' => 'libcgi-pm-perl',
-+    'Module::Build' => 'libmodule-build-perl',
-+    'Package::Constants' => 'libpackage-constants-perl',
++    # None for the perl 5.22 cycle
 +);
 +
  # This isn't a public API. It's internal to code maintained by the perl-porters
  # If you would like it to be a public API, please send a patch with
  # documentation and tests. Until then, it may change without warning.
-@@ -58,9 +75,15 @@ EOM
+@@ -58,9 +65,15 @@ EOM
  	if (defined $callers_bitmask
  	    && (vec($callers_bitmask, $warnings::Offsets{deprecated}, 1)
  		|| vec($callers_bitmask, $warnings::Offsets{all}, 1))) {

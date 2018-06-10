@@ -1,3 +1,0 @@
-# very much intentional
-# see also the perl-modules long description
-intra-source-package-circular-dependency perl perl-modules
