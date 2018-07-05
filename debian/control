@@ -11,7 +11,7 @@ Build-Depends: file, cpio, libdb-dev, libgdbm-dev, netbase [!hurd-any],
  libc6-dev (>= 2.19-9) [s390x]
 Vcs-Git: git://anonscm.debian.org/perl/perl.git -b debian-5.20
 Vcs-Browser: http://anonscm.debian.org/gitweb/?p=perl/perl.git
-XS-Pexip-Upstream: http://ftp.debian.org/debian/ jessie
+XS-Pexip-Upstream: http://ftp.debian.org/debian/ stretch
 
 Package: perl-base
 Essential: yes
