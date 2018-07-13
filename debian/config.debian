@@ -9,15 +9,22 @@ fullver="$ver.$subver"
 nextver="$ver."$(($subver+1))
 ccflags=-DDEBIAN
 ldflags=
-arch_cpu=${DEB_BUILD_ARCH_CPU:-$(dpkg-architecture -qDEB_BUILD_ARCH_CPU)}
-gnu_type=${DEB_BUILD_GNU_TYPE:-$(dpkg-architecture -qDEB_BUILD_GNU_TYPE)}
+host_arch=${DEB_HOST_ARCH:-$(dpkg-architecture -qDEB_HOST_ARCH)}
+host_arch_cpu=${DEB_HOST_ARCH_CPU:-$(dpkg-architecture -qDEB_HOST_ARCH_CPU)}
+host_gnu_type=${DEB_HOST_GNU_TYPE:-$(dpkg-architecture -qDEB_HOST_GNU_TYPE)}
+build_gnu_type=${DEB_BUILD_GNU_TYPE:-$(dpkg-architecture -qDEB_BUILD_GNU_TYPE)}
 optimize=-O2
 debugging=-g
+
+archtriplet=${DEB_HOST_MULTIARCH:-$(dpkg-architecture -qDEB_HOST_MULTIARCH)}
+
+# this goes in config.h to make perl -V output reproducible
+PERL_BUILD_DATE=$(LC_ALL=C date '+%b %e %Y %T' --utc -d "$(dpkg-parsechangelog | sed -n -e 's/^Date: //p')")
 
 case "$1" in
     --static) # static perl
     	build_type=static
-	opts="-Uuseshrplib";;
+	opts="-Uuseshrplib -Dotherlibdirs=\"/usr/lib/$archtriplet/perl-base\"";;
 
     --debug) # debugperl
     	build_type=debug
@@ -53,22 +60,19 @@ case "$1" in
     --install-type)
 	# The default installation type for /usr/bin/perl of shared or
 	# static may be changed by including x-perl-static or x-perl-shared
-	# in DEB_BUILD_OPTIONS.  The default is shared except for i386 where
-	# there is a measurable performance penalty.
+	# in DEB_BUILD_OPTIONS.  The default used to vary based on the
+	# architecture but is now static everywhere. See #781476
 	case ",$DEB_BUILD_OPTIONS," in
 	    *[,\ ]x-perl-static[,\ ]*)	exec echo static;;
 	    *[,\ ]x-perl-shared[,\ ]*)	exec echo shared;;
 	esac
-	case "$arch_cpu" in
-	    i386)			exec echo static;;
-	    *)				exec echo shared;;
-	esac;;
+	exec echo static;;
 
     *)	echo "$0: need --shared, --static, or --debug option"
     	exit 2;;
 esac
 
-case "$arch_cpu:$build_type" in
+case "$host_arch_cpu:$build_type" in
     sh4:*) # required to correctly handle floating point on sh4
     	ccflags="$ccflags -mieee";;
 
@@ -81,26 +85,34 @@ case ",$DEB_BUILD_OPTIONS," in
 	optimize="$optimize${optimize:+ }-O0";;
 esac
 
+cc=${CC:-${host_gnu_type}-gcc}
+cpp=${CPP:-${host_gnu_type}-cpp}
+ld=${LD:-${host_gnu_type}-gcc}
+
 if which dpkg-buildflags >/dev/null 2>&1; then
     ccflags="$ccflags $(dpkg-buildflags --get CPPFLAGS)"
     ccflags="$ccflags $(dpkg-buildflags --get CFLAGS)"
     ldflags="$ldflags $(dpkg-buildflags --get LDFLAGS)"
 fi
 
-archtriplet=`dpkg-architecture -qDEB_HOST_MULTIARCH`
-
 # post-configure tweaks
 cp debian/config.over .
 
-# need bash when sourcing config.over
-eval /bin/bash Configure			\
+if [ "$build_gnu_type" = "$host_gnu_type" ]
+then
+    # native builds
+    # need bash when sourcing config.over
+    eval /bin/bash Configure			\
     -Dusethreads				\
     -Duselargefiles				\
+    -Dcc=$cc					\
+    -Dcpp=$cpp					\
+    -Dld=$ld					\
     -Dccflags=\'$ccflags\'			\
     -Dldflags=\'$ldflags\'			\
     -Dlddlflags=\'-shared $ldflags\'			\
     -Dcccdlflags=-fPIC				\
-    -Darchname=$gnu_type			\
+    -Darchname=$host_gnu_type			\
     -Dprefix=/usr				\
     -Dprivlib=/usr/share/perl/$ver		\
     -Darchlib=/usr/lib/$archtriplet/perl/$ver		\
@@ -129,4 +141,115 @@ eval /bin/bash Configure			\
     -DDEBUGGING=$debugging			\
     -Doptimize=\"$optimize\"			\
     $extra_path					\
-    $opts -des \
+    -dEs $opts
+
+	# note about the debian/cross files for the build log
+	crossconfig=debian/cross/${host_arch}/config.sh.static
+	if [ "$build_type" = "static" ]; then
+	 if [ -f $crossconfig ]; then
+	  if ! diff --ignore-matching-lines="cf_time" \
+	          --ignore-matching-lines="Configuration time" \
+	          --ignore-matching-lines="Extracted from Debian package" \
+	          $crossconfig config.sh >/dev/null
+	  then
+	    echo "Note: source package config.sh for cross building differs from generated one"
+	    echo "Note: consider refreshing with debian/cross/extract-config-sh after the build"
+	    diff -u0 $crossconfig config.sh | head -100
+	    echo --------------------------------------------------
+	  else
+	    echo "Note: source package config.sh for cross building is up to date with the generated one (good!)"
+	  fi
+	 else
+	    echo "Note: no source package config.sh for cross building"
+	    echo "Note: consider including it with debian/cross/extract-config-sh after the build"
+	 fi
+	fi
+
+    # for the Configure -S call below
+    override=
+else
+	# cross builds
+
+	# find a ready made config.sh, currently in debian/cross/<arch>
+	basedir=debian/cross/${host_arch}
+	baseconfig=${basedir}/config.sh.static
+	if [ ! -f $baseconfig ]; then
+	    echo "need $baseconfig for cross build!" 1>&2
+	    exit 1
+	fi
+
+	# check for a new upstream version, invalidating old config.sh files
+	crossversion=$(sed -n "s/^version='\(.*\)'/\1/ p" $baseconfig)
+	if [ "$fullver" != "$crossversion" ]; then
+	    echo "Fatal: need $baseconfig for cross build but it needs refreshing from $crossversion to $fullver!" 1>&2
+	    echo "To fix: make a native build and run debian/cross/extract-config-sh on the results" 1>&2
+	    echo "        (or fix $baseconfig by hand)" 1>&2
+	    exit 1
+	fi
+
+	# arch-specific REFRESH files can be used to invalidate the old config.sh
+	# files regardless of the version
+	#   there can be a comment inside the REFRESH file
+	#   example use case: changed Configure parameters
+	if [ -e $basedir/REFRESH ]; then
+	    echo "Fatal: need $baseconfig for cross build but it needs refreshing!" 1>&2
+	    cat $basedir/REFRESH 1>&2
+	    echo "To fix: make a native build and run debian/cross/extract-config-sh on the results" 1>&2
+	    echo "        (or fix $baseconfig by hand)" 1>&2
+	    echo "Then remove $basedir/REFRESH" 1>&2
+	    exit 1
+	fi
+
+	# Next, ask Configure to compile a build system miniperl and
+	# generate_uudmap executable in host/
+	#
+	# It's tempting to use the system perl for this, but that fails
+	# when building extensions because it tries to dynamically load
+	# XS modules from lib/, particularly as <*> uses File::Glob on
+	# full perls (but not miniperl)
+	if [ ! -x build-miniperl ]; then
+	    echo "Cross build: making a native miniperl for the build process"
+	    ./Configure -dE -Dusecrosscompile
+	    # host/ gets cleaned between builds by 'make distclean', so
+	    # stash the results
+	    cp host/miniperl build-miniperl
+	    cp host/generate_uudmap build-generate_uudmap
+	fi
+
+	# Actually use the old config.sh files
+
+	cp $baseconfig ./config.sh
+	if [ "$build_type" = "static" ]; then
+		# notes for the build log
+		echo "Cross build: recycling old probed configuration from $baseconfig"
+		grep '^cf_time' $baseconfig
+		md5sum $baseconfig
+		# debian/cross/extract-config-sh appends a comment so show that
+		grep "Extracted from Debian package version" $baseconfig
+	else
+		patchconfig=${basedir}/config.sh.$build_type.patch
+		if [ ! -f "$patchconfig" ]; then
+			echo "need $patchconfig for cross build!" 1>&2
+			exit 1
+		fi
+		patch config.sh < $patchconfig
+		echo "Cross build: recycling old probed configuration from $patchconfig"
+		md5sum $patchconfig
+	fi
+
+	# override configuration for cross building
+	echo "usecrosscompile='define'" >  optdef.sh
+	echo "hostperl='./build-miniperl'" >> optdef.sh
+	echo "hostgenerate='./build-generate_uudmap'" >> optdef.sh
+	echo "perl='/usr/bin/perl'" >> optdef.sh
+
+	# for the Configure -S call below
+	override=-O
+fi
+
+# now continue with extracting Makefile et al.
+/bin/bash Configure -S $override
+
+# append PERL_BUILD_DATE before the last #endif in config.h
+# massive quoting problems prevent passing this to Configure
+sed -i "\$i #define PERL_BUILD_DATE \"$PERL_BUILD_DATE\"" config.h

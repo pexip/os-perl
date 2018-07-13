@@ -1,4 +1,4 @@
-From cc7249fd7f4820fd820f9ffd4ba3b73f5a3b90ed Mon Sep 17 00:00:00 2001
+From fd008eb84bfb5a1dfdbe16635bd779da518da6a8 Mon Sep 17 00:00:00 2001
 From: Brendan O'Dea <bod@debian.org>
 Date: Fri, 18 Mar 2005 22:22:25 +1100
 Subject: Postpone LD_LIBRARY_PATH evaluation to the binary targets.
@@ -16,10 +16,10 @@ Patch-Name: debian/fakeroot.diff
  1 file changed, 2 insertions(+), 5 deletions(-)
 
 diff --git a/Makefile.SH b/Makefile.SH
-index a2e6034037..dbff8122bf 100755
+index 8e943c4d8e..5f195299bf 100755
 --- a/Makefile.SH
 +++ b/Makefile.SH
-@@ -39,10 +39,7 @@ case "$useshrplib" in
+@@ -48,10 +48,7 @@ case "$useshrplib" in
  true)
  	# Prefix all runs of 'miniperl' and 'perl' with
  	# $ldlibpth so that ./perl finds *this* shared libperl.
@@ -31,7 +31,7 @@ index a2e6034037..dbff8122bf 100755
  
  	pldlflags="$cccdlflags"
  	static_ldflags=''
-@@ -113,7 +110,7 @@ true)
+@@ -122,7 +119,7 @@ true)
  	    ;;
  	esac
  	case "$ldlibpthname" in

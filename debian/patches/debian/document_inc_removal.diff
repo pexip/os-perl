@@ -1,0 +1,29 @@
+From ceef891685671cf55b80c6f42fb8546970318832 Mon Sep 17 00:00:00 2001
+From: Dominic Hargreaves <dom@earth.li>
+Date: Thu, 1 Sep 2016 14:54:15 +0100
+Subject: Document in perlvar that we remove '.' from @INC by default
+
+Patch-Name: debian/document_inc_removal.diff
+---
+ pod/perlvar.pod | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
+
+diff --git a/pod/perlvar.pod b/pod/perlvar.pod
+index 1821b95d1c..c3e8e4f893 100644
+--- a/pod/perlvar.pod
++++ b/pod/perlvar.pod
+@@ -503,9 +503,11 @@ initially consists of the arguments to any B<-I> command-line
+ switches, followed by the default Perl library, probably
+ F</usr/local/lib/perl>, followed by ".", to represent the current
+ directory.  ("." will not be appended if taint checks are enabled,
+-either by C<-T> or by C<-t>.)  If you need to modify this at runtime,
+-you should use the C<use lib> pragma to get the machine-dependent
+-library properly loaded also:
++either by C<-T> or by C<-t>.)  In Debian, '.' is removed by
++F</etc/perl/sitecustomize.pl> by default, as a prelude to it being
++removed upstream in a future release. If you need to modify C<@INC> at
++runtime, you should use the C<use lib> pragma to get the
++machine-dependent library properly loaded also:
+ 
+     use lib '/mypath/libdir/';
+     use SomeMod;

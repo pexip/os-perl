@@ -1,0 +1,29 @@
+From 53ff0306ac5e54fef5559efe9bddbf332c8ffa9c Mon Sep 17 00:00:00 2001
+From: Niko Tyni <ntyni@debian.org>
+Date: Wed, 1 Jul 2015 22:23:53 +0300
+Subject: Make EU::MakeMaker honour MANnEXT settings in generated manpage
+ headers
+
+This was inherited from early changes by Brendan O'Dea, previously
+(accidentally) in debian/prefix_changes.diff and before that in
+debian/extutils_hacks.diff
+
+Patch-Name: debian/makemaker-manext.diff
+Bug-Debian: https://bugs.debian.org/247370
+---
+ cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Any.pm | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Any.pm b/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Any.pm
+index 7679dc415a..b13c74857c 100644
+--- a/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Any.pm
++++ b/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Any.pm
+@@ -928,7 +928,7 @@ END
+     foreach my $section (qw(1 3)) {
+         my $pods = $self->{"MAN${section}PODS"};
+         my $p2m = sprintf <<CMD, $] > 5.008 ? " -u" : "";
+-	\$(NOECHO) \$(POD2MAN) --section=$section --perm_rw=\$(PERM_RW)%s
++	\$(NOECHO) \$(POD2MAN) --section=\$(MAN${section}EXT) --perm_rw=\$(PERM_RW)%s
+ CMD
+         push @man_cmds, $self->split_command($p2m, map {($_,$pods->{$_})} sort keys %$pods);
+     }

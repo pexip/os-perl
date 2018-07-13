@@ -1,4 +1,4 @@
-From f86b73ad3cd8b3a2ed904f5521012f5ea4f6ae0b Mon Sep 17 00:00:00 2001
+From 3daa32a0e89247d5f06cad2a7c71f2f85b801e00 Mon Sep 17 00:00:00 2001
 From: Brendan O'Dea <bod@debian.org>
 Date: Tue, 8 Mar 2005 19:30:38 +1100
 Subject: Debian policy doesn't install .packlist files for core or vendor.
@@ -9,10 +9,10 @@ Patch-Name: debian/instmodsh_doc.diff
  1 file changed, 3 insertions(+), 1 deletion(-)
 
 diff --git a/cpan/ExtUtils-MakeMaker/bin/instmodsh b/cpan/ExtUtils-MakeMaker/bin/instmodsh
-index 8b9aa95ae7..e551434802 100644
+index ab0f9d1ffe..b3b109f475 100644
 --- a/cpan/ExtUtils-MakeMaker/bin/instmodsh
 +++ b/cpan/ExtUtils-MakeMaker/bin/instmodsh
-@@ -18,9 +18,11 @@ instmodsh - A shell to examine installed modules
+@@ -19,9 +19,11 @@ instmodsh - A shell to examine installed modules
  
  =head1 DESCRIPTION
  

@@ -1,7 +1,7 @@
-From 6cf7ffa72ab3e7aaba668288cd63c8185a55de68 Mon Sep 17 00:00:00 2001
+From 67b3f0f3c333e771f5b3455b9b690082985614db Mon Sep 17 00:00:00 2001
 From: James E Keenan <jkeenan@cpan.org>
 Date: Thu, 11 May 2017 04:23:40 -0400
-Subject: [PATCH] Correct the order of tests of chmod(). (#294)
+Subject: Correct the order of tests of chmod(). (#294)
 
 Per code review by haarg, the order of tests was wrong in the first place.
 Hence, correctly re-ordering them is a better repair than changing one test's
@@ -10,18 +10,18 @@ description.
 For: https://github.com/Perl-Toolchain-Gang/ExtUtils-MakeMaker/pull/294
 
 [Debian note: this is a prerequisite for the CVE-2017-6512 fix in
-File-Path, and was backported by Dominic Hargreaves]
+File-Path]
 
 Bug: https://github.com/Perl-Toolchain-Gang/ExtUtils-MakeMaker/pull/294
 Patch-Name: fixes/extutils_file_path_compat.diff
 ---
- dist/ExtUtils-Command/t/eu_command.t | 13 +++++++------
+ cpan/ExtUtils-MakeMaker/t/eu_command.t | 13 +++++++------
  1 file changed, 7 insertions(+), 6 deletions(-)
 
-diff --git a/dist/ExtUtils-Command/t/eu_command.t b/dist/ExtUtils-Command/t/eu_command.t
-index aa9fcb80b7..8ec142d327 100644
---- a/dist/ExtUtils-Command/t/eu_command.t
-+++ b/dist/ExtUtils-Command/t/eu_command.t
+diff --git a/cpan/ExtUtils-MakeMaker/t/eu_command.t b/cpan/ExtUtils-MakeMaker/t/eu_command.t
+index 269aa5c9a4..32a6f59dca 100644
+--- a/cpan/ExtUtils-MakeMaker/t/eu_command.t
++++ b/cpan/ExtUtils-MakeMaker/t/eu_command.t
 @@ -151,20 +151,21 @@ BEGIN {
          is( ((stat('testdir'))[2] & 07777) & 0700,
              0100, 'change a dir to execute-only' );

@@ -5,11 +5,9 @@
 # subroutines
 #
 
-BEGIN { unshift @INC, 'lib' }
 use strict;
 use File::Find;
 use File::Path;
-use IO::File;
 
 my @args = @ARGV;
 @ARGV = ();
@@ -40,7 +38,7 @@ while (<>)
 	    }
 
 	    mkpath $dir unless -d $dir;
-	    $pod = IO::File->new(">$file")
+	    open($pod, '>', $file)
 		or die "$0: can't create $file ($!)\n";
 	}
 
@@ -50,7 +48,7 @@ while (<>)
 	}
 	else
 	{
-	    $pod->print($_);
+	    print $pod $_;
 	}
     }
     else
@@ -66,8 +64,8 @@ continue
 	close ARGV;
 	if ($pod)
 	{
-	    $pod->print("=cut\n");
-	    $pod->close;
+	    print $pod "=cut\n";
+	    close $pod;
 	    undef $pod;
 	}
 

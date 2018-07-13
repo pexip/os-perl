@@ -1,87 +1,235 @@
-perl (5.20.2-3+deb8u11pexip2) pexip; urgency=low
+perl (5.24.1-3+deb9u4pexip1) pexip; urgency=high
 
-  * Rebuild after git merge woe
+  * Migrate to Stretch
 
- -- John-Mark Bell <jmb@pexip.com>  Thu, 05 Jul 2018 09:07:04 +0100
+ -- John-Mark Bell <jmb@pexip.com>  Fri, 13 Jul 2018 11:28:57 +0100
 
-perl (5.20.2-3+deb8u11pexip1) pexip; urgency=low
-
-  * New upstream release
-
- -- John-Mark Bell <jmb@pexip.com>  Thu, 05 Jul 2018 08:21:56 +0100
-
-perl (5.20.2-3+deb8u11) jessie-security; urgency=high
+perl (5.24.1-3+deb9u4) stretch-security; urgency=high
 
   * [SECURITY] CVE-2018-12015: fix directory traversal vulnerability
     in Archive-Tar (Closes: #900834)
 
- -- Dominic Hargreaves <dom@earth.li>  Sun, 10 Jun 2018 18:40:37 +0100
+ -- Dominic Hargreaves <dom@earth.li>  Sun, 10 Jun 2018 18:37:28 +0100
 
-perl (5.20.2-3+deb8u10) jessie-security; urgency=high
+perl (5.24.1-3+deb9u3) stretch-security; urgency=high
 
+  * [SECURITY] CVE-2018-6797: buffer overflow related to regex
+                              unicode semantics.
+  * [SECURITY] CVE-2018-6798: heap buffer overflow when matching
+                              malformed UTF-8 characters.
   * [SECURITY] CVE-2018-6913: heap buffer overflow with large data blocks.
 
- -- Niko Tyni <ntyni@debian.org>  Sat, 10 Mar 2018 20:36:19 +0200
+ -- Niko Tyni <ntyni@debian.org>  Sat, 10 Mar 2018 20:39:49 +0200
 
-perl (5.20.2-3+deb8u9pexip1) pexip; urgency=low
-
-  * New upstream security release
-
- -- Vincent Sanders <vince@pexip.com>  Thu, 02 Nov 2017 14:05:28 +0100
-
-perl (5.20.2-3+deb8u9) jessie-security; urgency=high
+perl (5.24.1-3+deb9u2) stretch-security; urgency=high
 
   * Update upstream base.pm no-dot-in-inc fix patch description.
   * [SECURITY] CVE-2017-12837: Fix a heap buffer overflow in regular
     expression compiler. (Closes: #875596)
   * [SECURITY] CVE-2017-12883: Fix a buffer over-read in regular
     expression parser.   (Closes: #875597)
-    + also includes a separate upstream fix from the 5.23 cycle
 
- -- Niko Tyni <ntyni@debian.org>  Tue, 12 Sep 2017 20:00:57 +0300
+ -- Niko Tyni <ntyni@debian.org>  Tue, 12 Sep 2017 19:37:26 +0300
 
-perl (5.20.2-3+deb8u8pexip1) pexip; urgency=low
+perl (5.24.1-3+deb9u1) stretch; urgency=medium
 
-  * New upstream release
-  * debian/patches/fixes/getppid_in_container.diff:
-    Upstream fix to fix FTBFS when building in a container
-
- -- John-Mark Bell <jmb@pexip.com>  Thu, 03 Aug 2017 13:50:28 +0100
-
-perl (5.20.2-3+deb8u8) jessie; urgency=medium
-
+  * Backport various Getopt-Long fixes from upstream 2.49..2.51.
+    (Closes: #855532, #864544)
+  * Backport upstream patch fixing regexp "Malformed UTF-8 character"
+    crashes. (Closes: #864782)
   * Apply upstream base.pm no-dot-in-inc fix (from 5.24.2-RC1)
     (Closes: #867170)
 
- -- Dominic Hargreaves <dom@earth.li>  Tue, 11 Jul 2017 17:05:53 +0100
+ -- Dominic Hargreaves <dom@earth.li>  Tue, 11 Jul 2017 16:27:24 +0100
 
-perl (5.20.2-3+deb8u7pexip1) pexip; urgency=low
-
-  * New upstream release
-
- -- John-Mark Bell <jmb@pexip.com>  Mon, 05 Jun 2017 18:47:14 +0100
-
-perl (5.20.2-3+deb8u7) jessie-security; urgency=high
+perl (5.24.1-3) unstable; urgency=high
 
   * [CVE-2017-6512] Fix file permissions race condition in File-Path;
     patch from John Lightsey (Closes: #863870)
   * Also fix test logic in ExtUtils-MakeMaker required for the above
 
- -- Dominic Hargreaves <dom@earth.li>  Sat, 03 Jun 2017 13:11:53 +0100
+ -- Dominic Hargreaves <dom@earth.li>  Thu, 01 Jun 2017 16:09:52 +0100
 
-perl (5.20.2-3+deb8u6pexip1) pexip; urgency=low
+perl (5.24.1-2) unstable; urgency=medium
 
-  * Migrate to Jessie
-  * debian/patches/fixes/benchmark-calibration.diff,
-    debian/patches/fixes/benchmark-marginal-tests.diff,
-    debian/patches/fixes/time-failures.diff:
-    Backport upstream fixes to fix FTBFS.
+  * Apply patch from upstream fixing leak in list assignment
+    (Closes: #855064)
+  * Clarify documentation of 'do' in the face of '.' being removed
+    from @INC (Closes: #839536)
 
- -- John-Mark Bell <jmb@pexip.com>  Wed, 22 Mar 2017 20:28:43 +0000
+ -- Dominic Hargreaves <dom@earth.li>  Thu, 16 Mar 2017 11:11:46 +0000
 
-perl (5.20.2-3+deb8u6) jessie-security; urgency=high
+perl (5.24.1-1) unstable; urgency=medium
+
+  [ Dominic Hargreaves ]
+  * Break libexception-class-perl (<< 1.42) since this version fixes an
+    @INC related vulnerability potentially exposed by the reversion of the
+    base.pm changes below.
+  * Remove <nocheck> profile flag for build dependency on file, as it
+    is needed outside the test suite (Closes: #850296)
 
   [ Niko Tyni ]
+  * Use https for URLs in the patchlevel list.
+  * Refresh cross build support files.
+
+  [ Dominic Hargreaves ]
+  * New upstream release
+
+ -- Dominic Hargreaves <dom@earth.li>  Sun, 15 Jan 2017 23:35:20 +0000
+
+perl (5.24.1~rc5-1) experimental; urgency=medium
+
+  * New upstream release candidate which reverts the base.pm @INC fixes
+    pending a patch which does not break legitimate use cases.
+
+ -- Dominic Hargreaves <dom@earth.li>  Tue, 03 Jan 2017 21:22:31 +0000
+
+perl (5.24.1~rc4-1) unstable; urgency=medium
+
+  [ Dominic Hargreaves ]
+  * Fix Vcs-Git header. Thanks to Axel Beckert (Closes: #839057)
+  * Add Breaks on dh-haskell (<< 0.3) (Closes: #839018)
+  * Add workaround for optimization test failure on HPPA (Closes: #838613)
+
+  [ Niko Tyni ]
+  * Import new upstream release candidate with improved @INC localizing
+    in base.pm.
+  * Patch Test::Builder to fix a 'used only once' warning. (Closes: #840968)
+  * Sort the binary package conffile lists for reproducibility.
+  * Break amanda-common versions built against perlapi-5.22. (See #843700)
+  * Patch Configure to filter longdblinfbytes randomness for
+    build reproducibility. (Closes: #844752)
+  * Patch installman to generate man pages with UTF-8 characters.
+    (Closes: #840211)
+
+ -- Niko Tyni <ntyni@debian.org>  Sat, 26 Nov 2016 23:12:44 +0200
+
+perl (5.24.1~rc3-3) unstable; urgency=medium
+
+  * Reinstate perl-modules virtual package (Closes: #838855)
+
+ -- Niko Tyni <ntyni@debian.org>  Sun, 25 Sep 2016 23:22:41 +0300
+
+perl (5.24.1~rc3-2) unstable; urgency=medium
+
+  [ Dominic Hargreaves ]
+  * Build-Depends on netbase for hurd to fix FTBFS. The original
+    reason for the conditional exclude in #89406 is no longer
+    relevant (Closes: #836892)
+  * Fix test failure in Hurd due to hard-coded ENOENT.
+    Thanks to Pino Toscano for the fix
+  * Fix symbols file for Hurd. Thanks to Pino Toscano
+
+  [ Niko Tyni ]
+  * Refresh cross build support files.
+
+  [ Dominic Hargreaves ]
+  * Activate perl-major-upgrade trigger
+  * Update perlapi-* provides to be suitable for unstable
+  * Upload to unstable
+
+ -- Dominic Hargreaves <dom@earth.li>  Tue, 20 Sep 2016 12:53:37 +0100
+
+perl (5.24.1~rc3-1) experimental; urgency=medium
+
+  [ Dominic Hargreaves ]
+  * Add Breaks for older verions of texinfo which didn't work
+    with perl 5.24 (Closes: #825223)
+  * Skip some POSIX uid and pid tests on GNU/Hurd. Thanks to
+    Samuel Thibault for the report (Closes: #825016)
+  * Fix GNU/Hurd hints (Closes: #825020)
+  * Switch Vcs-Browser from gitweb to cgit and Vcs-Git to https
+
+  [ Niko Tyni ]
+  * [SECURITY] CVE-2016-6185: Make XSLoader skip relative paths not
+    on @INC. (Closes: #829578)
+  * Add patch from Chris Lamb making the output of ExtUtils::ParseXS
+    reproducible. (Closes: #829296)
+  * Import new upstream release candidate.
+    + provide perlapi-5.24.0-exp1 for compatibility with test packages
+  * Merge 5.22.2-5 from unstable.
+
+ -- Niko Tyni <ntyni@debian.org>  Sat, 03 Sep 2016 14:18:56 +0300
+
+perl (5.24.0-1) experimental; urgency=medium
+
+  [ Niko Tyni ]
+  * New upstream release.
+  * Make libperl-dev depend on perl:any of the same version.
+    This makes sure that versions of headers and libraries match
+    while keeping cross building possible. (Closes: #823861)
+  * Wrap long lines in perlbug messages. (Closes: #822463)
+
+  [ Dominic Hargreaves ]
+  * Add deprecation warning to bundled version of rename program
+    (see #735134)
+
+ -- Niko Tyni <ntyni@debian.org>  Tue, 17 May 2016 22:32:32 +0300
+
+perl (5.24.0~rc5-1) experimental; urgency=medium
+
+  * New upstream release candidate.
+
+ -- Niko Tyni <ntyni@debian.org>  Sat, 07 May 2016 19:32:25 +0300
+
+perl (5.24.0~rc4-1) experimental; urgency=medium
+
+  * Merge 5.22.2-1 from unstable
+  * Apply various minor documentation improvements in dual-lived
+    modules (Closes: #51962, #367291, #697567, #697568, #731505, #817925)
+  * New upstream release candidate
+    + documentation tweaks (Closes: #246542, #494590, #776614, #810156)
+
+ -- Dominic Hargreaves <dom@earth.li>  Tue, 03 May 2016 22:29:06 +0100
+
+perl (5.24.0~rc3-2) experimental; urgency=medium
+
+  * Fix libperl5.24.triggers permissions.
+  * Update to Standards-Version 3.9.8.
+
+ -- Niko Tyni <ntyni@debian.org>  Thu, 28 Apr 2016 10:55:17 +0300
+
+perl (5.24.0~rc3-1) experimental; urgency=medium
+
+  * New upstream release candidate.
+    + fixes Makefile.SH quoting (Closes: #754057)
+    + includes Time::Piece documentation improvements
+      (Closes: #762816, #796089, #782655)
+  * No longer Provide perl-modules. (Closes: #822064)
+  * Add symbols file for libperl5.24 (Closes: #702752)
+  * Provide perlapi-5.24.0-exp1 (and set $Config{debian_abi} accordingly):
+    while no further ABI changes are planned, this helps if some turn
+    out to be necessary before 5.24 enters unstable.
+  * Upload to experimental.
+
+ -- Niko Tyni <ntyni@debian.org>  Wed, 27 Apr 2016 22:59:49 +0300
+
+perl (5.22.2-5) unstable; urgency=low
+
+  [ Dominic Hargreaves ]
+  * Document in perlvar that we remove '.' from @INC by default
+
+  [ Niko Tyni ]
+  * Fix dpkg-buildflags filtering to handle slash characters.
+    (Closes: #836378)
+  * Break libencode-perl (<< 2.86) to make sure CVE-2016-1238 fixes are
+    active. (Closes: #836138)
+
+ -- Niko Tyni <ntyni@debian.org>  Sat, 03 Sep 2016 12:48:53 +0300
+
+perl (5.22.2-4) unstable; urgency=low
+
+  * Fix test failure when '.' has been removed from @INC
+  * Remove '.' from @INC by default (Closes: #588017)
+    + this behaviour can (for now) be disabled by commenting out the
+      last line of /etc/perl/sitecustomize.pl
+  * Make perllocal.pod files reproducible. Thanks to Chris Lamb
+    (Closes: #834190, #835815)
+
+ -- Dominic Hargreaves <dom@earth.li>  Thu, 01 Sep 2016 11:47:02 +0100
+
+perl (5.22.2-3) unstable; urgency=high
+
   * [SECURITY] CVE-2016-1238: opportunistic loading of optional
     modules can make many programs unintentionally load code
     from the current working directory (which might be changed to
@@ -94,53 +242,378 @@ perl (5.20.2-3+deb8u6) jessie-security; urgency=high
       build failures in perl and CPAN modules if "." is removed from
       @INC
 
-  [ Dominic Hargreaves ]
+ -- Dominic Hargreaves <dom@earth.li>  Mon, 25 Jul 2016 16:00:43 +0100
+
+perl (5.22.2-2) unstable; urgency=medium
+
+  [ Niko Tyni ]
   * [SECURITY] CVE-2016-6185: Make XSLoader skip relative paths not
     on @INC. (Closes: #829578)
+  * Add patch from Chris Lamb making the output of ExtUtils::ParseXS
+    reproducible. (Closes: #829296)
+  * Refresh cross build support files for all architectures.
 
- -- Dominic Hargreaves <dom@earth.li>  Fri, 22 Jul 2016 16:30:45 +0100
+  [ Dominic Hargreaves ]
+  * Update wrong-path-for-interpreter override for 5.22.2, fixing
+    Lintian error introduced in previous upload
+  * Switch Vcs-Browser from gitweb to cgit and Vcs-Git to https
 
-perl (5.20.2-3+deb8u5) jessie; urgency=medium
+ -- Niko Tyni <ntyni@debian.org>  Thu, 07 Jul 2016 20:40:41 +0200
 
-  * Apply patch from Niko Tyni fixing debugperl crashes with XS
-    modules (Closes: #816280)
-  * [SECURITY] CVE-2015-8853 fix regexp engine hang on illegal UTF8
-    input (Closes: #821848)
-  * Fix UTF8-related regexp engine crash (Closes: #820328)
-  * Apply selected bug-fix patches taken from 5.20.3 (Closes: #822336)
-    - /usr/share/doc/perl/perldebdelta.pod describes the changes in
-      more detail
+perl (5.22.2-1) unstable; urgency=medium
 
- -- Dominic Hargreaves <dom@earth.li>  Mon, 23 May 2016 23:42:11 +0100
+  [ Niko Tyni ]
+  * Refresh cross build support files for alpha, amd64, arm64, i386
+    kfreebsd-amd64, kfreebsd-i386, powerpc, ppc64el and s390x.
+  * Add cross build support files for ppc64.
+  * Merge 5.22.1-10 from unstable.
+  * Fix libperl5.22.triggers permissions.
+  * Work around t/op/stat.t problems on GNU/Hurd. (Closes: #822735)
 
-perl (5.20.2-3+deb8u4) jessie-security; urgency=high
+  [ Dominic Hargreaves ]
+  * New upstream release
+    + update version of libmodule-corelist-perl Breaks and Replaces
+      for 5.22.2
+  * Upload to unstable
 
-  * Work around a t/op/stat.t failure on GNU/kFreeBSD, possibly related
-    to softupdates. Fix by Steven Chamberlain. (Closes: #796798)
+ -- Dominic Hargreaves <dom@earth.li>  Sat, 30 Apr 2016 13:20:51 +0100
+
+perl (5.22.2~rc1-1) experimental; urgency=medium
+
+  * New upstream release candidate.
+    + update versions of libmodule-corelist-perl and libfile-spec-perl
+      Breaks and Replaces for 5.22.2-RC1
+  * Fix a misleading cross build note in build logs. (Closes: #820633)
+
+ -- Niko Tyni <ntyni@debian.org>  Sun, 10 Apr 2016 23:35:40 +0300
+
+perl (5.22.1-10) unstable; urgency=medium
+
+  * Replace libperl5.22 manual ldconfig calls with an explicit trigger.
+    (Closes: #820500)
+  * Only conflict with versioned (i.e. non-virtual) perl-modules packages.
+    (Closes: #821161)
+  * Emulate 'uname -m' output for reproducibility regardless of kernel arch.
+    (Closes: #821182)
+  * Add cross build support files for m68k, powerpcspe and sh4.
+
+ -- Niko Tyni <ntyni@debian.org>  Sun, 17 Apr 2016 22:08:08 +0300
+
+perl (5.22.1-9) unstable; urgency=medium
+
+  * Add cross build support files for alpha, hppa, sparc64, x32, mips,
+    and hurd-i386. (Closes: #816217)
+  * Use the standard library from the build tree, fixing non-cross
+    bootstrapping. (Closes: #817948)
+
+ -- Niko Tyni <ntyni@debian.org>  Sun, 13 Mar 2016 13:54:18 +0200
+
+perl (5.22.1-8) unstable; urgency=high
+
   * [SECURITY] CVE-2016-2381 fix duplicate environment variable taint
     checking issue
 
- -- Dominic Hargreaves <dom@earth.li>  Fri, 26 Feb 2016 21:41:47 +0000
+ -- Dominic Hargreaves <dom@earth.li>  Fri, 26 Feb 2016 21:59:01 +0000
 
-perl (5.20.2-3+deb8u3) jessie; urgency=medium
+perl (5.22.1-7) unstable; urgency=medium
 
-  * Backport Encode::Unicode BOM fix from Encode-2.77. (Closes: #798727)
-    + break+replace libencode-perl (<< 2.63-1+deb8u1) accordingly
+  * small tweaks to cross support file import infrastructure
+  * debian/copyright: include CC0-1.0 License for Test-Simple
+  * Changes prompted by lintian:
+    + debian/copyright: move license grants into Comment sections
+    + Bump build dependency on dpkg-dev to 1.17.14 for build profile support
+      (Closes: #813811)
+    + Call ldconfig in libperl5.22 postrm script.
+    + Override lintian warning about file conflict over /usr/bin/perldoc.
+    + Install manual pages for perl5.22-<arch> and cpan5.22-<arch>.
+    + Fix POD errors in Memoize, Encode-Unicode and ok.
+  * Remove libperl-dev dependency on perl. (Closes: #813384)
+    + this enables experimental support for cross building applications
+      linking against libperl; see /usr/share/doc/libperl-dev/README.cross
+      for more information.
+  * Add cross build support files for amd64, i386, powerpc, ppc64el, armel,
+    armhf, arm64, s390x, mipsel, mips64el, kfreebsd-amd64 and kfreebsd-i386.
+    (Closes: #285559)
+  * Upload to unstable.
 
- -- Dominic Hargreaves <dom@earth.li>  Mon, 11 Jan 2016 23:06:58 +0000
+ -- Niko Tyni <ntyni@debian.org>  Mon, 08 Feb 2016 22:09:56 +0200
 
-perl (5.20.2-3+deb8u2) jessie-security; urgency=high
+perl (5.22.1-6) experimental; urgency=medium
 
+  * Annotate test suite specific build dependencies with <!nocheck> for
+    better build profile support.
+  * Add packaging infrastructure for cross build support (#285559 et al.)
+    + Configure probes still need to run on native builds; we now stash
+      the results in libperl5.22 and copy them back to the source
+      package. See debian/cross/README.
+    + The full process is not quite established yet, and no commitment
+      is made on the long term feasibility of this approach. We will
+      see how it goes.
+    + Uploading to experimental to bootstrap the thing: we can then
+      gather the generated files from autobuilt binary packages.
+
+ -- Niko Tyni <ntyni@debian.org>  Tue, 02 Feb 2016 19:11:23 +0200
+
+perl (5.22.1-5) unstable; urgency=medium
+
+  [ Dominic Hargreaves ]
+  * Add Breaks entry for versions of mailagent not compatible with
+    perl 5.22
+
+  [ Niko Tyni ]
+  * Make perl-modules-5.22 Conflict with perl-modules rather than Break it.
+    Thanks to Adam Conrad. (Closes: #810164)
+  * Fix umask in mkstemp(3) calls. (Closes: #810924)
+
+ -- Niko Tyni <ntyni@debian.org>  Sat, 30 Jan 2016 11:41:34 +0200
+
+perl (5.22.1-4) unstable; urgency=high
+
+  * Add Breaks entry for versions of libsbuild-perl, maildirsync,
+    and backuppc not compatible with perl 5.22
+    (Closes: #808805, #809562, #810118)
+  * Apply patch from Niko Tyni restoring debugperl functionality
+    (Closes: #810326)
   * [SECURITY] CVE-2015-8607 fix untaint issue with File::Spec::canonpath()
+    (Closes: #810719)
 
- -- Dominic Hargreaves <dom@earth.li>  Fri, 01 Jan 2016 12:36:39 +0000
+ -- Dominic Hargreaves <dom@earth.li>  Mon, 11 Jan 2016 22:29:23 +0000
 
-perl (5.20.2-3+deb8u1) jessie; urgency=medium
+perl (5.22.1-3) unstable; urgency=medium
+
+  [ Dominic Hargreaves ]
+  * psed was removed in 5.22, so remove the (broken) manpage symlink
+    too (Closes: #808683)
+
+  [ Niko Tyni ]
+  * Fix an autodie scoping issue with "no autodie" and the "system" sub.
+    (Closes: #808629)
+    + break libautodie-perl (<< 2.29-2) to make sure it won't override the fix
+
+ -- Niko Tyni <ntyni@debian.org>  Sat, 26 Dec 2015 09:28:43 +0200
+
+perl (5.22.1-2) unstable; urgency=low
+
+  * Work around a t/op/stat.t failure on GNU/kFreeBSD, possibly related
+    to softupdates. Fix by Steven Chamberlain. (Closes: #796798)
+
+ -- Niko Tyni <ntyni@debian.org>  Fri, 18 Dec 2015 14:31:00 +0200
+
+perl (5.22.1-1) unstable; urgency=low
+
+  * New upstream release.
+  * Backport Encode::Unicode BOM fix from Encode-2.77.
+    (Closes: #798727)
+    + break+replace libencode-perl (<< 2.77) accordingly
+  * Upload to unstable.
+    + drop perlapi-5.22.0 for transition purposes
+
+ -- Niko Tyni <ntyni@debian.org>  Wed, 16 Dec 2015 20:13:17 +0200
+
+perl (5.22.1~rc4-2) experimental; urgency=low
+
+  * Activate the "perl-major-upgrade" trigger in "noawait" mode.
+    (Closes: #807647)
+
+ -- Niko Tyni <ntyni@debian.org>  Fri, 11 Dec 2015 13:41:55 +0200
+
+perl (5.22.1~rc4-1) experimental; urgency=low
+
+  * New upstream release candidate.
+
+ -- Niko Tyni <ntyni@debian.org>  Wed, 09 Dec 2015 18:51:28 +0200
+
+perl (5.22.1~rc3-2) experimental; urgency=low
+
+  * Fix a podlators test failure when building under SOURCE_DATE_EPOCH.
+    (Closes: #807086)
+  * Apply upstream patch to skip tests only intended for long double
+    configurations, failing on big-endian architectures. (Closes: #807038)
+  * Slightly patch Devel-PPPort to make its XS code reproducible
+    rather than vary with system file ordering. (Closes: #801523)
+
+ -- Niko Tyni <ntyni@debian.org>  Sat, 05 Dec 2015 11:03:44 +0200
+
+perl (5.22.1~rc3-1) experimental; urgency=low
+
+  * New upstream release candidate.
+  * Rename the license of the Sys-Syslog syslog.h file in debian/copyright
+    (Closes: #799014)
+  * Backport SOURCE_DATE_EPOCH support in Pod::Man from podlators-4.00.
+    (Closes: #801621)
+  * Remove strcpy usage from debian/patches/debian/mod_paths.diff,
+    now policed by t/porting/libperl.t
+
+ -- Niko Tyni <ntyni@debian.org>  Fri, 04 Dec 2015 11:42:57 +0200
+
+perl (5.22.0-4) experimental; urgency=medium
+
+  [ Dominic Hargreaves ]
+  * Move perl-debug from the debug to the devel section (Closes: #796834)
+
+  [ gregor herrmann ]
+  * Convert /usr/share/doc/libperl5.22 symlink into a directory.
+
+  [ Niko Tyni ]
+  * Remove obsolete debian/*.moduledocs references
+  * Don't try to install cpan/libnet/Config.eg, it's gone with 5.22
+  * Split out binary-only changelog entries (Closes: #797106)
+  * Unbreak libperl5.22 binNMUs by using ${binary:Version} in shlibs.local
+
+ -- Niko Tyni <ntyni@debian.org>  Fri, 11 Sep 2015 11:19:45 +0300
+
+perl (5.22.0-3) experimental; urgency=medium
+
+  * The "reproducible builds" release. (Closes: #774422)
+
+  [ Jérémy Bobbio ]
+  * Fix mtimes before building binary packages
+  * Set a deterministic configuration time
+  * Sort file list when generating md5sums
+  * Set mtime of patchlevel.h to highest mtime of Debian patches
+
+  [ Niko Tyni ]
+  * Override $Config{osvers} and $Config{myuname} to deterministic values
+  * Set the timezone to UTC when building as a workaround for #791362
+  * Set LC_ALL=C for the build to ensure stable sort ordering
+  * Replace __DATE__/__TIME__ usage with a deterministic time stamp
+
+  [ Dominic Hargreaves ]
+  *  Document the special case of modifying Configure in
+     debian/README.Source (Closes: #762638)
+
+ -- Dominic Hargreaves <dom@earth.li>  Sat, 22 Aug 2015 23:40:24 +0200
+
+perl (5.22.0-2) experimental; urgency=medium
+
+  * Drop the ExtUtils::MakeMaker changes we've been carrying for much too long
+    to keep "make install PREFIX=something" working after upstream stopped
+    supporting it. (Closes: #788883)
+  * Describe and rename the remaining inherited "ExtUtils hack" patch
+    that makes MakeMaker honour MANnEXT settings in generated manpage
+    headers. (See #247370)
+  * Provide libtest-use-ok-perl and libtest-tester-perl. (Closes: #790302)
+  * Make Replaces entries for dual life module packages versioned.
+    (Closes: #789339)
+
+ -- Niko Tyni <ntyni@debian.org>  Thu, 02 Jul 2015 19:56:57 +0300
+
+perl (5.22.0-1) experimental; urgency=medium
+
+  [ Dominic Hargreaves ]
+  * New upstream release
+
+  [ Niko Tyni ]
+  * Add upstream patch to fix a 5.22 regression with 'perl -C<number>'.
+    (Closes: #788636)
+
+ -- Niko Tyni <ntyni@debian.org>  Sat, 13 Jun 2015 20:05:07 +0300
+
+perl (5.22.0~rc2-2) experimental; urgency=medium
+
+  * Small build system tweaks:
+    + stash Config* files by copying them rather than renaming
+    + remove deprecated dpkg-gencontrol -isp options
+  * Restore the short version symlinks on privlib/archlib.
+    (Closes: #787158)
+  * Add infrastructure for cross compiling XS module packages:
+    + link Config.pm to /usr/lib/<triplet>/perl/cross-config-5.22.0/
+      (Closes: #717433)
+    + make libperl5.22 Provide a perl-cross-config virtual package
+  * Ship a cpan5.22-<arch> "binary" in the libperl5.22 package
+    to compensate for the lack of packaged XS modules visible to
+    embedded interpreters which don't match the version or architecture
+    of /usr/bin/perl.
+
+ -- Niko Tyni <ntyni@debian.org>  Sun, 31 May 2015 22:02:15 +0300
+
+perl (5.22.0~rc2-1) experimental; urgency=medium
+
+  [ Dominic Hargreaves ]
+  * New upstream release candidate
+    - fixes FTBFS under pbuilder with USENETWORK=no (Closes: #759799)
+    - fixes UTF8 issues with $!, $@ etc. (Closes: #409704)
+    - fixes fatal warnings hiding syntax errors (Closes: #663544)
+    - add Getopt::Long bundling_values option (Closes: #764621)
+    - libperl5.20 becomes libperl5.22
+    - update Breaks/Provides/Replaces to reflect changes to
+      dual-lived packages
+    - activate the perl-major-upgrade trigger
+  * Merge multiarch changes from Niko Tyni as detailed below
+
+  [ Niko Tyni ]
+  * Make the libperl5.22 package co-installable between different
+    major versions and architectures (Closes: #495394, #786575)
+    + perl-modules is renamed to perl-modules-5.22
+    + the standard library is now in libperl5.22 + perl-modules-5.22
+      instead of perl + perl-modules
+    + perl-base has a copy of the essential parts of the standard library
+      (~3M) in /usr/lib/<triplet>/perl-base
+    + libperl5.22 includes a thin /usr/bin/perl5.22-<triplet>, linked
+      against the shared libperl.
+  * change @INC to contain the full upstream version instead of the
+    short one (5.22.0 vs. 5.22) for the core paths (privlib and archlib)
+  * Prefix $Config{cc}, ld, and cpp with DEB_HOST_GNU_TYPE as a step
+    towards enabling multiarch and crosscompiling. While at it, explicitly
+    use gcc now. (Closes: #775009)
+
+  [ Dominic Hargreaves ]
+  * Various cleanups to dependency fields
+    - we no longer provide the perl5, perl5-base, and data-dumper virtual
+      packages
+  * Upload to experimental from the Barcelona Perl team sprint
+
+ -- Dominic Hargreaves <dom@earth.li>  Sun, 24 May 2015 19:15:46 +0200
+
+perl (5.20.2-6) unstable; urgency=low
+
+  * Remove two obsolete lintian overrides.
+  * Make libperl5.20 Break older perl-base versions to ensure perl-base
+    is upgraded first.
+  * Upload to unstable.
+
+ -- Niko Tyni <ntyni@debian.org>  Thu, 14 May 2015 13:38:21 +0300
+
+perl (5.20.2-5) experimental; urgency=medium
+
+  * Link /usr/bin/perl statically against libperl on all architectures.
+    (Closes: #781476)
+  * Relax the perl-modules -> perl-base dependency. (Closes: #784574)
+  * Upload to experimental.
+
+ -- Niko Tyni <ntyni@debian.org>  Fri, 08 May 2015 22:38:33 +0300
+
+perl (5.20.2-4) unstable; urgency=medium
 
   * Make the perl debugger work with threaded programs again.
     Thanks to James McCoy. (Closes: #779357)
+  * Make t/run/locale more robust against subtly broken locale settings
+    common in pbuilder chroot builds. (Closes: #782068)
+  * Backport upstream patches for gcc-5 compatibility. (Closes: #778060)
+  * Replace a few ancient and incorrect DEB_BUILD_{GNU_TYPE,ARCH_CPU}
+    occurrences with the corresponding DEB_HOST_* ones. (Closes: #782803)
+  * Make perl-doc suggest groff-base instead of the full groff.
+    (Closes: #206211)
+  * Backport podlators patches to base the Pod::Man footer date
+    on UTC instead of the local time zone. (Closes: #780259)
+  * Backport podlators patch to make Pod::Man support an empty
+    POD_MAN_DATE variable. (See #780259)
+  * Backport podlators patch to improve error handling with standard
+    input. (Closes: #777405)
+  * Minor improvements to the package maintainer test framework.
+    + remove the obsolete debian/check-control script
 
- -- Niko Tyni <ntyni@debian.org>  Tue, 28 Apr 2015 22:41:15 +0300
+ -- Niko Tyni <ntyni@debian.org>  Sun, 26 Apr 2015 13:00:50 +0300
+
+perl (5.20.2-3+deb8u6pexip1) pexip; urgency=low
+
+  * Migrate to Jessie
+  * debian/patches/fixes/benchmark-calibration.diff,
+    debian/patches/fixes/benchmark-marginal-tests.diff,
+    debian/patches/fixes/time-failures.diff:
+    Backport upstream fixes to fix FTBFS.
+
+ -- John-Mark Bell <jmb@pexip.com>  Wed, 22 Mar 2017 20:28:43 +0000
 
 perl (5.20.2-3) unstable; urgency=medium
 
