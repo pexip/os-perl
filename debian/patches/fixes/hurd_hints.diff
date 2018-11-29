@@ -16,7 +16,7 @@ Patch-Name: fixes/hurd_hints.diff
  1 file changed, 29 insertions(+), 4 deletions(-)
 
 diff --git a/hints/gnu.sh b/hints/gnu.sh
-index fe251cbc90..8ec9470183 100644
+index fe251cbc9..8ec947018 100644
 --- a/hints/gnu.sh
 +++ b/hints/gnu.sh
 @@ -1,6 +1,5 @@

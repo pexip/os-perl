@@ -14,7 +14,7 @@ Patch-Name: fixes/time_piece_doc.diff
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/cpan/Time-Piece/Piece.pm b/cpan/Time-Piece/Piece.pm
-index 6dbf4d69c4..d3b62ce5fb 100644
+index 6dbf4d69c..d3b62ce5f 100644
 --- a/cpan/Time-Piece/Piece.pm
 +++ b/cpan/Time-Piece/Piece.pm
 @@ -783,8 +783,8 @@ days, weeks and years in that delta, using the Time::Seconds API.

@@ -18,7 +18,7 @@ Patch-Name: fixes/test-builder-warning.diff
  1 file changed, 1 insertion(+)
 
 diff --git a/cpan/Test-Simple/lib/Test/Builder.pm b/cpan/Test-Simple/lib/Test/Builder.pm
-index a8e7bd95b1..c1dba1c66b 100644
+index a8e7bd95b..c1dba1c66 100644
 --- a/cpan/Test-Simple/lib/Test/Builder.pm
 +++ b/cpan/Test-Simple/lib/Test/Builder.pm
 @@ -2246,6 +2246,7 @@ sub find_TODO {

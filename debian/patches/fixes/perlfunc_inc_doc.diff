@@ -12,7 +12,7 @@ Patch-Name: fixes/perlfunc_inc_doc.diff
  1 file changed, 19 insertions(+), 9 deletions(-)
 
 diff --git a/pod/perlfunc.pod b/pod/perlfunc.pod
-index e9c7038a9c..09c9b6a3ea 100644
+index e9c7038a9..09c9b6a3e 100644
 --- a/pod/perlfunc.pod
 +++ b/pod/perlfunc.pod
 @@ -1808,20 +1808,30 @@ X<do>

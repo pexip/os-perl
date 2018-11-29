@@ -9,7 +9,7 @@ Patch-Name: fixes/file_path_hurd_errno.diff
  1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/cpan/File-Path/t/Path.t b/cpan/File-Path/t/Path.t
-index 5644f57a51..ff52fd69e3 100644
+index 5644f57a5..ff52fd69e 100644
 --- a/cpan/File-Path/t/Path.t
 +++ b/cpan/File-Path/t/Path.t
 @@ -8,6 +8,7 @@ use Config;

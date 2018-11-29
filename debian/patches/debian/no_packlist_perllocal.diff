@@ -9,7 +9,7 @@ Patch-Name: debian/no_packlist_perllocal.diff
  1 file changed, 3 insertions(+), 32 deletions(-)
 
 diff --git a/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm b/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm
-index 01e42d2d67..ff7bf2a2fa 100644
+index 01e42d2d6..ff7bf2a2f 100644
 --- a/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm
 +++ b/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm
 @@ -2123,11 +2123,6 @@ pure_perl_install :: all

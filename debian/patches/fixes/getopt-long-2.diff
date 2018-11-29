@@ -15,7 +15,7 @@ Patch-Name: fixes/getopt-long-2.diff
  1 file changed, 15 insertions(+), 4 deletions(-)
 
 diff --git a/cpan/Getopt-Long/lib/Getopt/Long.pm b/cpan/Getopt-Long/lib/Getopt/Long.pm
-index 631912bf91..68f090bee7 100644
+index 631912bf9..68f090bee 100644
 --- a/cpan/Getopt-Long/lib/Getopt/Long.pm
 +++ b/cpan/Getopt-Long/lib/Getopt/Long.pm
 @@ -1110,9 +1110,17 @@ sub FindOption ($$$$$) {

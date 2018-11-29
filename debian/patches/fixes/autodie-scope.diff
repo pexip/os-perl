@@ -23,7 +23,7 @@ Patch-Name: fixes/autodie-scope.diff
  create mode 100755 cpan/autodie/t/no-default.t
 
 diff --git a/cpan/autodie/lib/Fatal.pm b/cpan/autodie/lib/Fatal.pm
-index 16e1743474..2058abdab0 100644
+index 16e174347..2058abdab 100644
 --- a/cpan/autodie/lib/Fatal.pm
 +++ b/cpan/autodie/lib/Fatal.pm
 @@ -580,7 +580,12 @@ sub unimport {
@@ -42,7 +42,7 @@ index 16e1743474..2058abdab0 100644
      }
 diff --git a/cpan/autodie/t/no-all.t b/cpan/autodie/t/no-all.t
 new file mode 100755
-index 0000000000..1a503f68be
+index 000000000..1a503f68b
 --- /dev/null
 +++ b/cpan/autodie/t/no-all.t
 @@ -0,0 +1,22 @@
@@ -70,7 +70,7 @@ index 0000000000..1a503f68be
 +1;
 diff --git a/cpan/autodie/t/no-default.t b/cpan/autodie/t/no-default.t
 new file mode 100755
-index 0000000000..44d2acf27a
+index 000000000..44d2acf27
 --- /dev/null
 +++ b/cpan/autodie/t/no-default.t
 @@ -0,0 +1,23 @@

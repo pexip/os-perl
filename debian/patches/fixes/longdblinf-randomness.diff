@@ -18,7 +18,7 @@ Patch-Name: fixes/longdblinf-randomness.diff
  1 file changed, 6 insertions(+), 8 deletions(-)
 
 diff --git a/Configure b/Configure
-index 42f7c21da7..bdb2436409 100755
+index 42f7c21da..bdb243640 100755
 --- a/Configure
 +++ b/Configure
 @@ -20470,8 +20470,8 @@ $cat >try.c <<EOP

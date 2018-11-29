@@ -11,7 +11,7 @@ Patch-Name: debian/libperl_embed_doc.diff
  1 file changed, 3 insertions(+)
 
 diff --git a/lib/ExtUtils/Embed.pm b/lib/ExtUtils/Embed.pm
-index 9305b5dc13..c5e42e123c 100644
+index 9305b5dc1..c5e42e123 100644
 --- a/lib/ExtUtils/Embed.pm
 +++ b/lib/ExtUtils/Embed.pm
 @@ -296,6 +296,9 @@ and extensions in your C/C++ applications.

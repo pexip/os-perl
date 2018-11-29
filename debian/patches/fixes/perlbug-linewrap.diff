@@ -32,7 +32,7 @@ Patch-Name: fixes/perlbug-linewrap.diff
  1 file changed, 12 insertions(+), 1 deletion(-)
 
 diff --git a/utils/perlbug.PL b/utils/perlbug.PL
-index 100bc022e8..235313b6dd 100644
+index 100bc022e..235313b6d 100644
 --- a/utils/perlbug.PL
 +++ b/utils/perlbug.PL
 @@ -77,6 +77,8 @@ BEGIN {

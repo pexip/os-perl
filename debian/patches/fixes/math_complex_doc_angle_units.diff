@@ -11,7 +11,7 @@ Patch-Name: fixes/math_complex_doc_angle_units.diff
  1 file changed, 5 insertions(+)
 
 diff --git a/cpan/Math-Complex/lib/Math/Trig.pm b/cpan/Math-Complex/lib/Math/Trig.pm
-index acad31ff49..bc7ac780e9 100644
+index acad31ff4..bc7ac780e 100644
 --- a/cpan/Math-Complex/lib/Math/Trig.pm
 +++ b/cpan/Math-Complex/lib/Math/Trig.pm
 @@ -263,6 +263,11 @@ core Perl which defines only the C<sin()> and C<cos()>.  The constant
