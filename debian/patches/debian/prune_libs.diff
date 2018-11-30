@@ -14,7 +14,7 @@ Patch-Name: debian/prune_libs.diff
  1 file changed, 2 insertions(+), 3 deletions(-)
 
 diff --git a/Configure b/Configure
-index 5a353d6de4..a00df640e4 100755
+index 5a353d6de..a00df640e 100755
 --- a/Configure
 +++ b/Configure
 @@ -1479,8 +1479,7 @@ archname=''

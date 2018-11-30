@@ -15,7 +15,7 @@ Patch-Name: debian/devel-ppport-reproducibility.diff
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/cpan/Devel-PPPort/PPPort_xs.PL b/cpan/Devel-PPPort/PPPort_xs.PL
-index 5f18940ef1..149f2fe07e 100644
+index 5f18940ef..149f2fe07 100644
 --- a/cpan/Devel-PPPort/PPPort_xs.PL
 +++ b/cpan/Devel-PPPort/PPPort_xs.PL
 @@ -38,7 +38,7 @@ END

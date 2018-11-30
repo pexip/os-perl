@@ -11,7 +11,7 @@ Patch-Name: fixes/cpan_web_link.diff
  1 file changed, 3 insertions(+)
 
 diff --git a/cpan/CPAN/lib/CPAN.pm b/cpan/CPAN/lib/CPAN.pm
-index 25bf3494a8..6d11629e40 100644
+index 25bf3494a..6d11629e4 100644
 --- a/cpan/CPAN/lib/CPAN.pm
 +++ b/cpan/CPAN/lib/CPAN.pm
 @@ -3950,6 +3950,9 @@ your operating system) then typing C<cpan> in a console window will

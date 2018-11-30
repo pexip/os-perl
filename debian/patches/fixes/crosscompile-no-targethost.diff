@@ -21,7 +21,7 @@ Patch-Name: fixes/crosscompile-no-targethost.diff
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/Configure b/Configure
-index a00df640e4..42f7c21da7 100755
+index a00df640e..42f7c21da 100755
 --- a/Configure
 +++ b/Configure
 @@ -2972,7 +2972,7 @@ $define|true|[yY]*)

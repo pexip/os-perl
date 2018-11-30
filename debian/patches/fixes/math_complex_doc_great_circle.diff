@@ -11,7 +11,7 @@ Patch-Name: fixes/math_complex_doc_great_circle.diff
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/cpan/Math-Complex/lib/Math/Trig.pm b/cpan/Math-Complex/lib/Math/Trig.pm
-index 1d9612a41c..efc2ff80ac 100644
+index 1d9612a41..efc2ff80a 100644
 --- a/cpan/Math-Complex/lib/Math/Trig.pm
 +++ b/cpan/Math-Complex/lib/Math/Trig.pm
 @@ -608,7 +608,7 @@ or the midpoint if you know the end points:

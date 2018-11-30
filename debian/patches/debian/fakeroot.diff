@@ -16,7 +16,7 @@ Patch-Name: debian/fakeroot.diff
  1 file changed, 2 insertions(+), 5 deletions(-)
 
 diff --git a/Makefile.SH b/Makefile.SH
-index 8e943c4d8e..5f195299bf 100755
+index 8e943c4d8..5f195299b 100755
 --- a/Makefile.SH
 +++ b/Makefile.SH
 @@ -48,10 +48,7 @@ case "$useshrplib" in

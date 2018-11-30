@@ -79,4 +79,8 @@ fixes/CVE-2018-6798/pt2.diff
 fixes/CVE-2018-6798/pt3.diff
 fixes/CVE-2018-6913.diff
 fixes/CVE-2018-12015-Archive-Tar-directory-traversal.diff
+fixes/CVE-2018-18311.diff
+fixes/CVE-2018-18312.diff
+fixes/CVE-2018-18313.diff
+fixes/CVE-2018-18314.diff
 fixes/getppid_in_container.diff

@@ -16,7 +16,7 @@ Patch-Name: fixes/perlbug-refactor.diff
  1 file changed, 13 insertions(+), 12 deletions(-)
 
 diff --git a/utils/perlbug.PL b/utils/perlbug.PL
-index ae8c343052..100bc022e8 100644
+index ae8c34305..100bc022e 100644
 --- a/utils/perlbug.PL
 +++ b/utils/perlbug.PL
 @@ -835,10 +835,7 @@ EOF

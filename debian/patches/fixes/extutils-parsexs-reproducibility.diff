@@ -12,7 +12,7 @@ Patch-Name: fixes/extutils-parsexs-reproducibility.diff
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/dist/ExtUtils-ParseXS/lib/ExtUtils/ParseXS.pm b/dist/ExtUtils-ParseXS/lib/ExtUtils/ParseXS.pm
-index 32d74e18e8..8c7a6631a9 100644
+index 32d74e18e..8c7a6631a 100644
 --- a/dist/ExtUtils-ParseXS/lib/ExtUtils/ParseXS.pm
 +++ b/dist/ExtUtils-ParseXS/lib/ExtUtils/ParseXS.pm
 @@ -686,7 +686,7 @@ EOF

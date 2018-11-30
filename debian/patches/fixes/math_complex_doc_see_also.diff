@@ -11,7 +11,7 @@ Patch-Name: fixes/math_complex_doc_see_also.diff
  1 file changed, 2 insertions(+)
 
 diff --git a/cpan/Math-Complex/lib/Math/Trig.pm b/cpan/Math-Complex/lib/Math/Trig.pm
-index efc2ff80ac..acad31ff49 100644
+index efc2ff80a..acad31ff4 100644
 --- a/cpan/Math-Complex/lib/Math/Trig.pm
 +++ b/cpan/Math-Complex/lib/Math/Trig.pm
 @@ -743,6 +743,8 @@ an answer instead of giving a fatal runtime error.

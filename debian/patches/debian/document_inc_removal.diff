@@ -9,7 +9,7 @@ Patch-Name: debian/document_inc_removal.diff
  1 file changed, 5 insertions(+), 3 deletions(-)
 
 diff --git a/pod/perlvar.pod b/pod/perlvar.pod
-index 1821b95d1c..c3e8e4f893 100644
+index 1821b95d1..c3e8e4f89 100644
 --- a/pod/perlvar.pod
 +++ b/pod/perlvar.pod
 @@ -503,9 +503,11 @@ initially consists of the arguments to any B<-I> command-line

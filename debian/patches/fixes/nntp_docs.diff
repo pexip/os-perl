@@ -14,7 +14,7 @@ Patch-Name: fixes/nntp_docs.diff
  1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/cpan/libnet/lib/Net/NNTP.pm b/cpan/libnet/lib/Net/NNTP.pm
-index 675b1e6a5c..e043b3b763 100644
+index 675b1e6a5..e043b3b76 100644
 --- a/cpan/libnet/lib/Net/NNTP.pm
 +++ b/cpan/libnet/lib/Net/NNTP.pm
 @@ -845,10 +845,10 @@ NNTP server, a value of zero will cause all IO operations to block.

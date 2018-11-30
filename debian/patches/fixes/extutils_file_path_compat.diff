@@ -19,7 +19,7 @@ Patch-Name: fixes/extutils_file_path_compat.diff
  1 file changed, 7 insertions(+), 6 deletions(-)
 
 diff --git a/cpan/ExtUtils-MakeMaker/t/eu_command.t b/cpan/ExtUtils-MakeMaker/t/eu_command.t
-index 269aa5c9a4..32a6f59dca 100644
+index 269aa5c9a..32a6f59dc 100644
 --- a/cpan/ExtUtils-MakeMaker/t/eu_command.t
 +++ b/cpan/ExtUtils-MakeMaker/t/eu_command.t
 @@ -151,20 +151,21 @@ BEGIN {

@@ -16,7 +16,7 @@ Patch-Name: debian/errno_ver.diff
  1 file changed, 16 deletions(-)
 
 diff --git a/ext/Errno/Errno_pm.PL b/ext/Errno/Errno_pm.PL
-index 6251a3cf33..472dfba08d 100644
+index 6251a3cf3..472dfba08 100644
 --- a/ext/Errno/Errno_pm.PL
 +++ b/ext/Errno/Errno_pm.PL
 @@ -287,22 +287,6 @@ package Errno;

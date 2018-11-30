@@ -21,7 +21,7 @@ functionality].
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/cpan/CPAN/lib/CPAN/Distribution.pm b/cpan/CPAN/lib/CPAN/Distribution.pm
-index 092b781ac2..5c2bae1c8f 100644
+index 092b781ac..5c2bae1c8 100644
 --- a/cpan/CPAN/lib/CPAN/Distribution.pm
 +++ b/cpan/CPAN/lib/CPAN/Distribution.pm
 @@ -4099,7 +4099,7 @@ sub _display_url {

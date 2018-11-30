@@ -21,7 +21,7 @@ Patch-Name: fixes/file_path_chmod_race.diff
  2 files changed, 51 insertions(+), 28 deletions(-)
 
 diff --git a/cpan/File-Path/lib/File/Path.pm b/cpan/File-Path/lib/File/Path.pm
-index 034da1e578..a824cc8b77 100644
+index 034da1e57..a824cc8b7 100644
 --- a/cpan/File-Path/lib/File/Path.pm
 +++ b/cpan/File-Path/lib/File/Path.pm
 @@ -354,21 +354,32 @@ sub _rmtree {
@@ -72,7 +72,7 @@ index 034da1e578..a824cc8b77 100644
                      next ROOT_DIR;
                  }
 diff --git a/cpan/File-Path/t/Path.t b/cpan/File-Path/t/Path.t
-index ff52fd69e3..956ca09e7b 100644
+index ff52fd69e..956ca09e7 100644
 --- a/cpan/File-Path/t/Path.t
 +++ b/cpan/File-Path/t/Path.t
 @@ -3,7 +3,7 @@

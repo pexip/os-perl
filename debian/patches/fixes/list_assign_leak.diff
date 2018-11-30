@@ -58,7 +58,7 @@ Patch-Name: fixes/list_assign_leak.diff
  1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/pp_hot.c b/pp_hot.c
-index d6cb1aa091..243f43a972 100644
+index d6cb1aa09..243f43a97 100644
 --- a/pp_hot.c
 +++ b/pp_hot.c
 @@ -1181,6 +1181,7 @@ S_aassign_copy_common(pTHX_ SV **firstlelem, SV **lastlelem,

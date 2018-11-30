@@ -16,7 +16,7 @@ Patch-Name: fixes/hurd_sigaction.diff
  1 file changed, 3 insertions(+), 1 deletion(-)
 
 diff --git a/ext/POSIX/t/sigaction.t b/ext/POSIX/t/sigaction.t
-index d19341c246..bce3b76615 100644
+index d19341c24..bce3b7661 100644
 --- a/ext/POSIX/t/sigaction.t
 +++ b/ext/POSIX/t/sigaction.t
 @@ -202,7 +202,9 @@ SKIP: {

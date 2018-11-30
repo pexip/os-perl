@@ -11,7 +11,7 @@ Patch-Name: fixes/ok-pod.diff
  1 file changed, 4 insertions(+)
 
 diff --git a/cpan/Test-Simple/lib/ok.pm b/cpan/Test-Simple/lib/ok.pm
-index 02726ac964..9dc9ea235b 100644
+index 02726ac96..9dc9ea235 100644
 --- a/cpan/Test-Simple/lib/ok.pm
 +++ b/cpan/Test-Simple/lib/ok.pm
 @@ -20,6 +20,10 @@ sub import {
