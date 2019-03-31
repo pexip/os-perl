@@ -1,31 +1,243 @@
-perl (5.24.1-3+deb9u6) stretch; urgency=medium
+perl (5.28.1-6) unstable; urgency=medium
 
-  * Add backported Time-Local patch by Bernhard M. Wiedemann fixing test
-    failures from the year 2020 onwards. Thanks to Dean Hamstead.
-    (Closes: #915209)
+  * Fix NDBM autopkgtests by recreating necessary hardlinks at test time
+    (Closes: #925179)
+  * Update patch metadata for the POSIX::mblen() fix.
 
- -- Niko Tyni <ntyni@debian.org>  Sat, 25 Jan 2020 19:54:54 +0200
+ -- Niko Tyni <ntyni@debian.org>  Sun, 31 Mar 2019 14:51:22 +0300
 
-perl (5.24.1-3+deb9u5) stretch-security; urgency=high
+perl (5.28.1-5) unstable; urgency=medium
 
-  * [SECURITY] CVE-2018-18311: Integer overflow leading to buffer
-    overflow and segmentation fault
-  * [SECURITY] CVE-2018-18312: Heap-buffer-overflow write in S_regatom
-    (regcomp.c)
-  * [SECURITY] CVE-2018-18313: Heap-buffer-overflow read in regcomp.c
-  * [SECURITY] CVE-2018-18314: Heap-based buffer overflow in extended
-    character classes
+  * Patch perlbug to use "editor" as the default editor. (Closes: #922609)
+  * Add a Breaks entry for older versions of libdist-inkt-perl.
+    (Closes: #924506)
+  * Add a README.Debian note about overriding the default perldoc formatter.
+    (See: #917530)
+  * Include arch-specific data for NDBM and GDBM autopkgtests.
+    (Closes: #923409)
+  * Break older versions of libmarc-charset-perl, broken by libgdbm changes.
+    (Closes: #924719)
+    + Build-Depend on a current libgdbm-dev to guarantee compatibility
+      with the new LFS-enabled database binary format.
+  * Fix crashing POSIX::mblen(). (Closes: #924517)
 
- -- Dominic Hargreaves <dom@earth.li>  Thu, 29 Nov 2018 11:11:57 +0000
+ -- Niko Tyni <ntyni@debian.org>  Sat, 16 Mar 2019 16:02:28 +0200
 
-perl (5.24.1-3+deb9u4) stretch-security; urgency=high
+perl (5.28.1-4) unstable; urgency=medium
+
+  [ Dominic Hargreaves ]
+  * Include upstream patches fixing piped open (Closes: #916313)
+
+  [ Niko Tyni ]
+  * Revert to upstream changes for disabling Storable probing.
+
+ -- Niko Tyni <ntyni@debian.org>  Sat, 02 Feb 2019 18:30:38 +0200
+
+perl (5.28.1-3) unstable; urgency=low
+
+  [ Dominic Hargreaves ]
+  * Include upstream patches fixing perl -i (Closes: #914651)
+
+  [ Niko Tyni ]
+  * Re-adopt versioned Provides for the dual lived modules.
+    (Closes: #758100)
+    + upload with low urgency in the unlikely case that this hits
+      new Debian infrastructure issues like it did in 2017
+
+ -- Niko Tyni <ntyni@debian.org>  Fri, 07 Dec 2018 15:23:05 +0200
+
+perl (5.28.1-2) unstable; urgency=medium
+
+  [ Dominic Hargreaves ]
+  * Add 5.28.1 to debian/released-versions
+  * Drop incorrect libversion-requirements-perl Provides (Closes: #914809)
+
+  [ Niko Tyni ]
+  * Add a maintainer / autopkgtest check for debian/released-versions
+    contents.
+  * Apply patch by Bernhard M. Wiedemann fixing Time-Local tests in the
+    year 2020 and onwards. (Closes: #915209)
+  * Fix t/porting/manifest.t failures when run in a git checkout.
+    (Closes: #914962)
+  * Add current data for database and compression autopkgtest checks.
+  * Update cross build support files.
+  * Slightly improve maintainer test stderr handling.
+  * Disable Storable stacksize probing at build time. (Closes: #914133)
+    + apply upstream patches that disable the probing when cross-compiling
+    + amend the cross-compling fix to also look at PERL_STORABLE_DONT_PROBE
+      in the environment, and set that in debian/rules
+
+ -- Niko Tyni <ntyni@debian.org>  Mon, 03 Dec 2018 20:24:24 +0200
+
+perl (5.28.1-1) unstable; urgency=high
+
+  [ Niko Tyni ]
+  * Special case libextutils-parsexs-perl in maintainer / autopkgtest
+    checks (Closes: #914222)
+  * Update patch metadata for patches applied upstream.
+
+  [ Dominic Hargreaves ]
+  * Include note in README.source about importing new upstream releases.
+  * New upstream release
+    - [SECURITY] CVE-2018-18311: Integer overflow leading to buffer
+      overflow and segmentation fault
+    - [SECURITY] CVE-2018-18312: Heap-buffer-overflow write in S_regatom
+      (regcomp.c)
+
+ -- Dominic Hargreaves <dom@earth.li>  Thu, 29 Nov 2018 19:17:43 +0000
+
+perl (5.28.0-4) unstable; urgency=medium
+
+  [ Dominic Hargreaves ]
+  * Add missing test dependency for 'prove' test (Closes: #913096)
+
+  [ Niko Tyni ]
+  * Make perl Break apt-show-versions (<< 0.22.10) due to Storable
+    changes. (Closes: #913349)
+  * Cherry-pick several upstream fixes:
+    + improve Storable recursion checks (Closes: #912900)
+    + fix $^X when /proc is not mounted (Closes: #913347)
+    + avoid mangling /bin non-perl shebangs on merged-/usr systems
+      (Closes: #913637)
+  * Apply patch from Helmut Grohne making Errno_pm.PL compatible with
+    /usr/include/<ARCH>/errno.h . (Closes: #875921)
+  * Apply patch from James Clarke fixing 'perl -i' functionality
+    on kfreebsd. (See #912521)
+  * Change perl-debug package priority from extra to optional.
+  * Remove unused outdated lintian overrides.
+  * Make perl-base and libperl5.28 Suggest sensible-utils for
+    sensible-pager. (Closes: #914013)
+
+ -- Niko Tyni <ntyni@debian.org>  Mon, 19 Nov 2018 20:01:39 +0200
+
+perl (5.28.0-3) unstable; urgency=medium
+
+  * Temporarily patch GDBM_File fatal.t for gdbm >= 1.16 compatibility.
+    (Closes: #904005)
+  * Merge 5.26.2-7 from unstable.
+  * Update debian/released-versions to include 5.28.0.
+  * Remove 5.26 specific SIGUNUSED related config.sh fiddling.
+  * Upload to unstable.
+
+ -- Niko Tyni <ntyni@debian.org>  Wed, 31 Oct 2018 17:45:10 +0200
+
+perl (5.28.0-2) experimental; urgency=medium
+
+  * Amend debian/deprecate-with-apt.diff to for other Locale-Codes modules.
+    (Closes: #903705)
+  * Add upstream patch fixing file descriptor exhaustion with in-place edits.
+    (Closes: #902925)
+  * Patch away debugperl stack extension checks.
+    (Closes: #902779)
+  * Break older versions of libfilter-perl due to bundled Filter::Util::Call.
+    (Closes: #884401)
+  * Update some outdated links and information in debian/copyright.
+  * Update cross build support files.
+
+ -- Niko Tyni <ntyni@debian.org>  Mon, 16 Jul 2018 11:22:42 +0300
+
+perl (5.28.0-1) experimental; urgency=medium
+
+  [ Dominic Hargreaves ]
+  * Merge 5.26.2-6 from unstable
+    - [SECURITY] CVE-2018-12015: fix directory traversal vulnerability
+      in Archive-Tar (Closes: #900834)
+
+  [ Niko Tyni ]
+  * Add an autopkgtest check that trivially embeds Perl in C.
+  * Import new upstream major release.
+
+ -- Niko Tyni <ntyni@debian.org>  Mon, 25 Jun 2018 22:20:16 +0300
+
+perl (5.28.0~rc2-1) experimental; urgency=medium
+
+  * Import new upstream release candidate.
+
+ -- Niko Tyni <ntyni@debian.org>  Fri, 08 Jun 2018 19:19:00 +0300
+
+perl (5.28.0~rc1-1) experimental; urgency=medium
+
+  [ Niko Tyni ]
+  * Import new upstream release candidate.
+  * Cherry-pick upstream fix for reverting perl-run() return value
+    changes.
+  * Upload to experimental.
+
+  [ Dominic Hargreaves ]
+  * Update packaging for 5.28
+  * Update the Configure regeneration recipe, which now needs a recent
+    dist/metaconfig version for the '-X' exclusion feature.
+
+ -- Niko Tyni <ntyni@debian.org>  Sun, 03 Jun 2018 13:44:40 +0300
+
+perl (5.26.2-7) unstable; urgency=medium
+
+  * Temporarily skip GDBM_File fatal.t for gdbm >= 1.15 compatibility.
+    (Closes: #904005)
+
+ -- Niko Tyni <ntyni@debian.org>  Sun, 12 Aug 2018 11:26:41 +0300
+
+perl (5.26.2-6) unstable; urgency=high
 
   * [SECURITY] CVE-2018-12015: fix directory traversal vulnerability
     in Archive-Tar (Closes: #900834)
 
- -- Dominic Hargreaves <dom@earth.li>  Sun, 10 Jun 2018 18:37:28 +0100
+ -- Dominic Hargreaves <dom@earth.li>  Sat, 09 Jun 2018 13:38:44 +0100
 
-perl (5.24.1-3+deb9u3) stretch-security; urgency=high
+perl (5.26.2-5) unstable; urgency=medium
+
+  [ Dominic Hargreaves ]
+  * Remove Breaks and Conflicts entries relating to packages which were
+    fixed in oldstable or before
+
+  [ Niko Tyni ]
+  * autopkgtest improvements:
+    + add a missing Testsuite header
+    + run a syntax check on (almost) all the Perl modules we ship
+    + verify that perl-base stays self contained
+  * Move Provides entries from libperl5.26 and perl-modules-5.26 to perl.
+    (Closes: #899110)
+
+ -- Niko Tyni <ntyni@debian.org>  Sat, 19 May 2018 19:05:17 +0300
+
+perl (5.26.2-4) unstable; urgency=medium
+
+  * Add cross build support files for riscv64.
+  * Add Breaks/Replaces/Provides for libb-debug-perl.
+  * Add rudimentary autopkgtest regression checks. (Closes: #782760)
+
+ -- Niko Tyni <ntyni@debian.org>  Fri, 18 May 2018 17:13:34 +0300
+
+perl (5.26.2-3) unstable; urgency=medium
+
+  [ Dominic Hargreaves ]
+  * Update Vcs-* fields to point to salsa
+
+  [ Niko Tyni ]
+  * Refresh cross build support files for most Debian architectures.
+    (Closes: #895992)
+  * Increase test timeout of t/re/fold_grind.t on riscv64.
+    (Closes: #896827)
+
+ -- Niko Tyni <ntyni@debian.org>  Wed, 25 Apr 2018 19:55:24 +0300
+
+perl (5.26.2-2) unstable; urgency=medium
+
+  * Upload to unstable.
+
+ -- Niko Tyni <ntyni@debian.org>  Tue, 17 Apr 2018 20:25:01 +0300
+
+perl (5.26.2-1) experimental; urgency=medium
+
+  * Import new upstream minor release.
+  * Apply Configure patch from James Cowgill fixing a pointer to integer
+    cast in null_printf check. (Closes: #893601)
+  * Update cross build support files for glibc 2.27 _LIB_VERSION removal.
+    (Closes: #893469)
+
+ -- Niko Tyni <ntyni@debian.org>  Sun, 15 Apr 2018 12:07:39 +0300
+
+perl (5.26.1-6) unstable; urgency=high
 
   * [SECURITY] CVE-2018-6797: buffer overflow related to regex
                               unicode semantics.
@@ -33,28 +245,220 @@ perl (5.24.1-3+deb9u3) stretch-security; urgency=high
                               malformed UTF-8 characters.
   * [SECURITY] CVE-2018-6913: heap buffer overflow with large data blocks.
 
- -- Niko Tyni <ntyni@debian.org>  Sat, 10 Mar 2018 20:39:49 +0200
+ -- Niko Tyni <ntyni@debian.org>  Sat, 10 Mar 2018 20:40:42 +0200
 
-perl (5.24.1-3+deb9u2) stretch-security; urgency=high
+perl (5.26.1-5) unstable; urgency=medium
 
-  * Update upstream base.pm no-dot-in-inc fix patch description.
+  * Mark _LIB_VERSION as an optional symbol for glibc 2.27 compatibility.
+    Patch by Aurelien Jarno. (Closes: #890242)
+  * Refresh cross build support files.
+  * Apply an upstream patch by Yves Orton to fix a regexp related memory
+    leak, regressed in 5.26. (Closes: #891196)
+  * Build-Depend on libgdbm-compat-dev to restore the NDBM_File and
+    ODBM_File modules. (Closes: #891229)
+
+ -- Niko Tyni <ntyni@debian.org>  Fri, 23 Feb 2018 17:23:43 +0200
+
+perl (5.26.1-4) unstable; urgency=medium
+
+  [ Dominic Hargreaves ]
+  * Use dpkg-vendor to configure perl with a vendor-specific
+    "configured by" string (Closes: #884924)
+
+  [ Niko Tyni ]
+  * Also look in <version>/<archname> subdirectories for binary compatible
+    modules built for older Perl versions. (Closes: #886494)
+  * Backport upstream Encode patch fixing find_encoding() infinite recursion.
+    (Closes: #880085)
+
+ -- Niko Tyni <ntyni@debian.org>  Fri, 12 Jan 2018 21:31:09 +0200
+
+perl (5.26.1-3) unstable; urgency=medium
+
+  [ Dominic Hargreaves ]
+  * Include a note about debugging information in perl-debug in the package
+    description (Closes: #880117)
+
+  [ Niko Tyni ]
+  * Restore SIGUNUSED on glibc >= 2.26 to preserve ABI compatibility.
+    (Closes: #875927)
+  * No longer use xlocale.h, removed in glibc 2.26. (Closes: #882978)
+
+ -- Niko Tyni <ntyni@debian.org>  Tue, 28 Nov 2017 19:44:14 +0200
+
+perl (5.26.1-2) unstable; urgency=medium
+
+  * Upload to unstable.
+
+ -- Niko Tyni <ntyni@debian.org>  Wed, 25 Oct 2017 18:19:46 +0300
+
+perl (5.26.1-1) experimental; urgency=medium
+
+  [ Dominic Hargreaves ]
+  * Mark perl-doc as Multi-Arch: foreign (Closes: #876062)
+  * New upstream release
+
+  [ Niko Tyni ]
+  * Patch Pod::Perldoc::ToTerm to set LESS=-R with sensible-pager.
+    This is a hopefully temporary fix while upstream is working on the
+    bigger issue. (Closes: #870340)
+  * Include sources of Configure in a separate tarball component called
+    "regen-configure", and verify them by regenerating Configure on every
+    build using 'makeconfig' from the 'dist' package and checking for
+    any changes. Special thanks to H.Merijn Brand (upstream) for helping
+    with this at the Perl 5 Hackathon in Amsterdam. (Closes: #762638)
+
+  [ Dominic Hargreaves ]
+  * Replace various test skips with an upstreamable patch
+  * Upload to experimental
+
+ -- Dominic Hargreaves <dom@earth.li>  Mon, 16 Oct 2017 14:07:36 +0200
+
+perl (5.26.0-8) unstable; urgency=high
+
   * [SECURITY] CVE-2017-12837: Fix a heap buffer overflow in regular
     expression compiler. (Closes: #875596)
   * [SECURITY] CVE-2017-12883: Fix a buffer over-read in regular
     expression parser.   (Closes: #875597)
 
- -- Niko Tyni <ntyni@debian.org>  Tue, 12 Sep 2017 19:37:26 +0300
+ -- Niko Tyni <ntyni@debian.org>  Tue, 12 Sep 2017 18:07:07 +0300
 
-perl (5.24.1-3+deb9u1) stretch; urgency=medium
+perl (5.26.0-7) unstable; urgency=medium
+
+  * Upload to unstable
+  * Break older versions of slic3r-prusa (Closes: #873728)
+  * Remove Recommends: rename according to announced deprecation plan
+
+ -- Dominic Hargreaves <dom@earth.li>  Tue, 05 Sep 2017 21:48:47 +0100
+
+perl (5.26.0-6) experimental; urgency=medium
+
+  [ Niko Tyni ]
+  * Remove dangling pstruct.1 symlink (Closes: #870295)
+  * Unbreak Configure calls in cross builds (Closes: #872471)
+  * Fix an example in JSON::PP documentation (Closes: #871837)
+  * Break older versions of slic3r (see #869360)
+
+  [ Dominic Hargreaves ]
+  * Remove rename, which is now provided by the separate 'rename' package
+    instead (Closes: #735134)
+
+ -- Dominic Hargreaves <dom@earth.li>  Tue, 29 Aug 2017 19:39:52 +0100
+
+perl (5.26.0-5) unstable; urgency=medium
+
+  * Make perl-base Break intltool (<< 0.51.0-4). (Closes: #869612)
+  * Amend debian/CVE-2016-1238/base-pm-amends-pt2.diff description based
+    on the final upstream commit information.
+  * Lower the optimization level of opmini.c on hppa. (Closes: #869122)
+  * Also lower the optimization level of op.c and opmini.c on sh4.
+    (Closes: #869373)
+
+ -- Niko Tyni <ntyni@debian.org>  Sun, 30 Jul 2017 19:15:47 +0300
+
+perl (5.26.0-4) unstable; urgency=medium
+
+  * Upload to unstable.
+
+ -- Niko Tyni <ntyni@debian.org>  Thu, 20 Jul 2017 22:23:29 +0300
+
+perl (5.26.0-3) experimental; urgency=medium
+
+  * Merge 5.24.1-5, -6 and -7 from unstable:
+    + fix Breaks and Replaces versions for podlators-perl and libnet-perl.
+    + drop obsolete libversion-requirements-perl Breaks/Replaces/Provides
+      entries.
+    + Apply upstream base.pm no-dot-in-inc fix (from 5.24.2-RC1)
+      (Closes: #867170)
+    + Revert "Adopt versioned Provides for the dual lived modules",
+      hopefully temporarily. (Reopens: #758100).
+
+ -- Niko Tyni <ntyni@debian.org>  Sun, 09 Jul 2017 19:59:07 +0300
+
+perl (5.26.0-2) experimental; urgency=medium
+
+  * Update Breaks/Replaces versions for libmodule-corelist-perl.
+  * No longer configure with -Dusesitecustomize, unnecessary with the
+    5.26.0-1 changes.
+  * Synchronize with 5.24.1-4 from unstable:
+    + Update the kernel versions in $Config{myuname} et al.
+    + Backport various Getopt-Long fixes from upstream 2.50..2.51.
+      (Closes: #855532, #864544)
+    + Backport upstream patch fixing regexp "Malformed UTF-8 character"
+      crashes. (Closes: #864782)
+  * Backport upstream Test-Simple patch unbreaking the
+    libapache2-authcookie-perl test suite. (Closes: #865894)
+  * Refresh cross build support files with 5.26.0-1 results.
+
+ -- Niko Tyni <ntyni@debian.org>  Sun, 25 Jun 2017 22:46:11 +0300
+
+perl (5.26.0-1) experimental; urgency=medium
+
+  [ Niko Tyni ]
+  * Make perl-base Break debconf (<< 1.5.61) due to POSIX::tmpnam() usage.
+    (See #863071)
+
+  [ Dominic Hargreaves ]
+  * Remove /etc/perl/sitecustomize.pl as the interpreter's initial @INC
+    no longer contains '.'
+  * Revert local patch setting sitecustomize path
+  * Merged 5.24.1-3 from unstable:
+    + [CVE-2017-6512] Fix file permissions race condition in File-Path;
+      patch from John Lightsey (Closes: #863870)
+    + Also fix test logic in ExtUtils-MakeMaker required for the above
+  * New upstream release
+
+ -- Dominic Hargreaves <dom@earth.li>  Sun, 11 Jun 2017 23:37:03 +0100
+
+perl (5.26.0~rc1-1) experimental; urgency=low
+
+  * Import new upstream release candidate.
+  * Adopt versioned Provides for the dual lived modules. (Closes: #758100)
+  * Upload to experimental from the Debian Perl Sprint in Lloret de Mar.
+
+ -- Niko Tyni <ntyni@debian.org>  Sat, 20 May 2017 11:24:07 +0300
+
+perl (5.24.1-7) unstable; urgency=medium
+
+  * Revert "Adopt versioned Provides for the dual lived modules",
+    hopefully temporarily. (Closes: #867313, reopens: #758100).
+    .
+    We cannot use versioned Provides in unstable before wanna-build
+    is fixed to consider a versioned virtual package coinstallable
+    with a real package of the same name. See #867104.
+    .
+    This restores libperl5.2[24] coinstallability as a side effect.
+    (Closes: #867089)
+
+ -- Niko Tyni <ntyni@debian.org>  Sun, 09 Jul 2017 18:55:39 +0300
+
+perl (5.24.1-6) unstable; urgency=medium
+
+  * Apply upstream base.pm no-dot-in-inc fix (from 5.24.2-RC1)
+    (Closes: #867170)
+
+ -- Dominic Hargreaves <dom@earth.li>  Tue, 04 Jul 2017 16:27:07 +0100
+
+perl (5.24.1-5) unstable; urgency=medium
+
+  * Remove a leftover Replaces entry for libpackage-constants-perl.
+  * Fix Breaks and Replaces versions for podlators-perl and libnet-perl.
+  * Drop obsolete libversion-requirements-perl Breaks/Replaces/Provides
+    entries.
+  * Adopt versioned Provides for the dual lived modules (Closes: #758100)
+
+ -- Niko Tyni <ntyni@debian.org>  Sun, 02 Jul 2017 22:34:19 +0300
+
+perl (5.24.1-4) unstable; urgency=medium
 
   * Backport various Getopt-Long fixes from upstream 2.49..2.51.
     (Closes: #855532, #864544)
   * Backport upstream patch fixing regexp "Malformed UTF-8 character"
     crashes. (Closes: #864782)
-  * Apply upstream base.pm no-dot-in-inc fix (from 5.24.2-RC1)
-    (Closes: #867170)
+  * Update the kernel versions in $Config{myuname} et al.
+  * Refresh cross build support files.
 
- -- Dominic Hargreaves <dom@earth.li>  Tue, 11 Jul 2017 16:27:24 +0100
+ -- Niko Tyni <ntyni@debian.org>  Tue, 20 Jun 2017 20:26:51 +0300
 
 perl (5.24.1-3) unstable; urgency=high
 

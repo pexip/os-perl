@@ -1,4 +1,4 @@
-From 64a923d23c2d5fc76174027e4943d336c7420b0c Mon Sep 17 00:00:00 2001
+From 6113d33ddf611a4c33356d297232bec888dfb4ff Mon Sep 17 00:00:00 2001
 From: Brendan O'Dea <bod@debian.org>
 Date: Fri, 18 Mar 2005 22:22:25 +1100
 Subject: Tweak @INC ordering for Debian
@@ -16,31 +16,33 @@ The rationale being that an admin (via site), or module packager
 (vendor) can chose to shadow core modules when there is a newer
 version than is included in core.
 
+(later updates by Niko Tyni)
+
 Patch-Name: debian/mod_paths.diff
 ---
  perl.c | 58 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  1 file changed, 58 insertions(+)
 
 diff --git a/perl.c b/perl.c
-index 6197ea08d..1e543e716 100644
+index e6dfa8dc0..c7828e69c 100644
 --- a/perl.c
 +++ b/perl.c
-@@ -4483,6 +4483,11 @@ S_init_perllib(pTHX)
- 		      INCPUSH_ADD_SUB_DIRS|INCPUSH_CAN_RELOCATE);
- #endif
- 
+@@ -4674,6 +4674,10 @@ S_init_perllib(pTHX)
+     SITEARCH, SITELIB, VENDORARCH, VENDORLIB, ARCHLIB and PRIVLIB
+ */
+     INCPUSH_APPLLIB_EXP
 +#ifdef DEBIAN
 +    /* for configuration where /usr is mounted ro (CPAN::Config, Net::Config) */
 +    S_incpush_use_sep(aTHX_ STR_WITH_LEN("/etc/perl"), 0x0);
 +#endif
+     INCPUSH_SITEARCH_EXP
+     INCPUSH_SITELIB_EXP
+     INCPUSH_PERL_VENDORARCH_EXP
+@@ -4685,6 +4689,60 @@ S_init_perllib(pTHX)
+     INCPUSH_APPLLIB_OLD_EXP
+     INCPUSH_SITELIB_STEM
+     INCPUSH_PERL_VENDORLIB_STEM
 +
- #ifdef SITEARCH_EXP
-     /* sitearch is always relative to sitelib on Windows for
-      * DLL-based path intuition to work correctly */
-@@ -4600,6 +4605,59 @@ S_init_perllib(pTHX)
- 		      INCPUSH_ADD_OLD_VERS|INCPUSH_CAN_RELOCATE);
- #endif
- 
 +#ifdef DEBIAN
 +    /* Non-versioned site directory for local modules and for
 +       compatability with the previous packages' site dirs */
@@ -76,14 +78,14 @@ index 6197ea08d..1e543e716 100644
 +	   subdirectory of sitelib */
 +	for (p = vers; *p; p++)
 +	{
-+	    if (arch_vers)
++	    if (arch_vers && !strchr(*p, '/')) /* skip arch-specific subdirs */
 +	    {
 +		my_snprintf(arch_vers, 16, "%s", *p);
 +		if (PerlLIO_stat(sitearch, &s) >= 0 && S_ISDIR(s.st_mode))
 +		    S_incpush_use_sep(aTHX_ sitearch, strlen(sitearch), 0x0);
 +	    }
 +
-+	    if (lib_vers)
++	    if (lib_vers && !strchr(*p, '/')) /* skip arch-specific subdirs */
 +	    {
 +		my_snprintf(lib_vers, 16, "%s", *p);
 +		if (PerlLIO_stat(sitelib, &s) >= 0 && S_ISDIR(s.st_mode))
@@ -94,6 +96,6 @@ index 6197ea08d..1e543e716 100644
 +#endif
 +#endif
 +
- #ifdef PERL_OTHERLIBDIRS
-     S_incpush_use_sep(aTHX_ STR_WITH_LEN(PERL_OTHERLIBDIRS),
- 		      INCPUSH_ADD_OLD_VERS|INCPUSH_ADD_ARCHONLY_SUB_DIRS
+     INCPUSH_PERL_OTHERLIBDIRS_ARCHONLY
+ 
+ #endif /* !PERL_IS_MINIPERL */

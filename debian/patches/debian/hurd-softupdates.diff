@@ -1,4 +1,4 @@
-From 955ec17c7368a0e07d1e9f9a4f664e18a5105106 Mon Sep 17 00:00:00 2001
+From dab88c66f4d16e6356007b0509f162f69e1bad61 Mon Sep 17 00:00:00 2001
 From: Niko Tyni <ntyni@debian.org>
 Date: Thu, 28 Apr 2016 16:31:39 +0300
 Subject: Fix t/op/stat.t failures on hurd
@@ -13,10 +13,10 @@ Patch-Name: debian/hurd-softupdates.diff
  1 file changed, 1 insertion(+)
 
 diff --git a/t/op/stat.t b/t/op/stat.t
-index 0a7f971af..1dc3ff2c0 100644
+index 8dcb3d3fd..aa16fe739 100644
 --- a/t/op/stat.t
 +++ b/t/op/stat.t
-@@ -97,6 +97,7 @@ print FOO "Now is the time for all good men to come to.\n";
+@@ -100,6 +100,7 @@ print FOO "Now is the time for all good men to come to.\n";
  close(FOO);
  
  stat($tmpfile) if $^O =~ /^gnukfreebsd/;	# Work around Debian Bug#796798

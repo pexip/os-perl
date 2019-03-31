@@ -1,4 +1,4 @@
-From b4ac56f91d0faef718f8ecd5de964a6553c27348 Mon Sep 17 00:00:00 2001
+From b6adce77ceda447969a0e240e40b183063fe349d Mon Sep 17 00:00:00 2001
 From: Niko Tyni <ntyni@debian.org>
 Date: Sat, 19 Nov 2016 21:30:46 +0200
 Subject: Generate man pages with UTF-8 characters
@@ -15,10 +15,10 @@ Patch-Name: debian/installman-utf8.diff
  1 file changed, 1 insertion(+)
 
 diff --git a/installman b/installman
-index 60fbce3bd..fa7ac928a 100755
+index 0154be4d6..fff0ff04a 100755
 --- a/installman
 +++ b/installman
-@@ -153,6 +153,7 @@ sub pod2man {
+@@ -161,6 +161,7 @@ sub pod2man {
  	$manpage = "${mandir}/${manpage}.${manext}";
  
          my $parser = Pod::Man->new( section => $manext,

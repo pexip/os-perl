@@ -1,4 +1,4 @@
-From dccd6bb36ed3abf6225c508908015e6b11b332ae Mon Sep 17 00:00:00 2001
+From 88909d073ee54085a1399cc1d95047ed5d38ae06 Mon Sep 17 00:00:00 2001
 From: Niko Tyni <ntyni@debian.org>
 Date: Sun, 25 Sep 2016 09:59:22 +0200
 Subject: Temporarily lower the optimization of op.c on hppa due to gcc-6
@@ -16,10 +16,10 @@ Patch-Name: debian/hppa_op_optimize_workaround.diff
  1 file changed, 6 insertions(+)
 
 diff --git a/cflags.SH b/cflags.SH
-index a50044eb9..ba4ac8932 100755
+index e60742fed..3e4526ff8 100755
 --- a/cflags.SH
 +++ b/cflags.SH
-@@ -495,6 +495,12 @@ for file do
+@@ -497,6 +497,12 @@ for file do
      # or customize here
  
      case "$file" in

@@ -29,7 +29,7 @@ if [ ! -n "$package" ] && [ -r debian/control ]; then
 fi
 
 if [ ! -n "$package" ]; then
-    echo "cannot guess name of package to download, aborting 1>&2"
+    echo "cannot guess name of package to download, aborting" 1>&2
     exit 1
 fi
 
@@ -46,7 +46,7 @@ if [ ! -n "$debdir" ]; then
 fi
 
 if [ $# = 0 ]; then
-    echo "Usage: $0 [ -p <package> ] [ -d <debdir> ] [ -v <version> ] [ -s '<full sources.list line>' ] <arch> [...]" 1>&2
+    echo "Usage: $0 [ -p <package>[,<package2>,...] ] [ -d <debdir> ] [ -v <version> ] [ -s '<full sources.list line>' ] <arch> [...]" 1>&2
     exit 1
 fi
 
@@ -61,7 +61,9 @@ do
                 -o Acquire::Languages=none \
                 -o Dir::Etc::Sourcelist=$APTTMP/sources.list"
     apt-get $APTOPTIONS update
-    (cd "$debdir"; apt-get $APTOPTIONS download $package:$ARCH=$version) || EXITCODE=$?
+    for p in $(echo $package | sed 's/,/ /g'); do
+        (cd "$debdir"; apt-get $APTOPTIONS download $p:$ARCH=$version) || EXITCODE=$?
+    done
     rm -rf "$APTTMP"
 done
 exit $EXITCODE

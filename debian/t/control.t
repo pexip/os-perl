@@ -37,6 +37,8 @@ my %ok = (
                # bug #836138
                "2.72" => "2.86",
                "2.80_01" => "2.86",
+               # bug #880085
+               "2.88" => "2.94",
        },
        "libtest-simple-perl" => {
                "0.98" => "0.98",
@@ -50,17 +52,31 @@ my %ok = (
                "3.56_01" => "3.5601",
                "3.63"    => "3.6300",
                "3.63_01" => "3.6301",
+               "3.67"    => "3.6700",
+               "3.74"    => "3.7400",
        },
        # bug #808629
        "libautodie-perl" => {
                 "2.26"   => "2.29",
-       }
+       },
+       "libtime-local-perl" => {
+                "1.25"   => "1.2500",
+       },
+       "libextutils-parsexs-perl" => {
+                "3.39"   => "3.390000",
+       },
+);
+
+# epochs we used to have in the archive
+my %old_epochs = (
+	"libnet-perl" => "1",
 );
 
 # list special cases where a Breaks entry doesn't need to imply
 # Replaces+Provides
 my %triplet_check_skip = (
 	"perl-base" => [ "libfile-spec-perl" ],
+	"libperl5.28" => [ "libfilter-perl" ],
 );
 
 # list special cases where the name of the Debian package does not
@@ -72,6 +88,9 @@ my %special_modules = (
 	"libio-compress-zlib-perl" => "IO::Compress::Gzip",
 	"liblocale-codes-perl" => "Locale::Country",
 	"libscalar-list-utils-perl" => "List::Util",
+	"podlators-perl" => "Pod::Man",
+	"libnet-perl" => "Net::Cmd",
+	"libfilter-perl" => "Filter::Util::Call",
 );
 
 # list special cases where we're not providing a dual-lived module from
@@ -129,7 +148,7 @@ my %is_perl_binary;
 
 my %deps_found;
 my $breaks_total = 0;
-my $tests_per_breaks = 4;
+my $tests_per_breaks = 5;
 
 for my $perl_package_info ($control->get_packages) {
 	my $perl_package_name = $perl_package_info->{Package};
@@ -160,6 +179,8 @@ ok($breaks_total, "successfully parsed debian/control");
 
 for my $perl_package_name (keys %deps_found) {
 	my $dep_found = $deps_found{$perl_package_name};
+	my $providing_package = ($perl_package_name eq 'perl-base' ? 'perl-base' : 'perl');
+	my $providing_dep = $deps_found{$providing_package};
 	# go through all the Breaks targets
 	#  check the version against Module::CoreList
 	#  check for appropriate Replaces and Provides entries 
@@ -170,6 +191,9 @@ for my $perl_package_name (keys %deps_found) {
 	for my $broken (keys %{$dep_found->{$breaksname}}) {
 		my $module = deb2cpan($broken);
 		my ($archive_epoch, $archive_digits) = get_archive_info($broken);
+
+		$archive_epoch = $old_epochs{$broken}
+			if exists $old_epochs{$broken};
 
 		SKIP: {
 			my $broken_version = $dep_found->{$breaksname}{$broken}{version};
@@ -200,20 +224,37 @@ for my $perl_package_name (keys %deps_found) {
 				if $triplet_check_skip{$perl_package_name} &&
 					grep { $_ eq $broken } @{$triplet_check_skip{$perl_package_name}};
 
-			ok(exists $dep_found->{Replaces}{$broken},
-				"Breaks for $broken in $perl_package_name implies Replaces");
-
-			my $replaced_version = $dep_found->{Replaces}{$broken}{version};
-			$replaced_version =~ s/-\d+$//; # remove the Debian revision to mirror $broken_version
-			is($replaced_version, $broken_version,
-				"Replaces version for $broken in $perl_package_name matches Breaks");
-
 			if (exists $deprecated{$broken}) {
-				ok(!exists $dep_found->{Provides}{$broken},
+				ok(!exists $providing_dep->{Provides}{$broken},
 					"Breaks for deprecated package $broken in $perl_package_name does not imply Provides");
+				ok(!exists $dep_found->{Replaces}{$broken},
+					"Breaks for deprecated package $broken in $perl_package_name does not imply Replaces");
+				SKIP: {
+					skip("no need to check Replaces or Provides versions for deprecated package $broken in $perl_package_name", 2);
+				}
 			} else {
-				ok(exists $dep_found->{Provides}{$broken},
+				ok(exists $providing_dep->{Provides}{$broken},
 					"Breaks for $broken in $perl_package_name implies Provides");
+				ok(exists $dep_found->{Replaces}{$broken},
+					"Breaks for $broken in $perl_package_name implies Replaces");
+
+				my $replaced_version = $dep_found->{Replaces}{$broken}{version};
+				$replaced_version =~ s/-\d+$//; # remove the Debian revision to mirror $broken_version
+				is($replaced_version, $broken_version,
+					"Replaces version for $broken in $perl_package_name matches Breaks");
+
+				my $provided_version = $providing_dep->{Provides}{$broken}{version};
+				$provided_version = '' if !defined $provided_version;
+				$provided_version =~ s/-\d+$//; # remove the Debian revision to mirror $broken_version
+				is($provided_version, $broken_version,
+				    "Provides version for $broken in $perl_package_name matches Breaks");
+				if ($provided_version ne $corelist_version) {
+					if ($provided_version eq '') {
+						diag("s/$broken,/$broken (= $corelist_version),/");
+					} else {
+						diag("s/$broken (= $provided_version)/$broken (= $corelist_version)/");
+					}
+				}
 			}
 		}
 	}
@@ -318,6 +359,6 @@ sub get_perl_version {
 		sed -ne "s/-[^-]\+$//; s/~.*//; s/^Version: *\([0-9]\+:\)*//p"';
 	chomp $perl_version;
 	$perl_version = version->parse($perl_version || $])->numify;
-	diag("testing for $perl_version");
+	note("testing for $perl_version");
 	return $perl_version;
 }

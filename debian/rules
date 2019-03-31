@@ -103,13 +103,41 @@ export BUILD_BZIP2=0
 export BZIP2_INCLUDE=/usr/include
 export BZIP2_LIB=/usr/lib
 
+# disable tests declared upstream as not useful for packaging
+export PERL_BUILD_PACKAGING=1
+
+# Debian Bug #896827: riscv64 currently has excessively slow build hosts
+DEB_BUILD_ARCH          ?= $(shell dpkg-architecture -qDEB_BUILD_ARCH)
+ifeq (riscv64,$(DEB_BUILD_ARCH))
+export PERL_TEST_TIME_OUT_FACTOR=3
+endif
+
 build: build-stamp
 install: install-stamp
 
 build-arch: build
 build-indep: build
 
-build-stamp: $(patchlevel) perl.static perl.debug libperl.so.$(fullversion)
+build-stamp: verify-configure-stamp $(patchlevel) perl.static perl.debug libperl.so.$(fullversion)
+	touch $@
+
+update-configure: update-configure-stamp
+
+verify-configure-stamp: update-configure-stamp
+	if ! diff -u Configure.orig Configure || ! diff -u config_h.SH.orig config_h.SH; then \
+	    echo "Unexpected modifications after rebuilding Configure, aborting" 1>&2; \
+	    echo '(See "A special note on patching Configure" in README.source for details)' 1>&2; \
+	    exit 1; \
+	fi
+
+update-configure-stamp:
+	mv Configure Configure.orig
+	mv config_h.SH config_h.SH.orig
+	ln -s regen-configure/U
+	ln -s regen-configure/.package
+	metaconfig -X .metaconf-exclusions.txt -m -L regen-configure/dist
+	./Porting/config_h.pl # reorders config_h.SH
+	chmod +x config_h.SH Configure # placate t/porting/exec-bit.t
 	touch $@
 
 $(patchlevel): $(patches)
@@ -175,10 +203,13 @@ clean:
 	$(checkroot)
 	test -f $(patches)	# maintainer sanity check
 	[ ! -f Makefile ] || $(MAKE) distclean
+	[ ! -f Configure.orig ] || mv Configure.orig Configure
+	[ ! -f config_h.SH.orig ] || mv config_h.SH.orig config_h.SH
 	rm -rf config.over perl.static perl.debug libperl-static libperl.so* \
 	    $(patchlevel) build-stamp install-stamp t/auto debian/shlibs.local \
 	    debian/perl-base.shlibs debian/libperl$(version).shlibs \
 	    build-miniperl build-generate_uudmap optdef.sh config.sh.* \
+	    U .package Wanted Obsolete update-configure-stamp verify-configure-stamp \
 	    debian/substvars debian/files debian/list.tmp $(tmp) $(build)
 
 install-stamp: build-stamp
@@ -392,8 +423,7 @@ endif
 
 	# remove some linked man pages (symlinked later and cause
 	# problems as-is when compressing)
-	rm -f $(build)/perl/usr/share/man/man1/pstruct.1 \
-	    $(build)/perl/usr/share/man/man1/perlthanks.1
+	rm -f $(build)/perl/usr/share/man/man1/perlthanks.1
 
 	# the diagnostics module needs perldiag.pod
 	mkdir $(build)/perl-modules-$(version)/usr/share/perl/$(fullversion)/pod
@@ -403,13 +433,6 @@ endif
 	# copy dummy perldoc to perl package
 	cp debian/perl.perldoc $(build)/perl/usr/bin/perldoc
 	chmod 755 $(build)/perl/usr/bin/perldoc
-
-	# install rename script to bin (as prename, alternative configured)
-	cp debian/rename $(build)/perl/usr/bin/prename
-	chmod 755 $(build)/perl/usr/bin/prename
-
-	$(PERL_TO_USE) $(build)/perl/usr/bin/pod2man --official \
-	    debian/rename >$(build)/perl/usr/share/man/man1/prename.1
 
 	# install docs
 	for p in $(packages); \
@@ -464,9 +487,6 @@ endif
 	  ln -s ../$(fullversion)/Config.pm $$ccdir; \
 	  ln -s ../$(fullversion)/Config_heavy.pl $$ccdir
 
-	# example to strip "." from @INC (CVE-2016-1238)
-	cp debian/sitecustomize.pl $(build)/perl/etc/perl
-
 	# compress
 	find $(build)/*/usr/share/man -type f -print | xargs -r gzip -n9
 	find $(build)/*/usr/share/doc -type f \
@@ -515,7 +535,6 @@ endif
 
 	ln -s perl.1.gz $(build)/perl-debug/usr/share/man/man1/debugperl.1.gz
 	ln -s perl.1.gz $(build)/perl-base/usr/share/man/man1/perl$(fullversion).1.gz
-	ln -s c2ph.1.gz $(build)/perl/usr/share/man/man1/pstruct.1.gz
 	ln -s perlbug.1.gz $(build)/perl/usr/share/man/man1/perlthanks.1.gz
 
 	ln -s changelog.gz $(build)/perl/usr/share/doc/perl/Changes.gz
@@ -616,4 +635,4 @@ binary: binary-indep binary-arch
 
 .NOTPARALLEL:
 
-.PHONY: build clean binary-indep binary-arch binary install build-arch build-indep
+.PHONY: build clean binary-indep binary-arch binary install build-arch build-indep update-configure

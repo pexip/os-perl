@@ -1,4 +1,4 @@
-From 3b16a6629476825baa1a946c098b2835e7150954 Mon Sep 17 00:00:00 2001
+From a4ee6a17c070dc88058b6133b0c43b8d67ffa095 Mon Sep 17 00:00:00 2001
 From: Brendan O'Dea <bod@debian.org>
 Date: Fri, 18 Mar 2005 22:22:25 +1100
 Subject: Replace generic man(1) instructions with Debian-specific information.
@@ -11,10 +11,10 @@ Patch-Name: debian/doc_info.diff
  1 file changed, 10 insertions(+), 2 deletions(-)
 
 diff --git a/pod/perl.pod b/pod/perl.pod
-index 671044e7d..e8e1197d9 100644
+index fbbb952b6..bc0f531f8 100644
 --- a/pod/perl.pod
 +++ b/pod/perl.pod
-@@ -284,8 +284,16 @@ aux c2ph h2ph h2xs perlbug pl2pm pod2html pod2man splain xsubpp
+@@ -295,8 +295,16 @@ aux h2ph h2xs perlbug pl2pm pod2html pod2man splain xsubpp
  
  =for buildtoc __END__
  

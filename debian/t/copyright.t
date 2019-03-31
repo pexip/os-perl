@@ -37,7 +37,7 @@ SKIP: {
             if qx/cme list/ !~ /dpkg-copyright/;
         $cmd = 'cme check dpkg-copyright';
     }
-    diag("checking debian/copyright with copyright checker '$cmd'");
+    note("checking debian/copyright with copyright checker '$cmd'");
     unlike( qx/$cmd 2>&1/, qr/error/,
         'no error messages from copyright checker when parsing debian/copyright');
     is($?, 0, 'copyright checker exited successfully');

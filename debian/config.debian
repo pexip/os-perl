@@ -126,7 +126,6 @@ then
     -Dman3dir=/usr/share/man/man3		\
     -Dsiteman1dir=/usr/local/man/man1		\
     -Dsiteman3dir=/usr/local/man/man3		\
-    -Dusesitecustomize                          \
     -Duse64bitint                               \
     -Dman1ext=1					\
     -Dman3ext=3perl				\
@@ -137,6 +136,7 @@ then
     -Uusesfio					\
     -Uusenm					\
     -Ui_libutil					\
+    -Ui_xlocale					\
     -Uversiononly \
     -DDEBUGGING=$debugging			\
     -Doptimize=\"$optimize\"			\
@@ -166,7 +166,7 @@ then
 	fi
 
     # for the Configure -S call below
-    override=
+    crossargs=
 else
 	# cross builds
 
@@ -238,17 +238,14 @@ else
 	fi
 
 	# override configuration for cross building
-	echo "usecrosscompile='define'" >  optdef.sh
-	echo "hostperl='./build-miniperl'" >> optdef.sh
-	echo "hostgenerate='./build-generate_uudmap'" >> optdef.sh
-	echo "perl='/usr/bin/perl'" >> optdef.sh
-
-	# for the Configure -S call below
-	override=-O
+	crossargs="-Dusecrosscompile \
+               -Dhostgenerate=./build-generate_uudmap \
+               -Dhostperl=./build-miniperl \
+               -Dperl=/usr/bin/perl"
 fi
 
 # now continue with extracting Makefile et al.
-/bin/bash Configure -S $override
+/bin/bash Configure -S $crossargs
 
 # append PERL_BUILD_DATE before the last #endif in config.h
 # massive quoting problems prevent passing this to Configure
