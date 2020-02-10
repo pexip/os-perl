@@ -83,4 +83,5 @@ fixes/CVE-2018-18311.diff
 fixes/CVE-2018-18312.diff
 fixes/CVE-2018-18313.diff
 fixes/CVE-2018-18314.diff
+fixes/time-local-2020.diff
 fixes/getppid_in_container.diff

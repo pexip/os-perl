@@ -1,3 +1,17 @@
+perl (5.24.1-3+deb9u6pexip1) pexip; urgency=high
+
+  * New upstream release
+
+ -- John-Mark Bell <jmb@pexip.com>  Mon, 10 Feb 2020 10:36:12 +0000
+
+perl (5.24.1-3+deb9u6) stretch; urgency=medium
+
+  * Add backported Time-Local patch by Bernhard M. Wiedemann fixing test
+    failures from the year 2020 onwards. Thanks to Dean Hamstead.
+    (Closes: #915209)
+
+ -- Niko Tyni <ntyni@debian.org>  Sat, 25 Jan 2020 19:54:54 +0200
+
 perl (5.24.1-3+deb9u5pexip1) pexip; urgency=high
 
   * New upstream release
