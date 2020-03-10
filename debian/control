@@ -18,7 +18,7 @@ Build-Depends: file,
  libc6-dev (>= 2.19-9) [s390x]
 Vcs-Git: https://anonscm.debian.org/git/perl/perl.git -b debian-5.24
 Vcs-Browser: https://anonscm.debian.org/cgit/perl/perl.git
-XS-Pexip-Upstream: http://ftp.debian.org/debian/ stretch
+XS-Pexip-Upstream: http://ftp.debian.org/debian/ buster
 
 Package: perl-base
 Essential: yes
