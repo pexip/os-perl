@@ -14,10 +14,10 @@ BEGIN {
     require Win32;
     ($::os_id, $::os_major) = ( Win32::GetOSVersion() )[ 4, 1 ];
     if ($::os_id == 2 and $::os_major == 6) {    # Vista, Server 2008 (incl R2), 7
-	$::tests = 43;
+	$::tests = 45;
     }
     else {
-	$::tests = 40;
+	$::tests = 42;
     }
 
     require './test.pl';
@@ -70,11 +70,12 @@ sub runperl_and_capture {
 }
 
 sub try {
-  my ($env, $args, $stdout, $stderr) = @_;
+  my ($env, $args, $stdout, $stderr, $name) = @_;
   my ($actual_stdout, $actual_stderr) = runperl_and_capture($env, $args);
+  $name ||= "";
   local $::Level = $::Level + 1;
-  is $actual_stdout, $stdout;
-  is $actual_stderr, $stderr;
+  is $actual_stdout, $stdout, "$name - stdout";
+  is $actual_stderr, $stderr, "$name - stderr";
 }
 
 #  PERL5OPT    Command-line options (switches).  Switches in
@@ -196,6 +197,16 @@ try({PERL5LIB => "foo",
     '',
     '');
 
+{
+    # 131665
+    # crashes without the fix
+    my $longname = "X" x 2048;
+    try({ $longname => 1 },
+        [ '-e', '"print q/ok/"' ],
+        'ok', '',
+        'very long env var names' );
+}
+
 # Tests for S_incpush_use_sep():
 
 my @dump_inc = ('-e', '"print \"$_\n\" foreach @INC"');
@@ -206,7 +217,12 @@ is ($err, '', 'No errors when determining @INC');
 
 my @default_inc = split /\n/, $out;
 
-is ($default_inc[-1], '.', '. is last in @INC');
+if ($Config{default_inc_excludes_dot}) {
+    ok !(grep { $_ eq '.' } @default_inc), '. is not in @INC';
+}
+else {
+    is ($default_inc[-1], '.', '. is last in @INC');
+}
 
 my $sep = $Config{path_sep};
 my @test_cases = (

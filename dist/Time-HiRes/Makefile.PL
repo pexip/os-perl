@@ -88,7 +88,7 @@ sub try_compile_and_link {
     my $obj_ext = $Config{obj_ext} || ".o";
     unlink("$tmp.c", "$tmp$obj_ext");
 
-    if (open(TMPC, ">$tmp.c")) {
+    if (open(TMPC, '>', "$tmp.c")) {
 	print TMPC $c;
 	close(TMPC);
 
@@ -132,7 +132,7 @@ __EOD__
 	    unless defined $cccmd;
 
        if ($^O eq 'VMS') {
-	    open( CMDFILE, ">$tmp.com" );
+	    open( CMDFILE, '>', "$tmp.com" );
 	    print CMDFILE "\$ SET MESSAGE/NOFACILITY/NOSEVERITY/NOIDENT/NOTEXT\n";
 	    print CMDFILE "\$ $cccmd\n";
 	    print CMDFILE "\$ IF \$SEVERITY .NE. 1 THEN EXIT 44\n"; # escalate
@@ -290,6 +290,7 @@ sub has_clock_xxx_syscall {
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
+#include <time.h>
 #include <$SYSCALL_H>
 int main(int argc, char** argv)
 {
@@ -309,6 +310,7 @@ sub has_clock_xxx {
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
+#include <time.h>
 int main(int argc, char** argv)
 {
     struct timespec ts;
@@ -325,6 +327,7 @@ sub has_clock {
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
+#include <time.h>
 int main(int argc, char** argv)
 {
     clock_t tictoc;
@@ -348,8 +351,69 @@ int main(int argc, char** argv)
     struct timespec ts2;
     ts1.tv_sec  = 0;
     ts1.tv_nsec = 750000000;;
-    ret = clock_nanosleep(CLOCK_MONOTONIC, 0, &ts1, &ts2);
+    /* All implementations are supposed to support CLOCK_REALTIME. */
+    ret = clock_nanosleep(CLOCK_REALTIME, 0, &ts1, &ts2);
     ret == 0 ? exit(0) : exit(errno ? errno : -1);
+}
+EOM
+}
+
+sub has_futimens {
+    return 1 if
+    try_compile_and_link(<<EOM);
+#include "EXTERN.h"
+#include "perl.h"
+#include "XSUB.h"
+#include <sys/stat.h>
+int main(int argc, char** argv)
+{
+    int ret1, ret2;
+    struct timespec ts1[2], ts2[2];
+    ret1 = futimens(0, ts1);
+    char buf[1];
+    read(0, buf, 0); /* Assuming reading nothing updates atime (the [0]) */
+    ret2 = futimens(0, ts2);
+    ret1 == 0 && ret2 == 0 && (ts1[0].tv_nsec != 0 || ts2[0].tv_nsec != 0) ?
+        exit(0) : exit(errno ? errno : -1);
+}
+EOM
+}
+
+sub has_utimensat{
+    return 1 if
+    try_compile_and_link(<<EOM);
+#include "EXTERN.h"
+#include "perl.h"
+#include "XSUB.h"
+#include <sys/stat.h>
+#include <fcntl.h>
+int main(int argc, char** argv)
+{
+    int ret1, ret2;
+    struct timespec ts1[2], ts2[2];
+    /* We make the brave but probably foolish assumption that systems
+     * modern enough to have utimensat also have the /dev/stdin. */
+    ret1 = utimensat(AT_FDCWD, "/dev/stdin", ts1, 0);
+    char buf[1];
+    read(0, buf, 0); /* Assuming reading nothing updates atime (the [0]) */
+    ret2 = utimensat(AT_FDCWD, "/dev/stdin", ts2, 0);
+    ret1 == 0 && ret2 == 0 && (ts1[0].tv_nsec != 0 || ts2[0].tv_nsec != 0) ?
+        exit(0) : exit(errno ? errno : -1);
+}
+EOM
+}
+
+sub has_clockid_t{
+    return 1 if
+    try_compile_and_link(<<EOM);
+#include "EXTERN.h"
+#include "perl.h"
+#include "XSUB.h"
+#include <time.h>
+int main(int argc, char** argv)
+{
+    clockid_t id = CLOCK_REALTIME;
+    exit(id == CLOCK_REALTIME ? 1 : 0);
 }
 EOM
 }
@@ -367,7 +431,7 @@ sub init {
     if (-f $hints) {
 	print "Using hints $hints...\n";
 	local $self;
-	do $hints;
+	do "./$hints";
 	if (exists $self->{LIBS}) {
 	    $LIBS = $self->{LIBS};
 	    print "Extra libraries: @$LIBS...\n";
@@ -453,7 +517,7 @@ EOD
     if ($has_setitimer && $has_getitimer) {
 	print "You have interval timers (both setitimer and getitimer).\n";
     } else {
-	print "You do not have interval timers.\n";
+	print "You do NOT have interval timers.\n";
     }
 
     print "Looking for ualarm()... ";
@@ -534,6 +598,16 @@ EOD
         print "(It would not be portable anyway.)\n";
     }
 
+    print "Looking for clockid_t... ";
+    my $has_clockid_t;
+    if (has_clockid_t()) {
+	print "found.\n";
+        $has_clockid_t++;
+	$DEFINE .= ' -DTIME_HIRES_CLOCKID_T';
+    } else {
+	print "NOT found, will use int.\n";
+    }
+
     print "Looking for clock_gettime()... ";
     my $has_clock_gettime;
     my $has_clock_gettime_emulation;
@@ -548,7 +622,7 @@ EOD
     } elsif ($^O eq 'darwin') {
        $has_clock_gettime_emulation++;
        $has_clock_gettime++;
-       $DEFINE .= ' -DTIME_HIRES_CLOCK_GETTIME';
+       $DEFINE .= ' -DTIME_HIRES_CLOCK_GETTIME -DTIME_HIRES_CLOCK_GETTIME_EMULATION';
     }
 
     if ($has_clock_gettime) {
@@ -577,7 +651,7 @@ EOD
     } elsif ($^O eq 'darwin') {
        $has_clock_getres_emulation++;
        $has_clock_getres++;
-       $DEFINE .= ' -DTIME_HIRES_CLOCK_GETRES';
+       $DEFINE .= ' -DTIME_HIRES_CLOCK_GETRES -DTIME_HIRES_CLOCK_GETRES_EMULATION';
     }
 
     if ($has_clock_getres) {
@@ -603,7 +677,7 @@ EOD
     } elsif ($^O eq 'darwin') {
         $has_clock_nanosleep++;
         $has_clock_nanosleep_emulation++;
-	$DEFINE .= ' -DTIME_HIRES_CLOCK_NANOSLEEP';
+	$DEFINE .= ' -DTIME_HIRES_CLOCK_NANOSLEEP -DTIME_HIRES_CLOCK_NANOSLEEP_EMULATION';
     }
 
     if ($has_clock_nanosleep) {
@@ -631,6 +705,40 @@ EOD
 	print "NOT found.\n";
     }
 
+    print "Looking for working futimens()... ";
+    my $has_futimens;
+    if (has_futimens()) {
+        $has_futimens++;
+	$DEFINE .= ' -DHAS_FUTIMENS';
+    }
+
+    if ($has_futimens) {
+        print "found.\n";
+    } else {
+	print "NOT found.\n";
+    }
+
+    print "Looking for working utimensat()... ";
+    my $has_utimensat;
+    if (has_utimensat()) {
+        $has_utimensat++;
+	$DEFINE .= ' -DHAS_UTIMENSAT';
+    }
+
+    if ($has_utimensat) {
+        print "found.\n";
+    } else {
+	print "NOT found.\n";
+    }
+
+    my $has_hires_utime = ($has_futimens && $has_utimensat);
+    if ($has_hires_utime) {
+	$DEFINE .= ' -DTIME_HIRES_UTIME';
+        print "You seem to have subsecond timestamp setting.\n";
+    } else {
+        print "You do NOT seem to have subsecond timestamp setting.\n";
+    }
+
     print "Looking for stat() subsecond timestamps...\n";
 
     print "Trying struct stat st_atimespec.tv_nsec...";
@@ -644,7 +752,7 @@ int main(int argc, char** argv) {
 }
 EOM
       $has_stat_st_xtimespec++;
-      DEFINE('TIME_HIRES_STAT', 1);
+      DEFINE('TIME_HIRES_STAT_ST_XTIMESPEC');  # 1
     }
 
     if ($has_stat_st_xtimespec) {
@@ -664,7 +772,7 @@ int main(int argc, char** argv) {
 }
 EOM
       $has_stat_st_xtimensec++;
-      DEFINE('TIME_HIRES_STAT', 2);
+      DEFINE('TIME_HIRES_STAT_ST_XTIMENSEC');  # 2
     }
 
     if ($has_stat_st_xtimensec) {
@@ -684,7 +792,7 @@ int main(int argc, char** argv) {
 }
 EOM
       $has_stat_st_xtime_n++;
-      DEFINE('TIME_HIRES_STAT', 3);
+      DEFINE('TIME_HIRES_STAT_ST_XTIME_N');  # 3
     }
 
     if ($has_stat_st_xtime_n) {
@@ -704,7 +812,7 @@ int main(int argc, char** argv) {
 }
 EOM
       $has_stat_st_xtim++;
-      DEFINE('TIME_HIRES_STAT', 4);
+      DEFINE('TIME_HIRES_STAT_XTIM');  # 4
     }
 
     if ($has_stat_st_xtim) {
@@ -724,7 +832,7 @@ int main(int argc, char** argv) {
 }
 EOM
       $has_stat_st_uxtime++;
-      DEFINE('TIME_HIRES_STAT', 5);
+      DEFINE('TIME_HIRES_STAT_ST_UXTIME');  # 5
     }
 
     if ($has_stat_st_uxtime) {
@@ -733,12 +841,29 @@ EOM
 	print "NOT found.\n";
     }
 
-   if ($DEFINE =~ /-DTIME_HIRES_STAT=\d+/) {
-    print "You seem to have stat() subsecond timestamps.\n";
-    print "(Your struct stat has them, but the filesystems must help.)\n";
-   } else {
-    print "You do not seem to have stat subsecond timestamps.\n";
-   }
+    # See HiRes.xs hrstatns()
+    if ($has_stat_st_xtimespec) {
+        DEFINE('TIME_HIRES_STAT', 1);
+    } elsif ($has_stat_st_xtimensec) {
+        DEFINE('TIME_HIRES_STAT', 2);
+    } elsif ($has_stat_st_xtime_n) {
+        DEFINE('TIME_HIRES_STAT', 3);
+    } elsif ($has_stat_st_xtim) {
+        DEFINE('TIME_HIRES_STAT', 4);
+    } elsif ($has_stat_st_uxtime) {
+        DEFINE('TIME_HIRES_STAT', 5);
+    }
+
+    my $has_hires_stat = ($DEFINE =~ /-DTIME_HIRES_STAT=(\d+)/) ? $1 : 0;
+    if ($has_hires_stat) {
+        print "You seem to have subsecond timestamp reading.\n";
+        print "(Your struct stat has them, but the filesystems must help.)\n";
+        unless ($has_hires_utime) {
+            print "However, you do NOT seem to have subsecond timestamp setting.\n";
+        }
+    } else {
+        print "You do NOT seem to have subsecond timestamp reading.\n";
+    }
 
     my $has_w32api_windows_h;
 
@@ -757,7 +882,7 @@ EOM
 
     if ($DEFINE) {
         $DEFINE =~ s/^\s+//;
-        if (open(XDEFINE, ">xdefine")) {
+        if (open(XDEFINE, '>', 'xdefine')) {
 	    print XDEFINE $DEFINE, "\n";
 	    close(XDEFINE);
         }
@@ -788,10 +913,10 @@ sub doMakefile {
 	'PREREQ_PM' => {
 	    'Carp' => 0,
 	    'Config' => 0,
-	    'DynaLoader' => 0,
 	    'Exporter' => 0,
 	    'ExtUtils::MakeMaker' => 0,
-	    'Test::More' => "0.82",
+	    'Test::More' => 0,
+	    'XSLoader' => 0,
 	    'strict' => 0,
 	},
 	'dist'      => {
@@ -829,7 +954,7 @@ sub doMakefile {
     }
 
     if ($ExtUtils::MakeMaker::VERSION >= 6.48) {
-	push @makefileopts, (MIN_PERL_VERSION => '5.008',);
+	push @makefileopts, (MIN_PERL_VERSION => '5.006',);
     }
 
     if ($ExtUtils::MakeMaker::VERSION >= 6.31) {
@@ -841,42 +966,58 @@ sub doMakefile {
 
 sub doConstants {
     if (eval {require ExtUtils::Constant; 1}) {
+        # More or less this same list is in HiRes.pm.  Should unify.
 	my @names = qw(
-                       CLOCKS_PER_SEC
-                       CLOCK_BOOTTIME
-                       CLOCK_HIGHRES
-                       CLOCK_MONOTONIC
-                       CLOCK_MONOTONIC_COARSE
-                       CLOCK_MONOTONIC_PRECISE
-                       CLOCK_MONOTONIC_RAW
-                       CLOCK_PROCESS_CPUTIME_ID
-                       CLOCK_REALTIME
-                       CLOCK_REALTIME_COARSE
-                       CLOCK_REALTIME_FAST
-                       CLOCK_REALTIME_PRECISE
-                       CLOCK_SECOND
-                       CLOCK_SOFTTIME
-                       CLOCK_THREAD_CPUTIME_ID
-                       CLOCK_TIMEOFDAY
-                       CLOCK_UPTIME
-                       CLOCK_UPTIME_FAST
-                       CLOCK_UPTIME_PRECISE
-                       ITIMER_PROF
-                       ITIMER_REAL
-                       ITIMER_REALPROF
-                       ITIMER_VIRTUAL
-                       TIMER_ABSTIME
+		       CLOCKS_PER_SEC
+		       CLOCK_BOOTTIME
+		       CLOCK_HIGHRES
+		       CLOCK_MONOTONIC
+		       CLOCK_MONOTONIC_COARSE
+		       CLOCK_MONOTONIC_FAST
+		       CLOCK_MONOTONIC_PRECISE
+		       CLOCK_MONOTONIC_RAW
+		       CLOCK_PROF
+		       CLOCK_PROCESS_CPUTIME_ID
+		       CLOCK_REALTIME
+		       CLOCK_REALTIME_COARSE
+		       CLOCK_REALTIME_FAST
+		       CLOCK_REALTIME_PRECISE
+		       CLOCK_REALTIME_RAW
+		       CLOCK_SECOND
+		       CLOCK_SOFTTIME
+		       CLOCK_THREAD_CPUTIME_ID
+		       CLOCK_TIMEOFDAY
+		       CLOCK_UPTIME
+		       CLOCK_UPTIME_COARSE
+		       CLOCK_UPTIME_FAST
+		       CLOCK_UPTIME_PRECISE
+		       CLOCK_UPTIME_RAW
+		       CLOCK_VIRTUAL
+		       ITIMER_PROF
+		       ITIMER_REAL
+		       ITIMER_REALPROF
+		       ITIMER_VIRTUAL
+		       TIMER_ABSTIME
                       );
 	foreach (qw (d_usleep d_ualarm d_gettimeofday d_getitimer d_setitimer
 		     d_nanosleep d_clock_gettime d_clock_getres
-		     d_clock d_clock_nanosleep d_hires_stat)) {
+		     d_clock d_clock_nanosleep d_hires_stat
+                     d_futimens d_utimensat d_hires_utime)) {
 	    my $macro = $_;
 	    if ($macro =~ /^(d_nanosleep|d_clock)$/) {
 		$macro =~ s/^d_(.+)/TIME_HIRES_\U$1/;
 	    } elsif ($macro =~ /^(d_hires_stat)$/) {
-		my $d_hires_stat = 0;
-		$d_hires_stat = $1 if ($DEFINE =~ /-DTIME_HIRES_STAT=(\d+)/);
-		push @names, {name => $_, macro => "TIME_HIRES_STAT", value => $d_hires_stat,
+		my $d_hires_stat = $1 if ($DEFINE =~ /-DTIME_HIRES_STAT=(\d+)/);
+                if (defined $d_hires_stat) {
+                    push @names, {name => $_, macro => "TIME_HIRES_STAT", value => $d_hires_stat,
+                                  default => ["IV", "0"]};
+                    next;
+                }
+	    } elsif ($macro =~ /^(d_hires_utime)$/) {
+		my $d_hires_utime =
+		    ($DEFINE =~ /-DHAS_FUTIMENS/ ||
+		     $DEFINE =~ /-DHAS_UTIMENSAT/);
+		push @names, {name => $_, macro => "TIME_HIRES_UTIME", value => $d_hires_utime,
 			      default => ["IV", "0"]};
 		next;
 	    } elsif ($macro =~ /^(d_clock_gettime|d_clock_getres|d_clock_nanosleep)$/) {
@@ -900,8 +1041,8 @@ sub doConstants {
 	foreach $file ('const-c.inc', 'const-xs.inc') {
 	    my $fallback = File::Spec->catfile('fallback', $file);
 	    local $/;
-	    open IN, "<$fallback" or die "Can't open $fallback: $!";
-	    open OUT, ">$file" or die "Can't open $file: $!";
+	    open IN, '<', $fallback or die "Can't open $fallback: $!";
+	    open OUT, '>', $file or die "Can't open $file: $!";
 	    print OUT <IN> or die $!;
 	    close OUT or die "Can't close $file: $!";
 	    close IN or die "Can't close $fallback: $!";
@@ -910,9 +1051,11 @@ sub doConstants {
 }
 
 sub main {
-    if (-f "xdefine" && !(@ARGV  && $ARGV[0] eq '--configure')) {
+    if (-f "xdefine" && !(@ARGV  && $ARGV[0] =~ /^--(?:configure|force)$/)) {
 	print qq[$0: The "xdefine" exists, skipping the configure step.\n];
-	print qq[("$^X $0 --configure" to force the configure step)\n];
+	print qq[Use "$^X $0 --configure"\n];
+	print qq[or: "$^X $0 --force\n];
+	print qq[to force the configure step.\n];
     } else {
 	print "Configuring Time::HiRes...\n";
 	1 while unlink("define");
@@ -920,7 +1063,7 @@ sub main {
 	    DEFINE('SELECT_IS_BROKEN');
 	    $LIBS = [];
 	    print "System is $^O, skipping full configure...\n";
-	    open(XDEFINE, ">xdefine") or die "$0: Cannot create xdefine: $!\n";
+	    open(XDEFINE, '>', 'xdefine') or die "$0: Cannot create xdefine: $!\n";
 	    close(XDEFINE);
 	} else {
 	    init();
