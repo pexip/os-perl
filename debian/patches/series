@@ -60,4 +60,5 @@ fixes/storable-probing/disable-probing.diff
 debian/perlbug-editor.diff
 fixes/posix-mbrlen.diff
 
-fixes/getppid_in_container.diff
+ensure-locale-name-on-entry-isnt-clobbered.patch
+Fix-edge-case-test-failure-in-ext-POSIX-t-mb.t.patch

@@ -1,3 +1,15 @@
+perl (5.28.1-6pexip1) pexip; urgency=medium
+
+  * Migrate to Buster
+  * Remove patches applied upstream:
+    debian/patches/fixes/getppid_in_container.diff
+  * Apply upstream fix for locale overwriting:
+    debian/patches/ensure-locale-name-on-entry-isnt-clobbered.patch
+  * Apply sbuild workround:
+    Fix-edge-case-test-failure-in-ext-POSIX-t-mb.t.patch   
+
+ -- Vincent Sanders <vince@pexip.com>  Thu, 12 Mar 2020 14:54:32 +0000
+
 perl (5.28.1-6) unstable; urgency=medium
 
   * Fix NDBM autopkgtests by recreating necessary hardlinks at test time

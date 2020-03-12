@@ -1,0 +1,34 @@
+From ba80ce1f59e6aa82532d84627b8c5d094eeda1a4 Mon Sep 17 00:00:00 2001
+From: Dominic Hargreaves <dom@earth.li>
+Date: Fri, 7 Jun 2019 10:04:26 +0100
+Subject: [PATCH] Fix edge case test failure in ext/POSIX/t/mb.t
+
+This new test fails in an environment where LANG is set to one thing and
+LC_ALL is set to another, and where LANG is set to a locale which is
+not installed in the environment in question.
+
+Such a test environment is arguably broken, but appears in common
+chroot setups such as Debian's sbuild tool where LANG is inherited from
+the parent environment, and LC_ALL is used to override it.
+---
+ ext/POSIX/t/mb.t | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
+
+--- a/ext/POSIX/t/mb.t
++++ b/ext/POSIX/t/mb.t
+@@ -33,9 +33,13 @@
+     my $utf8_locale = find_utf8_ctype_locale();
+     skip("no utf8 locale available", 2) unless $utf8_locale;
+ 
++    # Here we need to influence LC_CTYPE, but it's not enough to just
++    # set this because LC_ALL could override it. It's also not enough
++    # to delete LC_ALL because it could be used to override other
++    # variables such as LANG in the underlying test environment.
++    # Continue to set LC_CTYPE just in case...
+     local $ENV{LC_CTYPE} = $utf8_locale;
+-    local $ENV{LC_ALL};
+-    delete $ENV{LC_ALL};
++    local $ENV{LC_ALL} = $utf8_locale;
+ 
+     fresh_perl_is(
+       'use POSIX; print &POSIX::mblen("\x{c3}\x{28}", &POSIX::MB_CUR_MAX)',
