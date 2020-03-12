@@ -1,24 +1,23 @@
-From 0f7890d19e69c0dbf944b4f9f8ca87083655e802 Mon Sep 17 00:00:00 2001
+From 81476c84af194a88675d9fb0c431f33756cce7ac Mon Sep 17 00:00:00 2001
 From: Brendan O'Dea <bod@debian.org>
 Date: Fri, 18 Mar 2005 22:22:25 +1100
 Subject: Remove standard libs from LD_RUN_PATH as per Debian policy.
 
 Patch-Name: debian/ld_run_path.diff
 ---
- cpan/ExtUtils-MakeMaker/lib/ExtUtils/Liblist/Kid.pm | 3 +++
- 1 file changed, 3 insertions(+)
+ cpan/ExtUtils-MakeMaker/lib/ExtUtils/Liblist/Kid.pm | 2 ++
+ 1 file changed, 2 insertions(+)
 
 diff --git a/cpan/ExtUtils-MakeMaker/lib/ExtUtils/Liblist/Kid.pm b/cpan/ExtUtils-MakeMaker/lib/ExtUtils/Liblist/Kid.pm
-index 93183a379..63eecc127 100644
+index a6da85586..fb849b21c 100644
 --- a/cpan/ExtUtils-MakeMaker/lib/ExtUtils/Liblist/Kid.pm
 +++ b/cpan/ExtUtils-MakeMaker/lib/ExtUtils/Liblist/Kid.pm
-@@ -56,6 +56,9 @@ sub _unix_os2_ext {
-     my ( $pwd )   = cwd();    # from Cwd.pm
-     my ( $found ) = 0;
- 
+@@ -62,6 +62,8 @@ sub _unix_os2_ext {
+         $potential_libs =~ s/(^|\s)(-(?:weak_|reexport_|lazy_)?framework)\s+(\S+)/$1-Wl,$2 -Wl,$3/g;
+         $potential_libs =~ s/(^|\s)(-F)\s*(\S+)/$1-Wl,$2 -Wl,$3/g;
+     }
 +    # Debian-specific: don't use LD_RUN_PATH for standard dirs
 +    $ld_run_path_seen{$_}++ for @libpath;
-+
+ 
      foreach my $thislib ( split ' ', $potential_libs ) {
          my ( $custom_name ) = '';
- 

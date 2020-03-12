@@ -10,4 +10,5 @@ use Config;
 
 print +(join ', ', map "perlapi-$_",
 	sort $Config{version},
+	grep /^[0-9.]+$/,
 	split ' ', $Config{inc_version_list}), "\n";

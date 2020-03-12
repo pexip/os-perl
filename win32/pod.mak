@@ -43,8 +43,18 @@ POD = perl.pod	\
 	perl5220delta.pod	\
 	perl5221delta.pod	\
 	perl5222delta.pod	\
+	perl5223delta.pod	\
+	perl5224delta.pod	\
 	perl5240delta.pod	\
 	perl5241delta.pod	\
+	perl5242delta.pod	\
+	perl5243delta.pod	\
+	perl5244delta.pod	\
+	perl5260delta.pod	\
+	perl5261delta.pod	\
+	perl5262delta.pod	\
+	perl5280delta.pod	\
+	perl5281delta.pod	\
 	perl561delta.pod	\
 	perl56delta.pod	\
 	perl581delta.pod	\
@@ -73,6 +83,7 @@ POD = perl.pod	\
 	perldebtut.pod	\
 	perldebug.pod	\
 	perldelta.pod	\
+	perldeprecation.pod	\
 	perldiag.pod	\
 	perldsc.pod	\
 	perldtrace.pod	\
@@ -182,8 +193,18 @@ MAN = perl.man	\
 	perl5220delta.man	\
 	perl5221delta.man	\
 	perl5222delta.man	\
+	perl5223delta.man	\
+	perl5224delta.man	\
 	perl5240delta.man	\
 	perl5241delta.man	\
+	perl5242delta.man	\
+	perl5243delta.man	\
+	perl5244delta.man	\
+	perl5260delta.man	\
+	perl5261delta.man	\
+	perl5262delta.man	\
+	perl5280delta.man	\
+	perl5281delta.man	\
 	perl561delta.man	\
 	perl56delta.man	\
 	perl581delta.man	\
@@ -212,6 +233,7 @@ MAN = perl.man	\
 	perldebtut.man	\
 	perldebug.man	\
 	perldelta.man	\
+	perldeprecation.man	\
 	perldiag.man	\
 	perldsc.man	\
 	perldtrace.man	\
@@ -321,8 +343,18 @@ HTML = perl.html	\
 	perl5220delta.html	\
 	perl5221delta.html	\
 	perl5222delta.html	\
+	perl5223delta.html	\
+	perl5224delta.html	\
 	perl5240delta.html	\
 	perl5241delta.html	\
+	perl5242delta.html	\
+	perl5243delta.html	\
+	perl5244delta.html	\
+	perl5260delta.html	\
+	perl5261delta.html	\
+	perl5262delta.html	\
+	perl5280delta.html	\
+	perl5281delta.html	\
 	perl561delta.html	\
 	perl56delta.html	\
 	perl581delta.html	\
@@ -351,6 +383,7 @@ HTML = perl.html	\
 	perldebtut.html	\
 	perldebug.html	\
 	perldelta.html	\
+	perldeprecation.html	\
 	perldiag.html	\
 	perldsc.html	\
 	perldtrace.html	\
@@ -460,8 +493,18 @@ TEX = perl.tex	\
 	perl5220delta.tex	\
 	perl5221delta.tex	\
 	perl5222delta.tex	\
+	perl5223delta.tex	\
+	perl5224delta.tex	\
 	perl5240delta.tex	\
 	perl5241delta.tex	\
+	perl5242delta.tex	\
+	perl5243delta.tex	\
+	perl5244delta.tex	\
+	perl5260delta.tex	\
+	perl5261delta.tex	\
+	perl5262delta.tex	\
+	perl5280delta.tex	\
+	perl5281delta.tex	\
 	perl561delta.tex	\
 	perl56delta.tex	\
 	perl581delta.tex	\
@@ -490,6 +533,7 @@ TEX = perl.tex	\
 	perldebtut.tex	\
 	perldebug.tex	\
 	perldelta.tex	\
+	perldeprecation.tex	\
 	perldiag.tex	\
 	perldsc.tex	\
 	perldtrace.tex	\

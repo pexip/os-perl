@@ -1,4 +1,4 @@
-From d798073206bb15c1e83f6f3c84a531c9e1292eb4 Mon Sep 17 00:00:00 2001
+From e64ba3c28908b6b7da33658ec078ccc0db25ef19 Mon Sep 17 00:00:00 2001
 From: Johan Vromans <jvromans@squirrel.nl>
 Date: Tue, 13 Jun 2017 13:26:00 +0200
 Subject: Fix issue #122068.
@@ -12,10 +12,10 @@ Patch-Name: fixes/getopt-long-4.diff
  1 file changed, 6 insertions(+)
 
 diff --git a/cpan/Getopt-Long/lib/Getopt/Long.pm b/cpan/Getopt-Long/lib/Getopt/Long.pm
-index 9992578aa..e71fee8d8 100644
+index 664c8b63c..e4e3026db 100644
 --- a/cpan/Getopt-Long/lib/Getopt/Long.pm
 +++ b/cpan/Getopt-Long/lib/Getopt/Long.pm
-@@ -1121,6 +1121,12 @@ sub FindOption ($$$$$) {
+@@ -1123,6 +1123,12 @@ sub FindOption ($$$$$) {
  	    $optargtype = 3;
  	}
  	if(($optargtype == 0) && !$mand) {

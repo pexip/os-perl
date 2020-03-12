@@ -25,8 +25,8 @@ while read ver
 do
     dpkg --compare-versions "$ver" lt "$version"	    || break
     dpkg --compare-versions "$ver" lt "$api_versionstring"  && continue
-    inc_version_list="$ver${inc_version_list:+ }$inc_version_list"
-    inc_version_list_init="\"$ver\",$inc_version_list_init"
+    inc_version_list="$ver $ver/$archname${inc_version_list:+ }$inc_version_list"
+    inc_version_list_init="\"$ver\",\"$ver/$archname\",$inc_version_list_init"
 done <debian/released-versions
 if [ -n "$inc_version_list" ]; then
     d_inc_version_list=define
@@ -49,19 +49,19 @@ fi
 # set configuration time to latest debian/changelog entry
 cf_time=$(LC_ALL=C date --utc -d "$(dpkg-parsechangelog | sed -n -e 's/^Date: //p')")
 # set generic email addresses, host/domain names
-cf_by='Debian Project'
+cf_by="$(dpkg-vendor --query vendor)"
 cf_email=perl@packages.debian.org
 perladmin=root@localhost
 mydomain=
 myhostname=localhost
+
+host_arch=${DEB_HOST_ARCH:-$(dpkg-architecture -qDEB_HOST_ARCH)}
 
 # emulate 'uname -m' output for reproducibility regardless of (for example)
 # 32-bit vs 64-bit kernel
 #
 # this is silly but oh well
 # see #821182
-
-host_arch=${DEB_HOST_ARCH:-$(dpkg-architecture -qDEB_HOST_ARCH)}
 
 case "$host_arch" in
     # hardcoded machine names on known architectures based on debian/cross results
@@ -127,17 +127,17 @@ esac
 
 case "$osname" in
   linux)
-      osvers=3.16.0
+      osvers=4.9.0
       osdesc="#1 smp debian $osvers"
       os=gnulinux
       ;;
   gnu)
-      osvers=0.6
+      osvers=0.9
       osdesc="gnu-mach"
       os=gnu
       ;;
   gnukfreebsd)
-      osvers=9.0
+      osvers=10.1
       osdesc="#0"
       os=gnukfreebsd
       ;;

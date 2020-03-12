@@ -17,6 +17,533 @@ Consult your favorite dictionary for details.
 
 =head1 EPIGRAPHS
 
+=head2 v5.29.4 - The Mountain Goats, "Oceanographer's Choice"
+
+L<Announced on 2018-10-20 by Aaron Crane|https://www.nntp.perl.org/group/perl.perl5.porters/2018/10/msg252575.html>
+
+  Well
+  Guy in a skeleton costume
+  Comes up to the guy in the Superman suit
+  Runs through him with a broadsword
+  I flipped the television off
+  Bring all the bright lights up
+  Turn the radio up loud
+  I don't know why I'm so persuaded
+  That if I think things through
+  Long enough and hard enough
+  I'll somehow get to you
+  But then you came in and we locked eyes
+  You kicked the ashtray over as we came toward each other
+  Stubbed my cigarette out against the west wall
+  Quickly lit another
+  Look at that
+  Would you look at that?
+  We're throwing off sparks
+  What will I do when I don't have you
+  To hold onto in the dark?
+
+=head2 v5.29.3 - Mac Miller, "Senior Skip Day"
+
+L<Announced on 2018-09-20 by John 'genehack' Anderson|https://www.nntp.perl.org/group/perl.perl5.porters/2018/09/msg252255.html>
+
+  Enjoy the best things in your life
+  ’Cause you ain’t gonna get to live it twice
+  They say you waste time asleep
+  But I’m just tryin’ to dream
+
+=head2 v5.29.2 - Rick Riordan, "The Lightning Thief"
+
+L<Announced on 2018-08-20 by Chris 'BinGOs' Williams|https://www.nntp.perl.org/group/perl.perl5.porters/2018/08/msg251918.html>
+
+  Look, I didn't want to be a half-blood.
+
+  If you're reading this because you think you might be one,
+  my advice is: close this book right now. Believe whatever
+  lie your mom or dad told you about your birth, and try
+  to lead a normal life.
+
+  Being a half-blood is dangerous. It's scary. Most of the time,
+  it gets you killed in painful, nasty ways.
+
+  If you're a normal kid, reading this because you think it's
+  fiction, great. Read on. I envy you for being able to believe
+  that none of this ever happened.
+
+  But if you recognize yourself in these pages - if you feel
+  something stirring inside - stop reading immediately.
+  You might be one of us. And once you know that, it's only a
+  matter of time before they sense it too, and they'll come for you.
+
+=head2 v5.29.1 - Richard Curtis & Ben Elton, "Blackadder, Series 3, Episode 2: Ink and Incapability"
+
+L<Announced on 2018-07-20 by Steve Hay|https://www.nntp.perl.org/group/perl.perl5.porters/2018/07/msg251605.html>
+
+  Dr. Samuel Johnson: Here it is, sir: the very cornerstone of English
+  scholarship.  This book, sir, contains every word in our beloved
+  language.
+
+  Prince Regent George: Hmm.
+
+  Edmund Blackadder: Every single one, sir?
+
+  Johnson: (confidently) Every single word, sir!
+
+  Blackadder: (to Prince) Oh, well, in that case, sir, I hope you will
+  not object if I also offer the Doctor my most enthusiastic
+  contrafribularities.
+
+  Johnson: What?
+
+  Blackadder: 'Contrafribularities,' sir? It is a common word down our
+  way.
+
+  Johnson: Damn! (writes in the book)
+
+  Blackadder: Oh, I'm sorry, sir.  I'm anaspeptic, phrasmotic, even
+  compunctious to have caused you such pericombobulation.
+
+  Johnson: What? What? WHAT?
+
+=head2 v5.29.0 - Erle Stanley Gardner, The Case of the Grinning Gorilla
+
+L<Announced on 2018-06-26 by Sawyer X|http://nntp.perl.org/group/perl.perl5.porters/251297>
+
+  Courage is the only antidote for danger.
+
+=head2 v5.28.0 - Martin Luther King, Jr., 1967
+
+L<Announced on 2018-06-22 by Sawyer X|http://nntp.perl.org/group/perl.perl5.porters/251240>
+
+  When we look at modern man we have to face the fact that modern man
+  suffers from a kind of poverty of the spirit which stands in glaring
+  contrast with his scientific and technological abundance. We've learned
+  to fly the air as birds, we've learned to swim the seas as fish, yet we
+  haven't learned to walk the earth as brothers and sisters.
+
+=head2 v5.28.0-RC4 - Neil Gaiman, The Graveyard Book
+
+L<Announced on 2018-06-19 by Sawyer X|http://nntp.perl.org/group/perl.perl5.porters/251212>
+
+  You're alive, Bod. That means you have infinite potential. You can do
+  anything, make anything, dream anything. If you can change the world,
+  the world will change. Potential. Once you're dead, it's gone. Over.
+  You've made what you've made, dreamed your dream, written your name.
+  You may be buried here, you may even walk. But that potential is
+  finished.
+
+=head2 v5.28.0-RC3 - Anthony Horowitz, Magpie Murders
+
+L<Announced on 2018-06-18 by Sawyer X|http://nntp.perl.org/group/perl.perl5.porters/251204>
+
+  These had been his plans. But if there was one thing that life had
+  taught him, it was the futility of making plans. Life had its own
+  agenda.
+
+=head2 v5.28.0-RC2 - Oliver Sacks, The Man Who Mistook His Wife For A Hat: And Other Clinical Tales
+
+L<Announced on 2018-06-06 by Sawyer X|http://nntp.perl.org/group/perl.perl5.porters/251122>
+
+  Had she not been of exceptional intelligence and literacy, with an
+  imagination filled and sustained, so to speak, by the images of
+  others, images conveyed by language, by the word, she might have
+  remained almost as helpless as a baby.
+
+=head2 v5.28.0-RC1 - Anu Garg, A Word A Day
+
+L<Announced on 2018-05-21 by Sawyer X|https://www.nntp.perl.org/group/perl.perl5.porters/2018/05/msg250999.html>
+
+  One doesn't have to know the unit of pain (dol) to realize that the
+  unit of joy is not the dollar, or any other currency for that matter.
+
+=head2 v5.27.11 - Tana French, In the Woods
+
+L<Announced on 2018-04-20 by Sawyer X|https://www.nntp.perl.org/group/perl.perl5.porters/2018/04/msg250571.html>
+
+  And then, too, I had learned early to assume something dark and
+  lethal hidden at the heart of anything I loved. When I couldn't find
+  it, I responded, bewildered and wary, in the only way I knew how: by
+  planting it there myself.
+
+=head2 v5.27.10 - Robert A. Heinlein, Time Enough for Love, p. 248
+
+L<Announced on 2018-03-20 by Todd Rinaldo|https://www.nntp.perl.org/group/perl.perl5.porters/2018/03/msg250042.html>
+
+  A human being should be able to change a diaper, plan an invasion, butcher
+  a hog, conn a ship, design a building, write a sonnet, balance accounts,
+  build a wall, set a bone, comfort the dying, take orders, give orders,
+  cooperate, act alone, solve equations, analyze a new problem, pitch manure,
+  program a computer, cook a tasty meal, fight efficiently, die gallantly.
+  Specialization is for insects.
+
+=head2 v5.27.9 - Agatha Christie, "The Mysterious Affair at Styles"
+
+L<Announced on 2018-02-20 by Renee Bäcker|https://www.nntp.perl.org/group/perl.perl5.porters/2018/02/msg249549.html>
+
+  Poirot was an extraordinary looking little man. He was hardly more
+  than five feet, four inches, but carried himself with great dignity.
+  His head was exactly the shape of an egg, and he always perched it
+  a little on one side. His moustache was very stiff and military.
+  The neatness of his attire was almost incredible. I believe a
+  speck of dust would have caused him more pain than a bullet wound.
+  Yet this quaint dandified little man who, I was sorry to see, now
+  limped badly, had been in his time one of the most celebrated members
+  of the Belgian police. As a detective, his flair had been extraordinary,
+  and he had achieved triumphs by unravelling some of the most baffling
+  cases of the day.
+    He pointed out to me the little house inhabited by him and his fellow
+  Belgians, and I promised to go and see him at an early date. Then he
+  raised his hat with a flourish to Cynthia, and we drove away.
+    "He's a dear little man," said Cynthia. "I'd no idea you knew him."
+    "You've been entertaining a celebrity unawares," I replied.
+    And, for the rest of the way home, I recited to them the various
+  exploits and triumphs of Hercule Poirot.
+
+=head2 v5.27.8 - Jasper Fforde, "Shades of Grey"
+
+L<Announced on 2018-01-20 by Abigail|http://nntp.perl.org/group/perl.perl5.porters/248914>
+
+2.4.16.55.021: Males are to wear dresscode #6 during inter-Collective
+travel. Hats are encouraged, but not required.
+
+9.3.88.32.025: The cucumber and tomato are both fruit; the avocado
+is a nut. To assist with the dietary requirements of vegetarians,
+on the first Tuesday of the month a chicken is officially a vegetable.
+
+5.3.21.01.002: Once allocated, postcodes are permanent, and for life.
+
+6.1.02.11.235: Artifacture from before the Something That Happened
+may be collected, so long it does not appear on the Leapback list
+or possess color above 23 percent saturation.
+
+2.3.06.02.087: Unnecessary sharpening of pencils constitutes a waste
+of public resources, and will be punished as appropriate.
+
+2.1.01.05.002: All children are to attent school until the age of
+sixteen or until they have learned everything, whichever be the sooner.
+
+1.3.02.06.023: There shall be no staring at the sun, however good
+the reason.
+
+1.1.19.02.006: Team sports are mandatory in order to build character.
+Character is there to give purpose to team sports.
+
+2.3.03.01.006: Juggling shall not be practiced after 4:00 pm.
+
+
+=head2 v5.27.7 - Terry Pratchett, "Hogfather"
+
+L<Announced on 2017-12-20 by Chris 'BinGOs' Williams|https://www.nntp.perl.org/group/perl.perl5.porters/2017/12/msg248274.html>
+
+  Death looked at the sacks.
+
+  It was a strange but demonstrable fact that the sacks of
+  toys carried by the Hogfather, no matter what they
+  really contained, always appeared to have sticking out
+  of the top a teddy bear, a toy soldier in the kind of
+  colorful uniform that would stand out in a disco, a
+  drum and a red-and-white candy cane. The actual
+  contents always turned out to be something a bit
+  garish and costing $5.99.
+
+  Death had investigated one or two. There had been a
+  Real Agatean Ninja, for example, with Fearsome
+  Death Grip, and a Captain Carrot One-Man Night
+  Watch with a complete wardrobe of toy weapons, each
+  of which cost as much as the original wooden doll in
+  the first place.
+
+  Mind you, the stuff for the girls was just as
+  depressing. It seemed to be nearly all horses. Most of
+  them were grinning. Horses, Death felt, shouldn't grin.
+
+  Any horse that was grinning was planning something.
+
+=head2 v5.27.6 - Ogden Nash, "Behold the Duck"
+
+L<Announced on 2017-11-20 by Karen Etheridge|https://www.nntp.perl.org/group/perl.perl5.porters/2017/11/msg247489.html>
+
+  Behold the duck,
+  it does not cluck;
+  a cluck it lacks,
+  it quacks!
+
+  It is 'specially fond
+  of puddles or ponds;
+  when it dines or sups
+  it bottoms ups.
+
+
+=head2 v5.27.5 - Frank Birch, Dilly Knox & G. P. Mackeson, "Alice in I.D.25"
+
+L<Announced on 2017-10-20 by Steve Hay|https://www.nntp.perl.org/group/perl.perl5.porters/2017/10/msg246785.html>
+
+    'Can I do anything?' Alice suggested timidly, thinking that something
+  dreadful must have happened.
+    The Waterflap jumped as if it had been shot. 'What are you doing
+  here?' it snapped. 'Take this at once into the Directional room,' and it
+  thrust the paper which had caused all the fuss into her hands.
+    'But where is the Directional room?' she inquired, bewildered.
+    'Why, there of course,' howled the Waterflap, pointing to a door.
+    'How could I possibly know that!' Alice exclaimed, angered by his
+  rudeness.
+    'Silly girl,' it hissed. 'Why, it's called the Directional room
+  because it's in that direction,' and it pushed her roughly through the
+  doorway.
+
+=head2 v5.27.4 - Richard Brautigan, "All Watched Over By Machines Of Loving Grace"
+
+L<Announced on 2017-09-20 by John SJ Anderson|https://www.nntp.perl.org/group/perl.perl5.porters/2017/09/msg246371.html>
+
+  I like to think (and
+  the sooner the better!)
+  of a cybernetic meadow
+  where mammals and computers
+  live together in mutually
+  programming harmony
+  like pure water
+  touching clear sky.
+
+  I like to think
+  (right now, please!)
+  of a cybernetic forest
+  filled with pines and electronics
+  where deer stroll peacefully
+  past computers
+  as if they were flowers
+  with spinning blossoms.
+
+  I like to think
+  (it has to be!)
+  of a cybernetic ecology
+  where we are free of our labors
+  and joined back to nature,
+  returned to our mammal
+  brothers and sisters,
+  and all watched over
+  by machines of loving grace.
+
+=head2 v5.27.3 - Rodgers and Hammerstein, "You'll Never Walk Alone"
+
+L<Announced on 2017-08-21 by Matthew Horsfall|http://www.nntp.perl.org/group/perl.perl5.porters/2017/08/msg245988.html>
+
+  When you walk through a storm
+  Hold your head up high
+  And don't be afraid of the dark
+
+  At the end of a storm
+  There's a golden sky
+  And the sweet silver song of a lark
+
+  Walk on through the wind
+  Walk on through the rain
+  Though your dreams be tossed and blown
+
+  Walk on, walk on
+  With hope in your heart
+  And you'll never walk alone
+
+  You'll never walk alone
+
+  Walk on, walk on
+  With hope in your heart
+  And you'll never walk alone
+
+  You'll never walk alone
+
+=head2 v5.27.2 - Lev Grossman, Codex
+
+L<Announced on 2017-07-20 by Aaron Crane|http://www.nntp.perl.org/group/perl.perl5.porters/2017/07/msg245585.html>
+
+  He went back for another stack of books: a three-volume English legal
+  treatise; a travel guide to Tuscany from the '20s crammed with faded
+  Italian wildflowers that fluttered out from between the pages like
+  moths; a French edition of Turgeniev so decayed that it came apart in
+  his hands; a register of London society from 1863. In a way it was
+  idiotic. He was treating these books like they were holy relics. It
+  wasn't like he would ever actually read them. But there was something
+  magnetic about them, something that compelled respect, even the silly
+  ones, like the Enlightenment treatise about how lightning was caused
+  by bees. They were information, data, but not in the form he was used
+  to dealing with it. They were non-digital, nonelectrical chunks of
+  memory, not stamped out of silicon but laboriously crafted out of wood
+  pulp and ink, leather and glue. Somebody had cared enough to write
+  these things; somebody else had cared enough to buy them, possibly
+  even read them, at the very least keep them safe for 150 years,
+  sometimes longer, when they could have vanished at the touch of a
+  spark. That made them worth something, didn't it, just by itself?
+  Though most of them would have bored him rigid the second he cracked
+  them open, which there wasn't much chance of. Maybe that was what he
+  found so appealing: the sight of so many books that he'd never have to
+  read, so much work he'd never have to do.
+
+=head2 v5.27.1 - Rona Munro, Doctor Who: Survival
+
+L<Announced on 2017-06-20 by Eric Herman|http://www.nntp.perl.org/group/perl.perl5.porters/2017/06/msg245055.html>
+
+  There are worlds out there where the sky is burning,
+  where the sea's asleep and the rivers dream,
+  people made of smoke and cities made of song.
+  Somewhere there's danger,
+  somewhere there's injustice
+  and somewhere else the tea is getting cold.
+  Come on, Ace, we've got work to do.
+
+=head2 v5.27.0 - Bertrand Russell, The Road to Happiness
+
+L<Announced on 2017-05-31 by Sawyer X|http://www.nntp.perl.org/group/perl.perl5.porters/2017/05/msg244580.html>
+
+  People who have theories as to how one should live tend to forget the
+  limitations of nature. If your way of life involves constant
+  restraint of impulse for the sake of some one supreme aim that you
+  have set yourself, it is likely that the aim will become increasingly
+  distasteful because of the efforts that it demands; impulse, denied
+  its normal outlets, will find others, probably in spite; pleasure, if
+  you allow yourself any at all, will be dissociated from the main
+  current of your life, and will become Bacchic and frivolous. Such
+  pleasure brings no happiness, but only a deeper despair.
+
+    -- Bertrand Russell, The Road to Happiness
+
+=head2 v5.26.2 - Desmond Morris, "Catwatching: The Essential Guide to Cat Behaviour"
+
+L<Announced on 2018-04-14 by Steve Hay|http://www.nntp.perl.org/group/perl.perl5.porters/2018/04/msg250440.html>
+
+How does a cat use its whiskers?  The usual answer is that the whiskers
+are feelers that enable a cat to tell whether a gap is wide enough for
+it to squeeze through, but the truth is more complicated and more
+remarkable.  In addition to their obvious role as feelers sensitive to
+touch, the whiskers also operate as air-current detectors.  As the cat
+moves along in the dark it needs to manoeuvre past solid objects without
+touching them.  Each solid object it approaches causes slight eddies in
+the air, minute disturbances in the currents of air movements, and the
+cat's whiskers are so amazingly sensitive that they can read these air
+changes and respond to the presence of solid obstacles even without
+touching them.
+
+=head2 v5.26.2-RC1 - Desmond Morris, "Catwatching: The Essential Guide to Cat Behaviour"
+
+L<Announced on 2018-03-24 by Steve Hay|http://www.nntp.perl.org/group/perl.perl5.porters/2018/03/msg250103.html>
+
+Cats have a way of endearing themselves to their owners, not just by
+their 'kittenoid' behaviour, which stimulates strong parental feelings,
+but also by their sheer gracefulness. There is an elegance and a
+composure about them that captivates the human eye. To the sensitive
+human being it becomes a privilege to share a room with a cat, exchange
+its glance, feel its greeting rub, or watch it gently luxuriate itself
+into a snoozing ball on a soft cushion.
+
+=head2 v5.26.1 - Samuel Taylor Coleridge, "The Rime of the Ancient Mariner"
+
+L<Announced on 2017-09-22 by Steve Hay|http://www.nntp.perl.org/group/perl.perl5.porters/2017/09/msg246408.html>
+
+  And soon I heard a roaring wind:
+  It did not come anear;
+  But with its sound it shook the sails,
+  That were so thin and sere.
+
+  The upper air burst into life!
+  And a hundred fire-flags sheen,
+  To and fro they were hurried about!
+  And to and fro, and in and out,
+  The wan stars danced between.
+
+=head2 v5.26.1-RC1 - Samuel Taylor Coleridge, "The Rime of the Ancient Mariner"
+
+L<Announced on 2017-09-10 by Steve Hay|http://www.nntp.perl.org/group/perl.perl5.porters/2017/09/msg246202.html>
+
+  At length did cross an Albatross,
+  Thorough the fog it came;
+  As if it had been a Christian soul,
+  We hailed it in God's name.
+
+  It ate the food it ne'er had eat,
+  And round and round it flew.
+  The ice did split with a thunder-fit;
+  The helmsman steered us through!
+
+  And a good south wind sprung up behind;
+  The Albatross did follow,
+  And every day, for food or play,
+  Came to the mariner's hollo!
+
+  In mist or cloud, on mast or shroud,
+  It perched for vespers nine;
+  Whiles all the night, through fog-smoke white,
+  Glimmered the white Moon-shine.'
+
+  'God save thee, ancient Mariner!
+  From the fiends, that plague thee thus!—
+  Why look'st thou so?'—With my cross-bow
+  I shot the ALBATROSS.
+
+=head2 v5.26.0 - Nine Simone, Ain't Got No / I Got Life
+
+L<Announced on 2017-05-30 by Sawyer X|http://www.nntp.perl.org/group/perl.perl5.porters/2017/05/msg244573.html>
+
+  I've got the life
+  And I'm gonna keep it
+  I've got the life
+  And nobody's gonna take it away
+  I've got the life
+
+=head2 v5.26.0-RC2 - Richard Condon, The Manchurian Candidate
+
+L<Announced on 2017-05-23 by Sawyer X|http://www.nntp.perl.org/group/perl.perl5.porters/2017/05/msg244511.html>
+
+  Amateur psychiatric prognosis can be fascinating when there is
+  absolutely nothing else to do.
+
+=head2 v5.26.0-RC1 - Thomas Paine, Common Sense
+
+L<Announced on 2017-05-11 by Sawyer X|http://www.nntp.perl.org/group/perl.perl5.porters/2017/05/msg244337.html>
+
+  A long habit of not thinking a thing WRONG, gives it a superficial
+  appearance of being RIGHT, and raises at first a formidable outcry in
+  defense of custom. But the tumult soon subsides. Time makes more
+  converts than reason.
+
+=head2 v5.25.12 - Kurt Vonnegut, Slaughterhouse-Five
+
+L<Announced on 2017-04-20 by Sawyer X|http://www.nntp.perl.org/group/perl.perl5.porters/2017/04/msg244146.html>
+
+  I have told my sons that they are not under any circumstances to take
+  part in massacres, and that the news of massacres of enemies is not
+  to fill them with satisfaction or glee.
+
+  I have also told them not to work for companies which make massacre
+  machinery, and to express contempt for people who think we need
+  machinery like that.
+
+=head2 v5.25.11 - Daniel Kahneman, Thinking, Fast and Slow
+
+L<Announced on 2017-03-20 by Sawyer X|http://www.nntp.perl.org/group/perl.perl5.porters/2017/03/msg243624.html>
+
+  Subjective confidence in a judgment is not a reasoned evaluation of
+  the probability that this judgment is correct. Confidence is a
+  feeling, which reflects the coherence of the information and the
+  cognitive ease of processing it. It is wise to take admissions of
+  uncertainty seriously, but declarations of high confidence mainly
+  tell you that an individual has constructed a coherent story in his
+  mind, not necessarily that the story is true.
+
+=head2 v5.25.10 - Erich Fried, 1968
+
+L<Announced on 2017-02-20 by Renee Bäcker|https://www.nntp.perl.org/group/perl.perl5.porters/2017/02/msg243173.html>
+
+  He who wants the world to remain as it is
+  doesn't want it to remain.
+
+=head2 v5.25.9 - A. A. Milne, "Winnie-the-Pooh", 1926
+
+L<Announced on 2017-01-20 by Abigail|http://www.nntp.perl.org/group/perl.perl5.porters/2017/01/msg242405.html>
+
+  Pooh always liked a little something at eleven o'clock in the
+  morning, and he was very glad to see Rabbit getting out the plates
+  and mugs; and when Rabbit said, "Honey or condensed milk with
+  your bread?" he was so excited that he said, "Both," and then,
+  so as not to seem greedy, he added, "But don't bother about the
+  bread, please."
+
 =head2 v5.25.8 - Langston Hughes, So long
 
 L<Announced on 2016-12-20 by Sawyer X|http://www.nntp.perl.org/group/perl.perl5.porters/2016/12/msg241739.html>
@@ -36,12 +563,12 @@ L<Announced on 2016-12-20 by Sawyer X|http://www.nntp.perl.org/group/perl.perl5.
 
 L<Announced on 2016-11-20 by Chad 'Exodist' Granum|http://www.nntp.perl.org/group/perl.perl5.porters/2016/11/msg241120.html>
 
-  Of Beren and L�thien
+  Of Beren and Lúthien
 
   Among the tales of sorrow and of ruin that come down to us from the darkness of
   those days there are yet some in which amid weeping there is joy and under the
   shadow of death light that endures. And of these histories most fair still in
-  the ears of the Elves is the tale of Beren and L�thien. Of their lives was made
+  the ears of the Elves is the tale of Beren and Lúthien. Of their lives was made
   the Lay of Leithian, Release from Bondage, which is the longest save one of the
   songs concerning the world of old; but here is told in fewer words and without
   song.
@@ -52,7 +579,7 @@ L<Announced on 2016-10-10 by Aaron Crane|http://www.nntp.perl.org/group/perl.per
 
   I'm up on all the pop trivia, says the guy with the stud in his tongue.
       Are you?
-      Yes. Do you know who he lead singer of Echo and the Bunnymen is?
+      Yes. Do you know who the lead singer of Echo and the Bunnymen is?
       Let me guess, is he called Echo?
       Good guess but no, anyway when they played Glastonbury it was so
   muddy he had two roadies to hold up a binliner on each of his legs so
@@ -192,6 +719,158 @@ L<Announced on 2016-05-09 by Ricardo Signes|http://www.nntp.perl.org/group/perl.
     Wide fields of asphodel fore’er,
   To find that the utmost reward
     Of daring should be still to dare.
+
+=head2 v5.24.4 - Desmond Morris, "Catwatching: The Essential Guide to Cat Behaviour"
+
+L<Announced on 2018-04-14 by Steve Hay|http://www.nntp.perl.org/group/perl.perl5.porters/2018/04/msg250439.html>
+
+Cats hate doors.  Doors simply do not register in the evolutionary story
+of the cat family.  They constantly block patrolling activities and
+prevent cats from exploring their home range and then returning to their
+central, secure base at will.  Humans often do not understand that a cat
+needs to make only a brief survey of its territory before returning with
+all the necessary information about the activities of other cats in the
+vicinity.  It likes to make these tours of inspection at frequent
+intervals, but does not want to stay outside for very long, unless there
+has been some special and unexpected change in the condition of the
+local feline population.
+
+=head2 v5.24.4-RC1 - Desmond Morris, "Catwatching: The Essential Guide to Cat Behaviour"
+
+L<Announced on 2018-03-24 by Steve Hay|http://www.nntp.perl.org/group/perl.perl5.porters/2018/03/msg250102.html>
+
+The domestic cat is a contradiction. No animal has developed such an
+intimate relationship with mankind, while at the same time demanding and
+getting such independence of movement and action. The dog may be man's
+best friend, but it is rarely allowed out on its own to wander from
+garden to garden or street to street. The obedient dog has to be taken
+for a walk. The headstrong cat walks alone.
+
+=head2 v5.24.3 - Samuel Taylor Coleridge, "The Rime of the Ancient Mariner"
+
+L<Announced on 2017-09-22 by Steve Hay|http://www.nntp.perl.org/group/perl.perl5.porters/2017/09/msg246407.html>
+
+  Oh sleep! it is a gentle thing,
+  Beloved from pole to pole!
+  To Mary Queen the praise be given!
+  She sent the gentle sleep from Heaven,
+  That slid into my soul.
+
+  The silly buckets on the deck,
+  That had so long remained,
+  I dreamt that they were filled with dew;
+  And when I awoke, it rained.
+
+=head2 v5.24.3-RC1 - Samuel Taylor Coleridge, "The Rime of the Ancient Mariner"
+
+L<Announced on 2017-09-10 by Steve Hay|http://www.nntp.perl.org/group/perl.perl5.porters/2017/09/msg246201.html>
+
+  'And now the STORM-BLAST came, and he
+  Was tyrannous and strong:
+  He struck with his o'ertaking wings,
+  And chased us south along.
+
+  With sloping masts and dipping prow,
+  As who pursued with yell and blow
+  Still treads the shadow of his foe,
+  And forward bends his head,
+  The ship drove fast, loud roared the blast,
+  And southward aye we fled.
+
+  And now there came both mist and snow,
+  And it grew wondrous cold:
+  And ice, mast-high, came floating by,
+  As green as emerald.
+
+  And through the drifts the snowy clifts
+  Did send a dismal sheen:
+  Nor shapes of men nor beasts we ken—
+  The ice was all between.
+
+  The ice was here, the ice was there,
+  The ice was all around:
+  It cracked and growled, and roared and howled,
+  Like noises in a swound!
+
+=head2 v5.24.2 - Roald Dahl, "The Three Little Pigs"
+
+L<Announced on 2017-07-15 by Steve Hay|http://www.nntp.perl.org/group/perl.perl5.porters/2017/07/msg245527.html>
+
+  A short while later, through the wood,
+  Came striding brave Miss Riding Hood.
+  The Wolf stood there, his eyes ablaze
+  And yellowish, like mayonnaise.
+  His teeth were sharp, his gums were raw,
+  And spit was dripping from his jaw.
+  Once more the maiden's eyelid flickers.
+  She draws the pistol from her knickers.
+  Once more, she hits the vital spot,
+  And kills him with a single shot.
+  Pig, peeping through the window, stood
+  And yelled, 'Well done, Miss Riding Hood!'
+
+  Ah, Piglet, you must never trust
+  Young ladies from the upper crust.
+  For now, Miss Riding Hood, one notes,
+  Not only has two wolfskin coats,
+  But when she goes from place to place,
+  She has a PIGSKIN TRAVELLING CASE.
+
+=head2 v5.24.2-RC1 - Roald Dahl, "The Three Little Pigs"
+
+L<Announced on 2017-07-01 by Steve Hay|http://www.nntp.perl.org/group/perl.perl5.porters/2017/07/msg245292.html>
+
+  The animal I really dig
+  Above all others is the pig.
+  Pigs are noble. Pigs are clever,
+  Pig are courteous. However,
+  Now and then, to break this rule,
+  One meets a pig who is a fool.
+  What, for example, would you say
+  If strolling through the woods one day,
+  Right there in front of you you saw
+  A pig who'd built his house of STRAW?
+  The Wolf who saw it licked his lips,
+  And said, 'That pig has had his chips.'
+
+=head2 v5.24.1 - Charles Dodgson [as "Lewis Carroll"], "The Hunting of the Snark", Fit 4: The Hunting
+
+L<Announced on 2017-01-14 by Steve Hay|https://www.nntp.perl.org/group/perl.perl5.porters/2017/01/msg242259.html>
+
+  The Bellman looked uffish, and wrinkled his brow.
+    'If only you'd spoken before!
+  It's excessively awkward to mention it now,
+    With the Snark, so to speak, at the door!
+
+  'We should all of us grieve, as you well may believe,
+    If you never were met with again -
+  But surely, my man, when the voyage began,
+    You might have suggested it then?
+
+  'It's excessively awkward to mention it now -
+    As I think I've already remarked.'
+  And the man they called 'Hi!' replied, with a sigh,
+    'I informed you the day we embarked.
+
+  'You may charge me with murder - or want of sense -
+    (We are all of us weak at times):
+  But the slightest approach to a false pretence
+    Was never among my crimes!
+
+  'I said it in Hebrew - I said it in Dutch -
+    I said it in German and Greek:
+  But I wholly forgot (and it vexes me much)
+    That English is what you speak!'
+
+  ''Tis a pitiful tale,' said the Bellman, whose face
+    Had grown longer at every word:
+  'But, now that you've stated the whole of your case,
+    More debate would be simply absurd.
+
+  'The rest of my speech' (he exclaimed to his men)
+    'You shall hear when I've leisure to speak it.
+  But the Snark is at hand, let me tell you again!
+    'Tis your glorious duty to seek it!
 
 =head2 v5.24.1-RC5 - John Milton, ed. Gordon Campbell, "Paradise Regained", Book IV
 
@@ -680,6 +1359,83 @@ L<Announced on 2015-06-20 by Ricardo Signes|http://www.nntp.perl.org/group/perl.
   To be just like them
   They sing while you slave and I just get bored
   I ain't gonna work on Maggie's farm no more
+
+=head2 v5.22.4 - Roald Dahl, "Little Red Riding Hood and the Wolf"
+
+L<Announced on 2017-07-15 by Steve Hay|http://www.nntp.perl.org/group/perl.perl5.porters/2017/07/msg245526.html>
+
+  Then Little Red Riding Hood said, 'But Grandma,
+  what a lovely great big furry coat you have on.'
+  'That's wrong!' cried Wolf. 'Have you forgot
+  'To tell me what BIG TEETH I've got?
+  'Ah well, no matter what you say,
+  'I'm going to eat you anyway.'
+  The small girl smiles. One eyelid flickers.
+  She whips a pistol from her knickers.
+  She aims it at the creature's head
+  And bang bang bang, she shoots him dead.
+
+  A few weeks later, in the wood,
+  I came across Miss Riding Hood.
+  But what a change! No cloak of red,
+  No silly hood upon her head.
+  She said, 'Hello, and do please note
+  'My lovely furry WOLFSKIN COAT.'
+
+=head2 v5.22.4-RC1 - Roald Dahl, "Little Red Riding Hood and the Wolf"
+
+L<Announced on 2017-07-01 by Steve Hay|http://www.nntp.perl.org/group/perl.perl5.porters/2017/07/msg245293.html>
+
+  As soon as Wolf began to feel
+  That he would like a decent meal,
+  He went and knocked on Grandma's door.
+  When Grandma opened it, she saw
+  The sharp white teeth, the horrid grin,
+  And Wolfie said, 'May I come in?'
+  Poor Grandmamma was terrified,
+  'He's going to eat me up!' she cried.
+  And she was absolutely right.
+  He ate her up in one big bite.
+
+=head2 v5.22.3 - Charles Dodgson [as "Lewis Carroll"], "Phantasmagoria", Canto 6: Discomfyture
+
+L<Announced on 2017-01-14 by Steve Hay|https://www.nntp.perl.org/group/perl.perl5.porters/2017/01/msg242258.html>
+
+  As one who strives a hill to climb,
+    Who never climbed before:
+  Who finds it, in a little time,
+  Grow every moment less sublime,
+    And votes the thing a bore:
+
+  Yet, having once begun to try,
+    Dares not desert his quest,
+  But, climbing, ever keeps his eye
+  On one small hut against the sky
+    Wherein he hopes to rest:
+
+  Who climbs till nerve and force are spent,
+    With many a puff and pant:
+  Who still, as rises the ascent,
+  In language grows more violent,
+    Although in breath more scant:
+
+  Who, climbing, gains at length the place
+    That crowns the upward track:
+  And, entering with unsteady pace,
+  Receives a buffet in the face
+    That lands him on his back:
+
+  And feels himself, like one in sleep,
+    Glide swiftly down again,
+  A helpless weight, from steep to steep,
+  Till, with a headlong giddy sweep,
+    He drops upon the plain -
+
+  So I, that had resolved to bring
+    Conviction to a ghost,
+  And found it quite a different thing
+  From any human arguing,
+    Yet dared not quit my post.
 
 =head2 v5.22.3-RC5 - John Milton, ed. Gordon Campbell, "Paradise Regained", Book II
 

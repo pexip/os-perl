@@ -1,4 +1,4 @@
-From aacc89a9d261be153058e40fb1f0e34dd6812d15 Mon Sep 17 00:00:00 2001
+From 857c2e027bce7d442f6ba4821d8d75aba0b9a2c1 Mon Sep 17 00:00:00 2001
 From: Steven Chamberlain <steven@pyro.eu.org>
 Date: Thu, 17 Dec 2015 02:15:58 +0000
 Subject: Work around Debian Bug#796798
@@ -16,10 +16,10 @@ Patch-Name: debian/kfreebsd-softupdates.diff
  1 file changed, 1 insertion(+)
 
 diff --git a/t/op/stat.t b/t/op/stat.t
-index 637a9025f..0a7f971af 100644
+index 905eb85fd..8dcb3d3fd 100644
 --- a/t/op/stat.t
 +++ b/t/op/stat.t
-@@ -96,6 +96,7 @@ sleep 3 if $funky_FAT_timestamps;
+@@ -99,6 +99,7 @@ sleep 3 if $funky_FAT_timestamps;
  print FOO "Now is the time for all good men to come to.\n";
  close(FOO);
  
