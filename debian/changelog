@@ -1,3 +1,9 @@
+perl (5.28.1-6pexip2) pexip; urgency=medium
+
+  * Rebuild in buster environment
+
+ -- Steve McIntyre <steve.mcintyre@pexip.com>  Thu, 16 Jul 2020 02:57:11 +0000
+
 perl (5.28.1-6pexip1) pexip; urgency=medium
 
   * Migrate to Buster
