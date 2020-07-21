@@ -10,7 +10,7 @@ Patch-Name: debian/perlbug-editor.diff
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/utils/perlbug.PL b/utils/perlbug.PL
-index d1eb1e04a..4555d0449 100644
+index d1eb1e04a8..4555d04494 100644
 --- a/utils/perlbug.PL
 +++ b/utils/perlbug.PL
 @@ -272,7 +272,7 @@ sub Init {

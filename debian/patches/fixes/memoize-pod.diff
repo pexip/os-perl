@@ -11,7 +11,7 @@ Patch-Name: fixes/memoize-pod.diff
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/cpan/Memoize/Memoize.pm b/cpan/Memoize/Memoize.pm
-index f4e6522d4..2f28b361f 100644
+index f4e6522d48..2f28b361f8 100644
 --- a/cpan/Memoize/Memoize.pm
 +++ b/cpan/Memoize/Memoize.pm
 @@ -752,6 +752,8 @@ cache that was populated by the first call.  C<complicated> ends up

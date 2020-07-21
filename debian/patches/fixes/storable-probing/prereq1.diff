@@ -12,7 +12,7 @@ Patch-Name: fixes/storable-probing/prereq1.diff
  1 file changed, 4 insertions(+), 3 deletions(-)
 
 diff --git a/dist/Storable/Makefile.PL b/dist/Storable/Makefile.PL
-index 697750566..4f0213277 100644
+index 697750566d..4f02132776 100644
 --- a/dist/Storable/Makefile.PL
 +++ b/dist/Storable/Makefile.PL
 @@ -14,10 +14,12 @@ use File::Spec;

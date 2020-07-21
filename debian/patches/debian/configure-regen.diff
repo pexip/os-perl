@@ -10,7 +10,7 @@ Bug-Debian: https://bugs.debian.org/762638
  1 file changed, 2 insertions(+), 3 deletions(-)
 
 diff --git a/Configure b/Configure
-index 3be9f05b7..437b8afc5 100755
+index 3be9f05b7d..437b8afc57 100755
 --- a/Configure
 +++ b/Configure
 @@ -1483,8 +1483,7 @@ archname=''

@@ -12,7 +12,7 @@ Origin: upstream, https://perl5.git.perl.org/perl.git/commit/a3c63a9402266c2f0e3
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/doio.c b/doio.c
-index 16daf9fd1..309326b27 100644
+index 16daf9fd11..309326b27a 100644
 --- a/doio.c
 +++ b/doio.c
 @@ -1461,7 +1461,7 @@ Perl_nextargv(pTHX_ GV *gv, bool nomagicopen)

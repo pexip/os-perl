@@ -21,7 +21,7 @@ Patch-Name: fixes/eumm-usrmerge.diff
  3 files changed, 55 insertions(+), 3 deletions(-)
 
 diff --git a/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm b/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm
-index bb41b274b..2e33d0a8a 100644
+index bb41b274b3..2e33d0a8ae 100644
 --- a/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm
 +++ b/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm
 @@ -1243,8 +1243,8 @@ sub _fixin_replace_shebang {
@@ -61,7 +61,7 @@ index bb41b274b..2e33d0a8a 100644
  
      # Figure out how to invoke interpreter on this machine.
 diff --git a/cpan/ExtUtils-MakeMaker/t/fixin.t b/cpan/ExtUtils-MakeMaker/t/fixin.t
-index 061e45624..872b023c5 100644
+index 061e456247..872b023c55 100644
 --- a/cpan/ExtUtils-MakeMaker/t/fixin.t
 +++ b/cpan/ExtUtils-MakeMaker/t/fixin.t
 @@ -9,7 +9,7 @@ BEGIN {
@@ -109,7 +109,7 @@ index 061e45624..872b023c5 100644
 +     );
 +}
 diff --git a/cpan/ExtUtils-MakeMaker/t/lib/MakeMaker/Test/Setup/BFD.pm b/cpan/ExtUtils-MakeMaker/t/lib/MakeMaker/Test/Setup/BFD.pm
-index 3d093fcfb..cfe49e546 100644
+index 3d093fcfbd..cfe49e5465 100644
 --- a/cpan/ExtUtils-MakeMaker/t/lib/MakeMaker/Test/Setup/BFD.pm
 +++ b/cpan/ExtUtils-MakeMaker/t/lib/MakeMaker/Test/Setup/BFD.pm
 @@ -53,6 +53,9 @@ program - this is a program

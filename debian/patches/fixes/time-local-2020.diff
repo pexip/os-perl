@@ -15,7 +15,7 @@ Patch-Name: fixes/time-local-2020.diff
  1 file changed, 5 insertions(+), 6 deletions(-)
 
 diff --git a/cpan/Time-Local/t/Local.t b/cpan/Time-Local/t/Local.t
-index 634139695..e28c6d212 100644
+index 634139695f..e28c6d2129 100644
 --- a/cpan/Time-Local/t/Local.t
 +++ b/cpan/Time-Local/t/Local.t
 @@ -96,7 +96,7 @@ SKIP: {

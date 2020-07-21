@@ -12,7 +12,7 @@ Patch-Name: fixes/inplace-editing-bugfix/part2.diff
  1 file changed, 27 insertions(+), 1 deletion(-)
 
 diff --git a/t/io/inplace.t b/t/io/inplace.t
-index 98159e06b..ac50f1ab7 100644
+index 98159e06bf..ac50f1ab77 100644
 --- a/t/io/inplace.t
 +++ b/t/io/inplace.t
 @@ -5,7 +5,7 @@ require './test.pl';

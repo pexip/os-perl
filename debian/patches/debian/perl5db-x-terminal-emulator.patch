@@ -15,7 +15,7 @@ Patch-Name: debian/perl5db-x-terminal-emulator.patch
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/lib/perl5db.pl b/lib/perl5db.pl
-index ecc49a814..6eb03d7c1 100644
+index ecc49a814d..6eb03d7c11 100644
 --- a/lib/perl5db.pl
 +++ b/lib/perl5db.pl
 @@ -6987,7 +6987,7 @@ properly set up.

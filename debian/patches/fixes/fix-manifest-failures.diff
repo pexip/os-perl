@@ -18,7 +18,7 @@ Patch-Name: fixes/fix-manifest-failures.diff
  1 file changed, 3 insertions(+), 4 deletions(-)
 
 diff --git a/t/test.pl b/t/test.pl
-index 868911ce3..4d9af221b 100644
+index 868911ce39..4d9af221b9 100644
 --- a/t/test.pl
 +++ b/t/test.pl
 @@ -199,7 +199,9 @@ sub find_git_or_skip {

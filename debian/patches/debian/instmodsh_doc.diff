@@ -9,7 +9,7 @@ Patch-Name: debian/instmodsh_doc.diff
  1 file changed, 3 insertions(+), 1 deletion(-)
 
 diff --git a/cpan/ExtUtils-MakeMaker/bin/instmodsh b/cpan/ExtUtils-MakeMaker/bin/instmodsh
-index ab0f9d1ff..b3b109f47 100644
+index ab0f9d1ffe..b3b109f475 100644
 --- a/cpan/ExtUtils-MakeMaker/bin/instmodsh
 +++ b/cpan/ExtUtils-MakeMaker/bin/instmodsh
 @@ -19,9 +19,11 @@ instmodsh - A shell to examine installed modules

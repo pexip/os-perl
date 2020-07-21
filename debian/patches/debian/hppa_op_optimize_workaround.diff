@@ -16,7 +16,7 @@ Patch-Name: debian/hppa_op_optimize_workaround.diff
  1 file changed, 6 insertions(+)
 
 diff --git a/cflags.SH b/cflags.SH
-index e60742fed..3e4526ff8 100755
+index e60742fed1..3e4526ff8f 100755
 --- a/cflags.SH
 +++ b/cflags.SH
 @@ -497,6 +497,12 @@ for file do

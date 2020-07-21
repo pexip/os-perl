@@ -31,7 +31,7 @@ Patch-Name: fixes/inplace-editing-bugfix/part3.diff
  3 files changed, 28 insertions(+), 23 deletions(-)
 
 diff --git a/doio.c b/doio.c
-index 39f0c42e7..f8be31c84 100644
+index 39f0c42e7e..f8be31c84a 100644
 --- a/doio.c
 +++ b/doio.c
 @@ -1173,34 +1173,39 @@ S_argvout_free(pTHX_ SV *io, MAGIC *mg) {
@@ -95,7 +95,7 @@ index 39f0c42e7..f8be31c84 100644
          }
  #ifdef ARGV_USE_ATFUNCTIONS
 diff --git a/t/io/inplace.t b/t/io/inplace.t
-index ac50f1ab7..0403cd925 100644
+index ac50f1ab77..0403cd9250 100644
 --- a/t/io/inplace.t
 +++ b/t/io/inplace.t
 @@ -96,7 +96,7 @@ SKIP:
@@ -108,7 +108,7 @@ index ac50f1ab7..0403cd925 100644
      our $file = tempfile() ;
  
 diff --git a/t/run/switches.t b/t/run/switches.t
-index 7ccef1e06..594cad6e7 100644
+index 7ccef1e063..594cad6e7f 100644
 --- a/t/run/switches.t
 +++ b/t/run/switches.t
 @@ -429,7 +429,7 @@ __EOF__

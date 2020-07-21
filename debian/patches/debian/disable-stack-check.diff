@@ -21,7 +21,7 @@ Patch-Name: debian/disable-stack-check.diff
  2 files changed, 6 insertions(+)
 
 diff --git a/dump.c b/dump.c
-index 227eb996e..4e1c594ce 100644
+index 227eb996ee..4e1c594ce8 100644
 --- a/dump.c
 +++ b/dump.c
 @@ -2500,6 +2500,8 @@ Perl_runops_debug(pTHX)
@@ -42,7 +42,7 @@ index 227eb996e..4e1c594ce 100644
  	if (PL_debug) {
              ENTER;
 diff --git a/pp_hot.c b/pp_hot.c
-index 56e3cbe6e..f4e1ae726 100644
+index 56e3cbe6e1..f4e1ae726d 100644
 --- a/pp_hot.c
 +++ b/pp_hot.c
 @@ -5232,6 +5232,8 @@ PP(pp_entersub)

@@ -12,7 +12,7 @@ Patch-Name: fixes/caretx-fallback.diff
  1 file changed, 16 insertions(+), 12 deletions(-)
 
 diff --git a/caretx.c b/caretx.c
-index d758f730d..247708de8 100644
+index d758f730de..247708de8c 100644
 --- a/caretx.c
 +++ b/caretx.c
 @@ -56,7 +56,19 @@ Perl_set_caret_X(pTHX) {

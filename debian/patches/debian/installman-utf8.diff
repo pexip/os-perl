@@ -15,7 +15,7 @@ Patch-Name: debian/installman-utf8.diff
  1 file changed, 1 insertion(+)
 
 diff --git a/installman b/installman
-index 0154be4d6..fff0ff04a 100755
+index 0154be4d68..fff0ff04a7 100755
 --- a/installman
 +++ b/installman
 @@ -161,6 +161,7 @@ sub pod2man {

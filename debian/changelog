@@ -1,3 +1,16 @@
+perl (5.28.1-6+deb10u1) buster; urgency=medium
+
+  * Multiple regexp security fixes (Closes: #962005)
+     + [SECURITY] CVE-2020-10543: Buffer overflow caused by a crafted
+       regular expression
+     + [SECURITY] CVE-2020-10878: Integer overflow via malformed bytecode
+       produced by a crafted regular expression
+     + [SECURITY] CVE-2020-12723: Buffer overflow caused by a crafted
+       regular expression
+  * Fix FTBFS with IPv6-only host (Closes: #962019)
+
+ -- Dominic Hargreaves <dom@earth.li>  Tue, 21 Jul 2020 20:27:00 +0100
+
 perl (5.28.1-6) unstable; urgency=medium
 
   * Fix NDBM autopkgtests by recreating necessary hardlinks at test time

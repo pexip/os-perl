@@ -17,7 +17,7 @@ Patch-Name: debian/enc2xs_inc.diff
  2 files changed, 7 insertions(+), 4 deletions(-)
 
 diff --git a/cpan/Encode/bin/enc2xs b/cpan/Encode/bin/enc2xs
-index 619b64b75..050c863ef 100644
+index 619b64b757..050c863ef9 100644
 --- a/cpan/Encode/bin/enc2xs
 +++ b/cpan/Encode/bin/enc2xs
 @@ -1013,11 +1013,11 @@ use vars qw(
@@ -53,7 +53,7 @@ index 619b64b75..050c863ef 100644
      for my $enc ( sort keys %LocalMod ) {
          $_ModLines .=
 diff --git a/t/porting/customized.t b/t/porting/customized.t
-index d425e5b77..d906a8255 100644
+index d425e5b775..d906a82553 100644
 --- a/t/porting/customized.t
 +++ b/t/porting/customized.t
 @@ -108,8 +108,11 @@ foreach my $module ( sort keys %Modules ) {

@@ -9,7 +9,7 @@ Patch-Name: debian/ld_run_path.diff
  1 file changed, 2 insertions(+)
 
 diff --git a/cpan/ExtUtils-MakeMaker/lib/ExtUtils/Liblist/Kid.pm b/cpan/ExtUtils-MakeMaker/lib/ExtUtils/Liblist/Kid.pm
-index a6da85586..fb849b21c 100644
+index a6da855862..fb849b21ca 100644
 --- a/cpan/ExtUtils-MakeMaker/lib/ExtUtils/Liblist/Kid.pm
 +++ b/cpan/ExtUtils-MakeMaker/lib/ExtUtils/Liblist/Kid.pm
 @@ -62,6 +62,8 @@ sub _unix_os2_ext {

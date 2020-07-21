@@ -22,7 +22,7 @@ Patch-Name: fixes/storable-probing/disable-probing.diff
  8 files changed, 31 insertions(+), 164 deletions(-)
 
 diff --git a/Makefile.SH b/Makefile.SH
-index 48151bce6..084924dab 100755
+index 48151bce65..084924dab5 100755
 --- a/Makefile.SH
 +++ b/Makefile.SH
 @@ -173,15 +173,11 @@ esac
@@ -77,7 +77,7 @@ index 48151bce6..084924dab 100755
      flags="--$name";
      flags=`echo $flags | sed -e 's/--all//'`
 diff --git a/dist/Storable/Makefile.PL b/dist/Storable/Makefile.PL
-index 69efc8294..60af5d256 100644
+index 69efc82944..60af5d256a 100644
 --- a/dist/Storable/Makefile.PL
 +++ b/dist/Storable/Makefile.PL
 @@ -12,15 +12,7 @@ use Config;
@@ -144,7 +144,7 @@ index 69efc8294..60af5d256 100644
  '
  all :: Storable.pm
 diff --git a/dist/Storable/__Storable__.pm b/dist/Storable/__Storable__.pm
-index 71c669daa..e5a655ecd 100644
+index 71c669daaf..e5a655ecda 100644
 --- a/dist/Storable/__Storable__.pm
 +++ b/dist/Storable/__Storable__.pm
 @@ -32,8 +32,6 @@ our $VERSION = '3.08';
@@ -193,7 +193,7 @@ index 71c669daa..e5a655ecd 100644
  modifying C<$Storable::recursion_limit> and
  C<$Storable::recursion_limit_hash> respectively.  Either can be set to
 diff --git a/dist/Storable/stacksize b/dist/Storable/stacksize
-index 14e073973..f93eccce1 100644
+index 14e0739734..f93eccce1a 100644
 --- a/dist/Storable/stacksize
 +++ b/dist/Storable/stacksize
 @@ -1,21 +1,17 @@
@@ -370,7 +370,7 @@ index 14e073973..f93eccce1 100644
 -      or die "Failed to close $fn: $!\n";
  }
 diff --git a/dist/Storable/t/recurse.t b/dist/Storable/t/recurse.t
-index 63fde90fd..b5967a072 100644
+index 63fde90fdf..b5967a072c 100644
 --- a/dist/Storable/t/recurse.t
 +++ b/dist/Storable/t/recurse.t
 @@ -318,9 +318,11 @@ is($refcount_ok, 1, "check refcount");
@@ -387,7 +387,7 @@ index 63fde90fd..b5967a072 100644
      my $t;
      print "# max depth ", MAX_DEPTH, "\n";
 diff --git a/win32/GNUmakefile b/win32/GNUmakefile
-index 05193a1f2..afc18ec8a 100644
+index 05193a1f2d..afc18ec8a4 100644
 --- a/win32/GNUmakefile
 +++ b/win32/GNUmakefile
 @@ -1168,7 +1168,7 @@ CFG_VARS	=					\
@@ -417,7 +417,7 @@ index 05193a1f2..afc18ec8a 100644
  # be running in parallel like UNIDATAFILES, this target a placeholder for the
  # future
 diff --git a/win32/Makefile b/win32/Makefile
-index 1e245f712..a4776dd22 100644
+index 1e245f7128..a4776dd227 100644
 --- a/win32/Makefile
 +++ b/win32/Makefile
 @@ -939,7 +939,7 @@ CFG_VARS	=					\
@@ -452,7 +452,7 @@ index 1e245f712..a4776dd22 100644
  	-del /f $(LIBDIR)\Win32CORE.pm
  	-del /f $(LIBDIR)\Win32API\File.pm
 diff --git a/win32/makefile.mk b/win32/makefile.mk
-index a6072a95a..15b148d15 100644
+index a6072a95a6..15b148d155 100644
 --- a/win32/makefile.mk
 +++ b/win32/makefile.mk
 @@ -1139,7 +1139,7 @@ CFG_VARS	=					\
