@@ -11,7 +11,7 @@ Patch-Name: debian/gdbm-fatal.diff
  1 file changed, 3 insertions(+)
 
 diff --git a/ext/GDBM_File/t/fatal.t b/ext/GDBM_File/t/fatal.t
-index 0e426d4db..3df6878f8 100644
+index 0e426d4dbc..3df6878f8c 100644
 --- a/ext/GDBM_File/t/fatal.t
 +++ b/ext/GDBM_File/t/fatal.t
 @@ -12,6 +12,9 @@ BEGIN {

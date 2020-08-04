@@ -14,7 +14,7 @@ Patch-Name: fixes/inplace-editing-bugfix/part1.diff
  4 files changed, 43 insertions(+), 24 deletions(-)
 
 diff --git a/doio.c b/doio.c
-index 309326b27..39f0c42e7 100644
+index 309326b27a..39f0c42e7e 100644
 --- a/doio.c
 +++ b/doio.c
 @@ -1526,31 +1526,14 @@ S_dir_unchanged(pTHX_ const char *orig_pv, MAGIC *mg) {
@@ -96,7 +96,7 @@ index 309326b27..39f0c42e7 100644
      }
      else {
 diff --git a/embed.fnc b/embed.fnc
-index 454a380e4..e762fe1ee 100644
+index 454a380e4c..e762fe1eec 100644
 --- a/embed.fnc
 +++ b/embed.fnc
 @@ -440,6 +440,7 @@ p	|bool|do_exec3	|NN const char *incmd|int fd|int do_report
@@ -108,7 +108,7 @@ index 454a380e4..e762fe1ee 100644
  #if defined(HAS_MSG) || defined(HAS_SEM) || defined(HAS_SHM)
  : Defined in doio.c, used only in pp_sys.c
 diff --git a/embed.h b/embed.h
-index fb93ebc1c..a5416a114 100644
+index fb93ebc1cb..a5416a1148 100644
 --- a/embed.h
 +++ b/embed.h
 @@ -1746,6 +1746,7 @@
@@ -120,7 +120,7 @@ index fb93ebc1c..a5416a114 100644
  #define ingroup(a,b)		S_ingroup(aTHX_ a,b)
  #define openn_cleanup(a,b,c,d,e,f,g,h,i,j,k,l,m)	S_openn_cleanup(aTHX_ a,b,c,d,e,f,g,h,i,j,k,l,m)
 diff --git a/proto.h b/proto.h
-index c91141b9e..66bb29b13 100644
+index c91141b9e8..66bb29b132 100644
 --- a/proto.h
 +++ b/proto.h
 @@ -4723,6 +4723,9 @@ STATIC void	S_deb_stack_n(pTHX_ SV** stack_base, I32 stack_min, I32 stack_max, I

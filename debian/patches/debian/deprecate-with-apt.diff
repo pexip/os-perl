@@ -10,7 +10,7 @@ Patch-Name: debian/deprecate-with-apt.diff
  1 file changed, 17 insertions(+), 1 deletion(-)
 
 diff --git a/lib/deprecate.pm b/lib/deprecate.pm
-index 47bc11253..01d48fa6c 100644
+index 47bc11253e..01d48fa6cc 100644
 --- a/lib/deprecate.pm
 +++ b/lib/deprecate.pm
 @@ -7,6 +7,16 @@ our $VERSION = 0.03;

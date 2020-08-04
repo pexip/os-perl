@@ -17,7 +17,7 @@ Patch-Name: debian/prune_libs.diff
  2 files changed, 2 insertions(+), 3 deletions(-)
 
 diff --git a/regen-configure/U/modified/Myinit.U b/regen-configure/U/modified/Myinit.U
-index 0e3155aec..e1d58c207 100644
+index 0e3155aecd..e1d58c2077 100644
 --- a/regen-configure/U/modified/Myinit.U
 +++ b/regen-configure/U/modified/Myinit.U
 @@ -32,8 +32,7 @@
@@ -31,7 +31,7 @@ index 0e3155aec..e1d58c207 100644
  : This is only used by the lib/ExtUtils/MakeMaker.pm routine extliblist.
  glibpth=`echo " $glibpth " | sed -e 's! /usr/shlib ! !'`
 diff --git a/regen-configure/U/perl/End.U b/regen-configure/U/perl/End.U
-index 352071422..9716623ae 100644
+index 352071422f..9716623ae0 100644
 --- a/regen-configure/U/perl/End.U
 +++ b/regen-configure/U/perl/End.U
 @@ -37,7 +37,7 @@ sunos*X4*)

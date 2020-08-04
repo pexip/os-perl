@@ -16,7 +16,7 @@ Patch-Name: debian/kfreebsd-softupdates.diff
  1 file changed, 1 insertion(+)
 
 diff --git a/t/op/stat.t b/t/op/stat.t
-index 905eb85fd..8dcb3d3fd 100644
+index 905eb85fd4..8dcb3d3fd5 100644
 --- a/t/op/stat.t
 +++ b/t/op/stat.t
 @@ -99,6 +99,7 @@ sleep 3 if $funky_FAT_timestamps;

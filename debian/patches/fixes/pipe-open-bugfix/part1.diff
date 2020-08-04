@@ -23,7 +23,7 @@ Patch-Name: fixes/pipe-open-bugfix/part1.diff
  1 file changed, 3 insertions(+), 1 deletion(-)
 
 diff --git a/util.c b/util.c
-index 842cc953e..17dfda9bc 100644
+index 842cc953e2..17dfda9bc7 100644
 --- a/util.c
 +++ b/util.c
 @@ -2441,8 +2441,10 @@ Perl_my_popen(pTHX_ const char *cmd, const char *mode)

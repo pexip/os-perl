@@ -12,7 +12,7 @@ Patch-Name: fixes/storable-probing/prereq2.diff
  2 files changed, 15 insertions(+), 4 deletions(-)
 
 diff --git a/dist/Storable/Makefile.PL b/dist/Storable/Makefile.PL
-index 4f0213277..69efc8294 100644
+index 4f02132776..69efc82944 100644
 --- a/dist/Storable/Makefile.PL
 +++ b/dist/Storable/Makefile.PL
 @@ -92,11 +92,18 @@ sub depend {
@@ -36,7 +36,7 @@ index 4f0213277..69efc8294 100644
  release : dist
  	git tag \$(VERSION)
 diff --git a/dist/Storable/stacksize b/dist/Storable/stacksize
-index 7abd3a84c..14e073973 100644
+index 7abd3a84cc..14e0739734 100644
 --- a/dist/Storable/stacksize
 +++ b/dist/Storable/stacksize
 @@ -7,6 +7,9 @@ use Cwd;

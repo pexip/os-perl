@@ -54,7 +54,7 @@ Patch-Name: fixes/storable-recursion.diff
  2 files changed, 77 insertions(+), 37 deletions(-)
 
 diff --git a/dist/Storable/Storable.xs b/dist/Storable/Storable.xs
-index 6a90e2481..f6df32b12 100644
+index 6a90e24814..f6df32b121 100644
 --- a/dist/Storable/Storable.xs
 +++ b/dist/Storable/Storable.xs
 @@ -418,6 +418,24 @@ typedef struct stcxt {
@@ -259,7 +259,7 @@ index 6a90e2481..f6df32b12 100644
          --cxt->recur_depth;
      }
 diff --git a/dist/Storable/t/recurse.t b/dist/Storable/t/recurse.t
-index fa8be0b37..63fde90fd 100644
+index fa8be0b374..63fde90fdf 100644
 --- a/dist/Storable/t/recurse.t
 +++ b/dist/Storable/t/recurse.t
 @@ -20,7 +20,7 @@ use Storable qw(freeze thaw dclone);

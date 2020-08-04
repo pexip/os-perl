@@ -53,7 +53,7 @@ Origin: backport, https://perl5.git.perl.org/perl.git/commit/25d7b7aa379d33ce2e8
  create mode 100644 ext/POSIX/t/mb.t
 
 diff --git a/MANIFEST b/MANIFEST
-index fcf3455b2..aa5e9b16b 100644
+index fcf3455b2e..aa5e9b16bd 100644
 --- a/MANIFEST
 +++ b/MANIFEST
 @@ -4233,6 +4233,7 @@ ext/POSIX/POSIX.xs		POSIX extension external subroutines
@@ -65,7 +65,7 @@ index fcf3455b2..aa5e9b16b 100644
  ext/POSIX/t/sigaction.t		See if POSIX::sigaction works
  ext/POSIX/t/sigset.t		See if POSIX::SigSet works
 diff --git a/ext/POSIX/POSIX.xs b/ext/POSIX/POSIX.xs
-index 749730584..395025a86 100644
+index 7497305841..395025a868 100644
 --- a/ext/POSIX/POSIX.xs
 +++ b/ext/POSIX/POSIX.xs
 @@ -3318,7 +3318,7 @@ mblen(s, n)
@@ -79,7 +79,7 @@ index 749730584..395025a86 100644
          RETVAL = mblen(s, n);
 diff --git a/ext/POSIX/t/mb.t b/ext/POSIX/t/mb.t
 new file mode 100644
-index 000000000..961edf6cf
+index 0000000000..961edf6cf2
 --- /dev/null
 +++ b/ext/POSIX/t/mb.t
 @@ -0,0 +1,47 @@

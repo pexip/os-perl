@@ -13,7 +13,7 @@ Patch-Name: fixes/respect_umask.diff
  2 files changed, 18 insertions(+), 18 deletions(-)
 
 diff --git a/cpan/ExtUtils-Install/lib/ExtUtils/Install.pm b/cpan/ExtUtils-Install/lib/ExtUtils/Install.pm
-index 047c00714..cd7e4f234 100644
+index 047c007145..cd7e4f234c 100644
 --- a/cpan/ExtUtils-Install/lib/ExtUtils/Install.pm
 +++ b/cpan/ExtUtils-Install/lib/ExtUtils/Install.pm
 @@ -463,7 +463,7 @@ sub _can_write_dir {
@@ -88,7 +88,7 @@ index 047c00714..cd7e4f234 100644
          if ($need_filtering) {
              run_filter($pm_filter, $from, $to);
 diff --git a/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm b/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm
-index fe53be12e..274e35c6f 100644
+index fe53be12ef..274e35c6fc 100644
 --- a/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm
 +++ b/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm
 @@ -2229,7 +2229,7 @@ doc__install : doc_site_install
