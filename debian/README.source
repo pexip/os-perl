@@ -1,26 +1,6 @@
 Building the Debian Perl package
 ================================
 
-Build Options
--------------
-
-In addition to the ``nostrip'' and ``noopt'' DEB_BUILD_OPTIONS
-required by policy (10.1) the build process also recognises the
-following perl-specific options:
-
-  x-perl-shared
-  x-perl-static
-    Select whether /usr/bin/perl is linked to the shared or static
-    perl library.  By default the link type is shared on all
-    architectures other than i386 (where the relocations incur a
-    measurable performance penalty).
-
-  x-perl-notest (or nocheck)
-    The regression test suite is normally run after each of the static
-    and shared build phases.  It is occaisionally useful to supress
-    these tests (when debugging the build process for example, or to
-    allow porters to work around known build chain or kernel bugs).
-
 Patches Applied
 ----------------
 
@@ -41,13 +21,8 @@ Packaging Details
 The Debian build process consists of the following components:
 
   debian/rules
-    makefile which drives the build process as usual with Debian
-    packages.  This process is slightly more complex than normal to
-    simplify bootstrapping a new port--using only basic shell utils, and
-    perl (once built, as perl.static).  To bootstrap a new architecture,
-    use:
-
-      DEB_HOST_GNU_TYPE=<arch> debian/rules binary-arch
+    makefile which drives the build process as usual with Debian packages. 
+    This has been converted to use debhelper starting with version 5.30.0-2.
 
   debian/config.debian 
     a helper script, invoked by debian/rules to run Configure with
@@ -59,10 +34,11 @@ The Debian build process consists of the following components:
 
   debian/patches
     directory containg the patches applied (see above).  These are maintained
-    with git-dpm, but if a standalone way to add a new patch is needed 
+    with git-debrebase, but if a standalone way to add a new patch is needed 
     (for instance when NMUing), the recommended way is to use quilt(1).
     Using DEP-3 compatible headers for the patch will improve its description
-    in `perl -V' output.
+    in `perl -V' output. See below for more information about using
+    git-debrebase.
 
       quilt new debian/myfix
       quilt add <file>
@@ -82,46 +58,67 @@ The Debian build process consists of the following components:
     pick up any required includes--keep this base list as short as
     possible.
 
-  debian/*.{files{,.static,.shared},docs}
-    used to split packages; see the comments/code in the install-stamp
-    target of debian/rules.
-
-Managing debian/patches with git-dpm 
-------------------------------------
+Managing debian/patches with git-debrebase
+------------------------------------------
 
 This section is targeted at the Debian package maintainers, working with
 the Git repository pointed by the Vcs-Git field in debian/control.  NMUers
 and the like can use the old way of standalone patch handling described
 above, or just hack the source and ignore debian/patches altogether.
 
-First, you need to be running wheezy or later, and have the 'git-dpm'
+First, you need to be running buster or later, and have the 'git-debrebase'
 package installed.
 
-Any upstream modifications need to be done on a special 'patched' branch
-that is created with 'git-dpm checkout-patched'. Every commit on this branch
-corresponds to one patch in debian/patches. The commits can be handled
-with normal git tools like 'git rebase -i'.
+Then, follow the guide at dgit-maint-debrebase(7) ("EDITING THE DELTA QUEUE")
+<https://manpages.debian.org/stretch-backports/dgit/dgit-maint-debrebase.7.en.html#EDITING_THE_DELTA_QUEUE>
 
-When everything is ready, 'git-dpm update-patches' will merge the work into
-the master branch with the debian/ directory and remove the 'patched' branch,
-which is not supposed to be pushed to the shared repository.
+tldr; git-debrebase -i to edit the patch queue
 
-See the git-dpm(1) manual page for more information.
+In addition, ensure you add the necessary metadata in the commit message:
+
+    Gbp-Pq: Topic {fixes,debian}
+    Gbp-Pq: Name my_fix_name.diff
+
+IMPORTANT: any time you have been working with debrebase (for example
+to import a new upstream release, or edit any file outside debian/)
+ensure that you run the following commands before pushing:
+
+    git debrebase conclude
+    git-debrebase make-patches # or dgit build-source
+
+If you omit the former command, you will be unable to fast-forward-push.
+If you omit the latter, then the repository will not accurately represent
+the state of the package which will be a a problem for consistency and
+historical accuracy.
+
+Note that at the moment the perl maintainers are considering the use of dgit for
+building and uploading as optional (and yet to be documented). Continue to
+build and upload using your preferred methods in the meantime.
 
 Importing new upstream releases
 -------------------------------
 
-Since we use git-dpm to manage patches, that tools is implicitly part of
-the process of importing a new upstream version. Since we started using
-components (the metaconfig tarball described below) we also need to
-take some special steps here, examples of which are described below:
+Assuming you are importing a new major upstream release and
+have the files perl_5.31.0.orig.tar.xz and
+perl_5.31.0.orig-regen-configure.tar.gz in the parent directory
+(see below for information about the regen-configure component
+tarball).
 
-git-dpm import-tar -p upstream-debian-5.28 ../perl_5.28.0.orig.tar.xz
-git log|head -1|cut -f2 -d\
-[note down the commit]
-git checkout debian-5.28
-git-dpm import-new-upstream --component ../perl_5.28.0.orig-regen-configure.tar.xz -p [commit hash from above] ../perl_5.28.0.orig.tar.xz
-git-dpm rebase-patched
+# necessary due to https://bugs.debian.org/898026
+ln -s perl_5.31.0.orig-regen-configure.tar.gz perl_5.31.0.orig-regen-configure.tar.xz
+cd perl
+git branch upstream-debian-5.31 upstream-debian-5.30
+git branch debian-5.31 debian-5.30
+gbp import-orig --upstream-version 5.31.0 --upstream-branch upstream-debian-5.31 --debian-branch debian-5.31 --component regen-configure --no-merge ../perl_5.31.0.orig.tar.xz
+pristine-tar commit ../perl_5.31.0.orig.tar.xz 5.31.0
+pristine-tar commit ../perl_5.31.0.orig-regen-configure.tar.gz 5.31.0
+git debrebase new-upstream 5.31.0
+# possibly resolve conflicts
+git diff debian/5.30.0-1..HEAD . ':!debian' # review changes
+# hack on code, add other patches, etc
+# before pushing
+git debrebase conclude
+git debrebase make-patches
 
 Package maintainer tests
 ------------------------
@@ -162,6 +159,18 @@ code documentation, not functionality.)
 
 Please see <https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=762638>
 for a discussion about this issue.
+
+Cross build support
+-------------------
+
+The build system currently support cross builds by storing architecture
+specific configuration information under the debian/cross/ directory in
+the source package. This works around for the lack of cross configuration
+support in the Configure script.
+
+These cross build support files need to be refreshed for new
+upstream versions, and whenever configuration options change. See
+debian/cross/README for more information.
 
 Regenerating the 'perl-regen-configure' original component tarball
 ------------------------------------------------------------------

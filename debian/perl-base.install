@@ -1,0 +1,104 @@
+#!/bin/sh
+
+# This is an executable script so that
+#  1) we can dynamically determine the installation path (which contains the arch triplet)
+#  2) we don't have to keep track of whether the perl-base modules are arch-all (usr/share)
+#     or arch-only (usr/lib). Wildcards in dh_install are not quite enough for this.
+
+# This is normally inherited from debian/rules
+# but just in case somebody calls us directly
+archtriplet=${archtriplet:-$(dpkg-architecture -qDEB_HOST_MULTIARCH)}
+
+echo build-static/perl usr/bin
+
+cd debian/tmp && \
+while read f; do \
+	if echo $f | grep -q "^#"; then continue; fi
+	share=$(ls -d usr/share/perl/*/$f) 2>/dev/null
+	  lib=$(ls -d usr/lib/*/perl/*/$f) 2>/dev/null
+	if [ -z "$lib$share" ]; then
+		echo "No match for $f" 1>&2
+		exit 1
+	fi
+	if [ -n "$lib" ] && [ -n "$share" ]; then
+		echo "Several matches for $f" 1>&2
+		exit 1
+	fi
+	echo "$lib$share" usr/lib/$archtriplet/perl-base/$(dirname $f)
+done <<EOF
+Config.pm
+Config_heavy.pl
+Config_git.pl
+Cwd.pm
+DynaLoader.pm
+Errno.pm
+Fcntl.pm
+File/Glob.pm
+Hash/Util.pm
+IO.pm
+IO/File.pm
+IO/Handle.pm
+IO/Pipe.pm
+IO/Seekable.pm
+IO/Select.pm
+IO/Socket/INET.pm
+IO/Socket/UNIX.pm
+IO/Socket.pm
+List/Util.pm
+POSIX.pm
+Scalar/Util.pm
+Socket.pm
+XSLoader.pm
+auto/Cwd
+auto/Fcntl
+auto/File/Glob
+IO/Socket/IP.pm
+auto/Hash/Util/Util.so
+auto/re/re.so
+auto/attributes/attributes.so
+auto/IO
+auto/List/Util
+auto/POSIX/POSIX.so
+auto/Socket
+lib.pm
+re.pm
+AutoLoader.pm
+Carp.pm
+Carp/Heavy.pm
+Exporter.pm
+Exporter/Heavy.pm
+File/Spec.pm
+File/Spec/Unix.pm
+FileHandle.pm
+Getopt/Long.pm
+IPC/Open2.pm
+IPC/Open3.pm
+SelectSaver.pm
+Symbol.pm
+Text/ParseWords.pm
+Text/Tabs.pm
+Text/Wrap.pm
+Tie/Hash.pm
+attributes.pm
+base.pm
+bytes.pm
+bytes_heavy.pl
+constant.pm
+fields.pm
+integer.pm
+locale.pm
+overload.pm
+overloading.pm
+strict.pm
+utf8.pm
+unicore/To
+unicore/lib
+vars.pm
+warnings.pm
+warnings/register.pm
+feature.pm
+File/Temp.pm
+File/Path.pm
+File/Basename.pm
+parent.pm
+EOF

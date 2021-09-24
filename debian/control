@@ -5,7 +5,7 @@ Maintainer: Niko Tyni <ntyni@debian.org>
 Uploaders: Dominic Hargreaves <dom@earth.li>
 Standards-Version: 3.9.8
 Homepage: http://dev.perl.org/perl5/
-Testsuite: autopkgtest
+Rules-Requires-Root: no
 Build-Depends: file,
  cpio,
  libdb-dev,
@@ -13,6 +13,7 @@ Build-Depends: file,
  libgdbm-compat-dev,
  netbase <!nocheck>,
  procps [!hurd-any] <!nocheck>,
+ debhelper-compat (= 13),
  zlib1g-dev | libz-dev,
  libbz2-dev,
  dpkg-dev (>= 1.17.14),
@@ -26,6 +27,7 @@ Essential: yes
 Priority: required
 Architecture: any
 Pre-Depends: ${shlibs:Depends}, dpkg (>= 1.17.17)
+Depends: ${misc:Depends}
 Conflicts: safe-rm (<< 0.8),
  update-inetd (<< 4.41),
  defoma (<< 0.11.12),
@@ -33,13 +35,13 @@ Conflicts: safe-rm (<< 0.8),
  mono-gac (<< 2.10.8.1-3),
 Breaks: perl (<< ${Upstream-Version}~),
  perl-modules (<< ${Upstream-Version}~),
- libfile-spec-perl (<< 3.7400),
+ libfile-spec-perl (<< 3.7800),
  libxsloader-perl (<< 0.30),
- libsocket-perl (<< 2.027),
+ libsocket-perl (<< 2.029),
  libio-socket-ip-perl (<< 0.39),
- libfile-temp-perl (<< 0.2304),
- libfile-path-perl (<< 2.15),
- libscalar-list-utils-perl (<< 1:1.50),
+ libfile-temp-perl (<< 0.2309),
+ libfile-path-perl (<< 2.16),
+ libscalar-list-utils-perl (<< 1:1.55),
  libsbuild-perl (<< 0.67.0-1),
  backuppc (<< 3.3.1-2),
  mailagent (<< 1:3.1-81-2),
@@ -51,19 +53,26 @@ Breaks: perl (<< ${Upstream-Version}~),
  intltool (<< 0.51.0-4),
  slic3r (<< 1.2.9+dfsg-6.1),
  slic3r-prusa (<< 1.37.0+dfsg-1.1),
+ pod2pdf (<< 0.42-5.1),
+ bucardo (<< 5.5.0-1.1),
+ latexml (<< 0.8.4-2),
+ kio-perldoc (<< 20.04.1-1),
+ libencode-arabic-perl (<< 14.2-2),
+ libmp3-tag-perl (<< 1.13-1.2),
+ libdevel-mat-dumper-perl (<< 0.42-3),
 Replaces: perl (<< 5.10.1-12), perl-modules (<< 5.20.1-3),
- libscalar-list-utils-perl (<< 1:1.50),
+ libscalar-list-utils-perl (<< 1:1.55),
  libxsloader-perl (<< 0.30),
- libsocket-perl (<< 2.027),
- libfile-temp-perl (<< 0.2304),
- libfile-path-perl (<< 2.15),
+ libsocket-perl (<< 2.029),
+ libfile-temp-perl (<< 0.2309),
+ libfile-path-perl (<< 2.16),
  libio-socket-ip-perl (<< 0.39),
 Provides: ${perlapi:Provides},
- libscalar-list-utils-perl (= 1:1.50),
+ libscalar-list-utils-perl (= 1:1.55),
  libxsloader-perl (= 0.30),
- libsocket-perl (= 2.027),
- libfile-temp-perl (= 0.2304),
- libfile-path-perl (= 2.15),
+ libsocket-perl (= 2.029),
+ libfile-temp-perl (= 0.2309),
+ libfile-path-perl (= 2.16),
  libio-socket-ip-perl (= 0.39),
 Suggests: perl, sensible-utils
 Description: minimal Perl system
@@ -71,14 +80,14 @@ Description: minimal Perl system
  .
  This package provides a Perl interpreter and the small subset of the
  standard run-time library required to perform basic tasks. For a full
- Perl installation, install "perl" (and its dependencies, "perl-modules-5.28"
+ Perl installation, install "perl" (and its dependencies, "perl-modules-5.32"
  and "perl-doc").
 
 Package: perl-doc
 Section: doc
 Priority: optional
 Architecture: all
-Depends: perl (>= ${Upstream-Version}-1)
+Depends: perl (>= ${Upstream-Version}-1), ${misc:Depends}
 Suggests: man-browser, groff-base
 Multi-Arch: foreign
 Description: Perl documentation
@@ -89,7 +98,7 @@ Package: perl-debug
 Section: devel
 Priority: optional
 Architecture: any
-Depends: perl (= ${binary:Version}), ${shlibs:Depends}
+Depends: perl (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
 Description: debug-enabled Perl interpreter
  debugperl provides a debug-enabled version of Perl which can produce
  extensive information about the interpreter as it compiles and executes
@@ -102,49 +111,49 @@ Description: debug-enabled Perl interpreter
  In addition, this package also includes debugging information for the normal
  Perl interpreter.
 
-Package: libperl5.28
+Package: libperl5.32
 Section: libs
 Priority: optional
 Architecture: any
-Depends: ${shlibs:Depends}, perl-modules-5.28 (>= ${source:Version})
-Breaks: libdigest-md5-perl (<< 2.55),
+Depends: ${shlibs:Depends}, perl-modules-5.32 (>= ${source:Version}), ${misc:Depends}
+Breaks: libdigest-md5-perl (<< 2.55.01),
  libmime-base64-perl (<< 3.15),
- libtime-hires-perl (<< 1.9759),
- libstorable-perl (<< 3.08),
- libdigest-sha-perl (<< 6.01),
- libsys-syslog-perl (<< 0.35),
- libcompress-zlib-perl (<< 2.074),
- libcompress-raw-zlib-perl (<< 2.076),
- libcompress-raw-bzip2-perl (<< 2.074),
- libio-compress-zlib-perl (<< 2.074),
- libio-compress-bzip2-perl (<< 2.074),
- libio-compress-base-perl (<< 2.074),
- libio-compress-perl (<< 2.074),
- libthreads-perl (<< 2.22),
- libthreads-shared-perl (<< 1.58),
- libtime-piece-perl (<< 1.3204),
- libencode-perl (<< 2.97),
- libfilter-perl (<< 1.58),
+ libtime-hires-perl (<< 1.9764),
+ libstorable-perl (<< 3.21),
+ libdigest-sha-perl (<< 6.02),
+ libsys-syslog-perl (<< 0.36),
+ libcompress-zlib-perl (<< 2.093),
+ libcompress-raw-zlib-perl (<< 2.093),
+ libcompress-raw-bzip2-perl (<< 2.093),
+ libio-compress-zlib-perl (<< 2.093),
+ libio-compress-bzip2-perl (<< 2.093),
+ libio-compress-base-perl (<< 2.093),
+ libio-compress-perl (<< 2.093),
+ libthreads-perl (<< 2.25),
+ libthreads-shared-perl (<< 1.61),
+ libtime-piece-perl (<< 1.3401),
+ libencode-perl (<< 3.06),
+ libfilter-perl (<< 1.59),
 Replaces: perl-base (<< 5.22.0~), perl (<< 5.22.0~),
  libarchive-tar-perl (<= 1.38-2),
- libdigest-md5-perl (<< 2.55),
+ libdigest-md5-perl (<< 2.55.01),
  libmime-base64-perl (<< 3.15),
- libtime-hires-perl (<< 1.9759),
- libstorable-perl (<< 3.08),
- libdigest-sha-perl (<< 6.01),
- libtime-piece-perl (<< 1.3204),
- libsys-syslog-perl (<< 0.35),
- libcompress-zlib-perl (<< 2.074),
- libcompress-raw-zlib-perl (<< 2.076),
- libcompress-raw-bzip2-perl (<< 2.074),
- libio-compress-zlib-perl (<< 2.074),
- libio-compress-bzip2-perl (<< 2.074),
- libio-compress-base-perl (<< 2.074),
- libio-compress-perl (<< 2.074),
- libthreads-perl (<< 2.22),
- libthreads-shared-perl (<< 1.58),
+ libtime-hires-perl (<< 1.9764),
+ libstorable-perl (<< 3.21),
+ libdigest-sha-perl (<< 6.02),
+ libtime-piece-perl (<< 1.3401),
+ libsys-syslog-perl (<< 0.36),
+ libcompress-zlib-perl (<< 2.093),
+ libcompress-raw-zlib-perl (<< 2.093),
+ libcompress-raw-bzip2-perl (<< 2.093),
+ libio-compress-zlib-perl (<< 2.093),
+ libio-compress-bzip2-perl (<< 2.093),
+ libio-compress-base-perl (<< 2.093),
+ libio-compress-perl (<< 2.093),
+ libthreads-perl (<< 2.25),
+ libthreads-shared-perl (<< 1.61),
  libmodule-corelist-perl (<< 2.14-2),
- libencode-perl (<< 2.97),
+ libencode-perl (<< 3.06),
 Suggests: sensible-utils
 Multi-Arch: same
 Description: shared Perl library
@@ -152,120 +161,119 @@ Description: shared Perl library
  which embed a Perl interpreter.
  .
  It also contains the architecture-dependent parts of the standard
- library (and depends on perl-modules-5.28 which contains the
+ library (and depends on perl-modules-5.32 which contains the
  architecture-independent parts).
 
 Package: libperl-dev
 Section: libdevel
 Priority: optional
 Architecture: any
-Depends: perl:any (= ${binary:Version}), libperl5.28 (= ${binary:Version}),
- libc6-dev | libc-dev
+Provides: perl-xs-dev
+Multi-Arch: same
+Depends: perl:any (= ${binary:Version}), libperl5.32 (= ${binary:Version}),
+ ${misc:Depends}, libc6-dev | libc-dev
 Description: Perl library: development files
  Files for developing applications which embed a Perl interpreter.
 
-Package: perl-modules-5.28
+Package: perl-modules-5.32
+Section: libs
 Priority: standard
 Architecture: all
 Multi-Arch: foreign
-Depends: perl-base (>= ${Upstream-Version}-1)
+Depends: perl-base (>= ${Upstream-Version}-1), ${misc:Depends}
 Pre-Depends: dpkg (>= 1.17.17)
 Recommends: perl (>= ${Upstream-Version}-1),
 Conflicts: perl-modules (<< 5.22.0~),
 Breaks: perl (<< ${Upstream-Version}~),
- libpod-parser-perl (<< 1.63),
- libansicolor-perl (<< 4.06),
+ libansicolor-perl (<< 5.01),
  libnet-perl (<< 1:3.11),
  libattribute-handlers-perl (<< 1.01),
- libi18n-langtags-perl (<< 0.43),
+ libi18n-langtags-perl (<< 0.44),
  liblocale-maketext-perl (<< 1.29),
- libmath-bigint-perl (<< 1.999811),
- libnet-ping-perl (<< 2.62),
+ libmath-bigint-perl (<< 1.999818),
+ libnet-ping-perl (<< 2.72),
  libtest-harness-perl (<< 3.42),
- libtest-simple-perl (<< 1.302133),
- liblocale-codes-perl (<< 3.56),
- libmodule-corelist-perl (<< 5.20181129.28),
+ libtest-simple-perl (<< 1.302175),
+ libmodule-corelist-perl (<< 5.20210123),
  libio-zlib-perl (<< 1.10),
- libarchive-tar-perl (<< 2.30),
- libextutils-cbuilder-perl (<< 0.280230),
- libmodule-load-perl (<< 0.32),
+ libarchive-tar-perl (<< 2.36),
+ libextutils-cbuilder-perl (<< 0.280234),
+ libmodule-load-perl (<< 0.34),
  liblocale-maketext-simple-perl (<< 0.21.01),
  libparams-check-perl (<< 0.38),
- libmodule-load-conditional-perl (<< 0.68),
- libversion-perl (<< 1:0.9923),
- libpod-simple-perl (<< 3.35),
- libextutils-parsexs-perl (<< 3.390000),
+ libmodule-load-conditional-perl (<< 0.70),
+ libversion-perl (<< 1:0.9924),
+ libpod-simple-perl (<< 3.40),
+ libextutils-parsexs-perl (<< 3.400000),
  libpod-escapes-perl (<< 1.07),
  libparse-cpan-meta-perl (<< 2.150010),
- libparent-perl (<< 0.236),
- libautodie-perl (<< 2.29-2),
- libthread-queue-perl (<< 3.12),
- libfile-spec-perl (<< 3.7400),
- libtime-local-perl (<< 1.2500),
- podlators-perl (<< 4.10),
- libunicode-collate-perl (<< 1.25),
+ libparent-perl (<< 0.238),
+ libautodie-perl (<< 2.32),
+ libthread-queue-perl (<< 3.14),
+ libfile-spec-perl (<< 3.7800),
+ libtime-local-perl (<< 1.2800),
+ podlators-perl (<< 4.14),
+ libunicode-collate-perl (<< 1.27),
  libcpan-meta-perl (<< 2.150010),
  libmath-complex-perl (<< 1.5901),
- libextutils-command-perl (<< 7.34),
- libmodule-metadata-perl (<< 1.000033),
- libjson-pp-perl (<< 2.97001),
+ libextutils-command-perl (<< 7.44),
+ libmodule-metadata-perl (<< 1.000037),
+ libjson-pp-perl (<< 4.04000),
  libperl-ostype-perl (<< 1.010),
  libcpan-meta-yaml-perl (<< 0.018),
  libdigest-perl (<< 1.17.01),
  libextutils-install-perl (<< 2.14),
- libhttp-tiny-perl (<< 0.070),
+ libhttp-tiny-perl (<< 0.076),
  libcpan-meta-requirements-perl (<< 2.140),
- libexperimental-perl (<< 0.019),
- libtest-use-ok-perl (<< 1.302133),
- libtest-tester-perl (<< 1.302133),
- libb-debug-perl (<< 1.26),
+ libexperimental-perl (<< 0.020),
+ libtest-use-ok-perl (<< 1.302175),
+ libtest-tester-perl (<< 1.302175),
  maildirsync (<< 1.2-2.1),
 Replaces: perl-modules,
  perl-base (<< 5.22.0~),
- libpod-parser-perl (<< 1.63),
- libansicolor-perl (<< 4.06),
+ libansicolor-perl (<< 5.01),
  libnet-perl (<< 1:3.11),
  libattribute-handlers-perl (<< 1.01),
- libi18n-langtags-perl (<< 0.43),
+ libi18n-langtags-perl (<< 0.44),
  liblocale-maketext-perl (<< 1.29),
- libmath-bigint-perl (<< 1.999811),
- libnet-ping-perl (<< 2.62),
+ libmath-bigint-perl (<< 1.999818),
+ libnet-ping-perl (<< 2.72),
  libtest-harness-perl (<< 3.42),
- libtest-simple-perl (<< 1.302133),
- libmodule-corelist-perl (<< 5.20181129.28),
+ libtest-simple-perl (<< 1.302175),
+ libmodule-corelist-perl (<< 5.20210123),
  libio-zlib-perl (<< 1.10),
- libarchive-tar-perl (<< 2.30),
- libextutils-cbuilder-perl (<< 0.280230),
- libmodule-load-perl (<< 0.32),
+ libarchive-tar-perl (<< 2.36),
+ libextutils-cbuilder-perl (<< 0.280234),
+ libmodule-load-perl (<< 0.34),
  liblocale-maketext-simple-perl (<< 0.21.01),
  libparams-check-perl (<< 0.38),
- libmodule-load-conditional-perl (<< 0.68),
- libversion-perl (<< 1:0.9923),
- libpod-simple-perl (<< 3.35),
- libextutils-parsexs-perl (<< 3.390000),
+ libmodule-load-conditional-perl (<< 0.70),
+ libversion-perl (<< 1:0.9924),
+ libpod-simple-perl (<< 3.40),
+ libextutils-parsexs-perl (<< 3.400000),
  libpod-escapes-perl (<< 1.07),
  libparse-cpan-meta-perl (<< 2.150010),
- libparent-perl (<< 0.236),
- libautodie-perl (<< 2.29-2),
- libthread-queue-perl (<< 3.12),
- libfile-spec-perl (<< 3.7400),
- libtime-local-perl (<< 1.2500),
- podlators-perl (<< 4.10),
- libunicode-collate-perl (<< 1.25),
+ libparent-perl (<< 0.238),
+ libautodie-perl (<< 2.32),
+ libthread-queue-perl (<< 3.14),
+ libfile-spec-perl (<< 3.7800),
+ libtime-local-perl (<< 1.2800),
+ podlators-perl (<< 4.14),
+ libunicode-collate-perl (<< 1.27),
  libcpan-meta-perl (<< 2.150010),
  libmath-complex-perl (<< 1.5901),
- libextutils-command-perl (<< 7.34),
- libmodule-metadata-perl (<< 1.000033),
- libjson-pp-perl (<< 2.97001),
+ libextutils-command-perl (<< 7.44),
+ libmodule-metadata-perl (<< 1.000037),
+ libjson-pp-perl (<< 4.04000),
  libperl-ostype-perl (<< 1.010),
  libcpan-meta-yaml-perl (<< 0.018),
  libdigest-perl (<< 1.17.01),
  libextutils-install-perl (<< 2.14),
- libhttp-tiny-perl (<< 0.070),
+ libhttp-tiny-perl (<< 0.076),
  libcpan-meta-requirements-perl (<< 2.140),
- libexperimental-perl (<< 0.019),
- libtest-use-ok-perl (<< 1.302133),
- libtest-tester-perl (<< 1.302133),
+ libexperimental-perl (<< 0.020),
+ libtest-use-ok-perl (<< 1.302175),
+ libtest-tester-perl (<< 1.302175),
 Provides: perl-modules
 Description: Core Perl modules
  Architecture independent Perl modules.  These modules are part of Perl and
@@ -273,88 +281,91 @@ Description: Core Perl modules
  .
  Note that this package only exists to save archive space and should be
  considered an internal implementation detail of the `perl' package.
- Other packages should not depend on `perl-modules-5.28' directly, they
- should use `perl' (which depends on `perl-modules-5.28') instead.
+ Other packages should not depend on `perl-modules-5.32' directly, they
+ should use `perl' (which depends on `perl-modules-5.32') instead.
 
 Package: perl
 Priority: standard
 Architecture: any
 Multi-Arch: allowed
 Pre-Depends: dpkg (>= 1.17.17)
-Depends: perl-base (= ${binary:Version}), perl-modules-5.28 (>= ${source:Version}), libperl5.28 (= ${binary:Version}), ${shlibs:Depends}
+Depends: perl-base (= ${binary:Version}), perl-modules-5.32 (>= ${source:Version}), libperl5.32 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
 Conflicts: libjson-pp-perl (<< 2.27200-2)
 Breaks: perl-doc (<< ${Upstream-Version}-1),
  libperl-dev (<< 5.24.0~),
+ perl-modules-5.22,
+ perl-modules-5.24,
+ perl-modules-5.26 (<< 5.26.2-5),
  apt-show-versions (<< 0.22.10),
  libmarc-charset-perl (<< 1.35-3),
  libdist-inkt-perl (<< 0.024-5)
-Replaces: perl-modules (<< 5.22.0~)
-Provides: perl-cross-config,
- libdigest-md5-perl (= 2.55),
+Replaces: perl-modules (<< 5.22.0~), perl-base (<< 5.32.0-2)
+Provides: libdigest-md5-perl (= 2.55.01),
  libmime-base64-perl (= 3.15),
- libtime-hires-perl (= 1.9759),
- libstorable-perl (= 3.08),
- libdigest-sha-perl (= 6.01),
- libsys-syslog-perl (= 0.35),
- libcompress-zlib-perl (= 2.074),
- libcompress-raw-zlib-perl (= 2.076),
- libcompress-raw-bzip2-perl (= 2.074),
- libio-compress-zlib-perl (= 2.074),
- libio-compress-bzip2-perl (= 2.074),
- libio-compress-base-perl (= 2.074),
- libio-compress-perl (= 2.074),
- libthreads-perl (= 2.22),
- libthreads-shared-perl (= 1.58),
- libtime-piece-perl (= 1.3204),
- libencode-perl (= 2.97),
- libpod-parser-perl (= 1.63),
- libansicolor-perl (= 4.06),
+ libtime-hires-perl (= 1.9764),
+ libstorable-perl (= 3.21),
+ libdigest-sha-perl (= 6.02),
+ libsys-syslog-perl (= 0.36),
+ libcompress-zlib-perl (= 2.093),
+ libcompress-raw-zlib-perl (= 2.093),
+ libcompress-raw-bzip2-perl (= 2.093),
+ libio-compress-zlib-perl (= 2.093),
+ libio-compress-bzip2-perl (= 2.093),
+ libio-compress-base-perl (= 2.093),
+ libio-compress-perl (= 2.093),
+ libthreads-perl (= 2.25),
+ libthreads-shared-perl (= 1.61),
+ libtime-piece-perl (= 1.3401),
+ libencode-perl (= 3.06),
+ libansicolor-perl (= 5.01),
  libnet-perl (= 1:3.11),
  libattribute-handlers-perl (= 1.01),
- libi18n-langtags-perl (= 0.43),
+ libi18n-langtags-perl (= 0.44),
  liblocale-maketext-perl (= 1.29),
- libmath-bigint-perl (= 1.999811),
- libnet-ping-perl (= 2.62),
+ libmath-bigint-perl (= 1.999818),
+ libnet-ping-perl (= 2.72),
  libtest-harness-perl (= 3.42),
- libtest-simple-perl (= 1.302133),
- libmodule-corelist-perl (= 5.20181129.28),
+ libtest-simple-perl (= 1.302175),
+ libmodule-corelist-perl (= 5.20210123),
  libio-zlib-perl (= 1.10),
- libarchive-tar-perl (= 2.30),
- libextutils-cbuilder-perl (= 0.280230),
- libmodule-load-perl (= 0.32),
+ libarchive-tar-perl (= 2.36),
+ libextutils-cbuilder-perl (= 0.280234),
+ libmodule-load-perl (= 0.34),
  liblocale-maketext-simple-perl (= 0.21.01),
  libparams-check-perl (= 0.38),
- libmodule-load-conditional-perl (= 0.68),
- libversion-perl (= 1:0.9923),
- libpod-simple-perl (= 3.35),
- libextutils-parsexs-perl (= 3.390000),
+ libmodule-load-conditional-perl (= 0.70),
+ libversion-perl (= 1:0.9924),
+ libpod-simple-perl (= 3.40),
+ libextutils-parsexs-perl (= 3.400000),
  libpod-escapes-perl (= 1.07),
  libparse-cpan-meta-perl (= 2.150010),
- libparent-perl (= 0.236),
- libautodie-perl (= 2.29-2),
- libthread-queue-perl (= 3.12),
- libfile-spec-perl (= 3.7400),
- libtime-local-perl (= 1.2500),
- podlators-perl (= 4.10),
- libunicode-collate-perl (= 1.25),
+ libparent-perl (= 0.238),
+ libautodie-perl (= 2.32),
+ libthread-queue-perl (= 3.14),
+ libfile-spec-perl (= 3.7800),
+ libtime-local-perl (= 1.2800),
+ podlators-perl (= 4.14),
+ libunicode-collate-perl (= 1.27),
  libcpan-meta-perl (= 2.150010),
  libmath-complex-perl (= 1.5901),
- libextutils-command-perl (= 7.34),
- libmodule-metadata-perl (= 1.000033),
- libjson-pp-perl (= 2.97001),
+ libextutils-command-perl (= 7.44),
+ libmodule-metadata-perl (= 1.000037),
+ libjson-pp-perl (= 4.04000),
  libperl-ostype-perl (= 1.010),
  libversion-requirements-perl,
  libcpan-meta-yaml-perl (= 0.018),
  libdigest-perl (= 1.17.01),
  libextutils-install-perl (= 2.14),
- libhttp-tiny-perl (= 0.070),
+ libhttp-tiny-perl (= 0.076),
  libcpan-meta-requirements-perl (= 2.140),
- libexperimental-perl (= 0.019),
- libtest-use-ok-perl (= 1.302133),
- libtest-tester-perl (= 1.302133),
+ libexperimental-perl (= 0.020),
+ libtest-use-ok-perl (= 1.302175),
+ libtest-tester-perl (= 1.302175),
 Recommends: netbase
-Suggests: perl-doc, libterm-readline-gnu-perl | libterm-readline-perl-perl,
- make, libb-debug-perl, liblocale-codes-perl
+Suggests: perl-doc,
+ libterm-readline-gnu-perl | libterm-readline-perl-perl,
+ make,
+ libtap-harness-archive-perl
 Description: Larry Wall's Practical Extraction and Report Language
  Perl is a highly capable, feature-rich programming language with over
  20 years of development. Perl 5 runs on over 100 platforms from

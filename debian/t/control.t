@@ -30,8 +30,18 @@ require './lib/deprecate.pm';
 	%deprecated = reverse %deprecate::DEBIAN_PACKAGES;
 }
 
+# list packages that have acquired more digits in Debian than upstream uses
+# this happens because CPAN and Debian versioning systems differ
+my %known_digits = (
+    "libfile-spec-perl"  => 4,
+    "libtime-local-perl" => 4,
+    "libtime-piece-perl" => 4,
+    "libjson-pp-perl"    => 5,
+    "libextutils-parsexs-perl" => 6,
+);
+
 # list special cases of version numbers that are OK here
-# version numbering discontinuities (epochs, added digits) cause these
+# version numbering discontinuities and backported fixes cause these
 my %ok = (
        "libencode-perl" => {
                # bug #836138
@@ -46,29 +56,16 @@ my %ok = (
        "libmodule-corelist-perl" => {
                "3.10" => "3.10",
        },
-       "libfile-spec-perl" => {
-               "3.48_01" => "3.4801",
-               "3.56"    => "3.5600",
-               "3.56_01" => "3.5601",
-               "3.63"    => "3.6300",
-               "3.63_01" => "3.6301",
-               "3.67"    => "3.6700",
-               "3.74"    => "3.7400",
-       },
        # bug #808629
        "libautodie-perl" => {
                 "2.26"   => "2.29",
        },
-       "libtime-local-perl" => {
-                "1.25"   => "1.2500",
-       },
-       "libextutils-parsexs-perl" => {
-                "3.39"   => "3.390000",
-       },
 );
 
-# epochs we used to have in the archive
-my %old_epochs = (
+# epochs in the archive (including past ones)
+my %known_epochs = (
+	"libversion-perl" => "1",
+	"libscalar-list-utils-perl" => "1",
 	"libnet-perl" => "1",
 );
 
@@ -76,7 +73,7 @@ my %old_epochs = (
 # Replaces+Provides
 my %triplet_check_skip = (
 	"perl-base" => [ "libfile-spec-perl" ],
-	"libperl5.28" => [ "libfilter-perl" ],
+	"libperl5.32" => [ "libfilter-perl" ],
 );
 
 # list special cases where the name of the Debian package does not
@@ -148,7 +145,7 @@ my %is_perl_binary;
 
 my %deps_found;
 my $breaks_total = 0;
-my $tests_per_breaks = 5;
+my $tests_per_breaks = 6;
 
 for my $perl_package_info ($control->get_packages) {
 	my $perl_package_name = $perl_package_info->{Package};
@@ -185,15 +182,15 @@ for my $perl_package_name (keys %deps_found) {
 	#  check the version against Module::CoreList
 	#  check for appropriate Replaces and Provides entries 
 	#
-	# the number of digits is a pain
-	#  we use the current version in the Debian archive to determine
-	#  how many we need
 	for my $broken (keys %{$dep_found->{$breaksname}}) {
 		my $module = deb2cpan($broken);
-		my ($archive_epoch, $archive_digits) = get_archive_info($broken);
+		my ($epoch, $digits) = (0, 0);
 
-		$archive_epoch = $old_epochs{$broken}
-			if exists $old_epochs{$broken};
+		$epoch = $known_epochs{$broken}
+			if exists $known_epochs{$broken};
+
+		$digits = $known_digits{$broken}
+			if exists $known_digits{$broken};
 
 		SKIP: {
 			my $broken_version = $dep_found->{$breaksname}{$broken}{version};
@@ -207,9 +204,9 @@ for my $perl_package_name (keys %deps_found) {
 				if !exists $corelist->{$module};
 
 			my $corelist_version =
-				cpan_version_to_deb($corelist->{$module}, $broken, $archive_digits);
-			$corelist_version = $archive_epoch . ":". $corelist_version
-				if $archive_epoch;
+				cpan_version_to_deb($corelist->{$module}, $broken, $digits);
+			$corelist_version = $epoch . ":". $corelist_version
+				if $epoch;
 
 			is($broken_version, $corelist_version,
 				"Breaks for $broken in $perl_package_name matches Module::CoreList for $module");
@@ -220,7 +217,37 @@ for my $perl_package_name (keys %deps_found) {
 				diag("s/$broken (<< $broken_version)/$broken (<< $corelist_version)/");
 			}
 
-			skip("not checking Replaces and Provides for $broken in $perl_package_name", $tests_per_breaks - 1)
+			# check if separate packages in the archive have introduced epochs
+			# or extra digits that we don't know of
+			#
+			# if they have, it's still fine if our version of the module with
+			# those digits and epoch is earlier than the one in the archive
+			#
+			# otherwise we have a newer version than the separate package in the
+			# archive and need to update our versions in Breaks etc.
+
+			my ($current_epoch_in_breaks, $current_digits_in_breaks) =
+			   parse_epoch_and_digits_from_version($broken, $broken_version);
+
+			my $current_version_in_archive = get_archive_upstream_version($broken);
+			my ($current_epoch_in_archive, $current_digits_in_archive) =
+			   parse_epoch_and_digits_from_version($broken, $current_version_in_archive);
+
+			if ($current_epoch_in_archive  eq $current_epoch_in_breaks and
+			   ($current_digits_in_archive eq $current_digits_in_breaks or
+			    $current_digits_in_archive == 0)) { # probably just a virtual package
+
+				ok (1, "no digit or epoch changes found in the archive for $broken");
+			} else {
+				my $mangled_corelist_version =
+					cpan_version_to_deb($corelist->{$module}, $broken, $current_digits_in_archive);
+				$mangled_corelist_version = $current_epoch_in_archive. ":". $mangled_corelist_version
+					if $current_epoch_in_archive > 0;
+				ok ($versioning->compare($mangled_corelist_version, $current_version_in_archive) < 0,
+					"new digits or epoch in the archive found for $broken ($broken_version vs $current_version_in_archive) but no updates needed yet")
+			}
+
+			skip("not checking Replaces and Provides for $broken in $perl_package_name", $tests_per_breaks - 2)
 				if $triplet_check_skip{$perl_package_name} &&
 					grep { $_ eq $broken } @{$triplet_check_skip{$perl_package_name}};
 
@@ -325,15 +352,36 @@ sub cpan_version_to_deb {
 	$major.$prefix.$suffix;
 }
 
-sub get_archive_info {
+sub get_archive_upstream_version {
 	my $p = shift;
-	return (0, 0) if !exists $apt->{$p};
-	return (0, 0) if !exists $apt->{$p}{VersionList}; # virtual package
+	return if !exists $apt->{$p};
+	return if !exists $apt->{$p}{VersionList}; # virtual package
 	my $latest = (sort byversion @{$apt->{$p}{VersionList}})[-1];
 	my $v = $latest->{VerStr};
 	$v =~ s/\+dfsg//;
+	$v =~ s/-[^-]+$//;
+	return $v;
+}
+
+sub parse_epoch_and_digits_from_version {
+	my $p = shift;
+	my $v = shift;
+	if (!defined $v) {
+		my $digits = 0;
+		my $epoch = 0;
+		$digits = $known_digits{$p} if exists $known_digits{$p};
+		$epoch  = $known_epochs{$p} if exists $known_epochs{$p};
+		return ($epoch, $digits);
+	}
 	my ($epoch, $major, $prefix, $suffix, $revision) =
-		($v =~ /^(?:(\d+):)?((?:\d+\.))+(\d+)(?:_(\d+))?(-[^-]+)$/);
+		($v =~ /^
+			(?:(\d+):)?      # epoch
+			((?:\d+\.))+?    # upstream major version x.y.z (ends in .)
+			(\d+)            # last part of upstream version
+			(?:[._](\d+))?   # possible _xy or .xy suffix for dev versions and the like
+			(-[^-]+)?        # Debian revision
+		$/x);
+	$epoch = 0 if !defined $epoch;
 	return ($epoch, length $prefix);
 }
 

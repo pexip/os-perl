@@ -1,0 +1,60 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+use Getopt::Long qw(:config bundling nopermute passthrough);
+my $opt_l = 0;
+my $opt_w = 0;
+my $opt_F = 0;
+GetOptions (
+    "w|word!"	=> \$opt_w,
+    "l|list!"	=> \$opt_l,
+    "F|fixed!"	=> \$opt_F,
+    ) or die "usage: metagrep [-w] [-l] [-F] pattern\n";
+
+use Cwd qw(getcwd abs_path);
+use File::Find;
+use FindBin;
+
+my $pat = shift or die "usage: metagrep pattern\n";
+$opt_F and $pat = quotemeta $pat;
+$opt_w and $pat = "\\b$pat\\b";
+$pat = qr/$pat/i;
+
+my $cwd    = getcwd;
+my $mcpath = abs_path "$FindBin::Bin/../";
+my $onmeta = $cwd =~ m{CPAN/meta[^/]+$} ? 1 : 0;
+
+my @dir = ($mcpath, $onmeta ? "dist/U" : "$mcpath/dist/U");
+my %dir; # I don't want a file for which any path component symlinks
+find (sub {
+    -l and return;
+    -d and $dir{$File::Find::name}++;
+    }, @dir);
+
+print STDERR "<$pat>\n";
+my %seen;
+find (sub {
+    -l and return;
+    -f or  return;
+    m/\.U$/ or return;
+
+    exists $dir{$File::Find::dir} or return;
+    #print STDERR "$File::Find::dir - $_\n";
+
+    $seen{$File::Find::name}++ and return;
+
+    $File::Find::dir =~ m{^(?:$cwd/)?dist-3} and return;
+
+    open my $f, "<$_" or die "$File::Find::name: $!\n";
+    my $fnm = $File::Find::name;
+    $fnm =~ s{^$cwd/}{};
+    for (grep /$pat/, <$f>) {
+	if ($opt_l) {
+	    print "$fnm\n";
+	    return;
+	    }
+	print "$fnm:$_";
+	}
+    }, @dir);

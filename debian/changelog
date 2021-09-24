@@ -1,15 +1,309 @@
-perl (5.28.1-6+deb10u1) buster; urgency=medium
+perl (5.32.1-4+deb11u2) bullseye; urgency=medium
 
-  * Multiple regexp security fixes (Closes: #962005)
-     + [SECURITY] CVE-2020-10543: Buffer overflow caused by a crafted
-       regular expression
-     + [SECURITY] CVE-2020-10878: Integer overflow via malformed bytecode
-       produced by a crafted regular expression
-     + [SECURITY] CVE-2020-12723: Buffer overflow caused by a crafted
-       regular expression
+  * Apply upstream patch fixing a regexp memory leak. (Closes: #994834)
+
+ -- Niko Tyni <ntyni@debian.org>  Fri, 24 Sep 2021 19:10:58 +0300
+
+perl (5.32.1-4+deb11u1) bullseye-security; urgency=high
+
+  * [SECURITY] CVE-2021-36770: Encode loading code from working directory
+
+ -- Niko Tyni <ntyni@debian.org>  Thu, 05 Aug 2021 22:26:55 +0300
+
+perl (5.32.1-4) unstable; urgency=medium
+
+  * Add perl Breaks: perl-modules-5.22 and early versions of
+    perl-modules-5.26. They had the same issue as perl-modules-5.24,
+    which perl already Breaks since 5.32.0-6. (Closes: #976704)
+
+ -- Niko Tyni <ntyni@debian.org>  Thu, 29 Apr 2021 21:37:46 +0300
+
+perl (5.32.1-3) unstable; urgency=medium
+
+  * Refresh cross build support files for 5.32.1. (Closes: #983099)
+    + Update source documentation (README.Source, debian/cross/README)
+      with cross build support information.
+
+ -- Niko Tyni <ntyni@debian.org>  Thu, 25 Feb 2021 16:52:03 +0200
+
+perl (5.32.1-2) unstable; urgency=medium
+
+  * Update relations with libmodule-corelist-perl to fix autopkgtest
+    failures (Closes: #981409)
+  * Add Breaks on earlier versions of libdevel-mat-dumper-perl built
+    against earlier versions of perl (Closes: #981493)
+  * Add 5.32.1 to debian/released-versions
+  * Upload to unstable
+
+ -- Dominic Hargreaves <dom@earth.li>  Mon, 01 Feb 2021 22:44:54 +0000
+
+perl (5.32.1-1) experimental; urgency=medium
+
+  * Remove duplicate/obsolete entries for various tutorial documentation
+    in d/copyright (this was erroneously missed from the previous
+    release)
+  * Update to new upstream version 5.32.1.
+
+ -- Dominic Hargreaves <dom@earth.li>  Sun, 24 Jan 2021 10:49:43 +0000
+
+perl (5.32.1~rc1-1) experimental; urgency=medium
+
+  * Update to new upstream version 5.32.1~rc1.
+  * Remove duplicate/obsolete entries for various tutorial documentation
+    in d/copyright
+
+ -- Dominic Hargreaves <dom@earth.li>  Mon, 18 Jan 2021 00:21:24 +0000
+
+perl (5.32.0-6) unstable; urgency=medium
+
+  [ Dominic Hargreaves ]
+  * Update lintian overrides with various severity info and pedantic
+    tags
+
+  [ Niko Tyni ]
+  * Add patch from Chris Lamb removing traces of the build directory from
+    the binary packages. (Closes: #972559)
+  * Refresh cross build support files.
+  * Make perl Break the old perl-modules-5.24 package. (Closes: #976666)
+  * Add a missing test dependency on dpkg-dev.
+
+ -- Niko Tyni <ntyni@debian.org>  Sun, 13 Dec 2020 20:58:36 +0200
+
+perl (5.32.0-5) unstable; urgency=medium
+
+  [ Dominic Hargreaves ]
+  * Add Breaks on versions of pod2pdf, bucardo, latexml, kio-perldoc
+    which didn't depend on libpod-parser-perl (Closes: #974029)
+  * Add Breaks on libencode-arabic-perl which had an autopkgtest
+    regression with perl 5.32 (Closes: #974170)
+
+  [ Niko Tyni ]
+  * Update debian/copyright for 5.32.0 proper
+  * Add test dependency on libdpkg-perl
+  * Add Breaks on older versions of libmp3-tag-perl (see #947756)
+
+ -- Dominic Hargreaves <dom@earth.li>  Sat, 14 Nov 2020 11:19:57 +0000
+
+perl (5.32.0-4) unstable; urgency=medium
+
+  * Upload to unstable
+
+ -- Dominic Hargreaves <dom@earth.li>  Sun, 08 Nov 2020 16:57:57 +0000
+
+perl (5.32.0-3) experimental; urgency=medium
+
+  * Replace the earlier IO-Socket-IP IPv6 fix with one which fixes FTBFS
+    in other packages as well, authored by Niko Tyni (Closes: #968913)
+
+ -- Dominic Hargreaves <dom@earth.li>  Tue, 08 Sep 2020 23:55:26 +0100
+
+perl (5.32.0-2) experimental; urgency=medium
+
+  * Drop Provides/Breaks/Replaces on libpod-parser-perl, removed upstream.
+  * Refresh cross support files.
+
+ -- Niko Tyni <ntyni@debian.org>  Tue, 23 Jun 2020 20:05:06 +0300
+
+perl (5.32.0-1) experimental; urgency=medium
+
+  * Update to new upstream version 5.32.0.
+
+ -- Dominic Hargreaves <dom@earth.li>  Sat, 20 Jun 2020 19:46:36 +0100
+
+perl (5.32.0~rc1-2) experimental; urgency=medium
+
+  * Apply patch from John Paul Adrian Glaubitz fixing FTBFS on m68k
+    (Closes: #963108)
+  * Apply patch from Samuel Thibault fixing FTBFS on hurd
+    (Closes: #963214)
+
+ -- Dominic Hargreaves <dom@earth.li>  Sat, 20 Jun 2020 18:14:38 +0100
+
+perl (5.32.0~rc1-1) experimental; urgency=medium
+
+  * Update to new upstream release candidate.
+
+ -- Niko Tyni <ntyni@debian.org>  Sun, 14 Jun 2020 08:18:55 +0300
+
+perl (5.30.3-4) unstable; urgency=medium
+
+  * Restore earlier behaviour where the shared version of Config.pm
+    had precedence on @INC. This makes perl -V:useshrplib lie again,
+    so that it can be used to check whether a shared libperl is
+    available. Thanks to the PostgreSQL project for early testing.
+    (See #798626)
+  * Refresh cross support files and add support for ia64.
+
+ -- Niko Tyni <ntyni@debian.org>  Sun, 07 Jun 2020 10:56:32 +0300
+
+perl (5.30.3-3) unstable; urgency=medium
+
+  * Move the perl-base specific library path between vendor and core so
+    that the separate libscalar-list-utils-perl package can override the
+    version in perl-base. (See #962138)
+  * Suppress an ExtUtils::MakeMaker warning about our new @INC arrangement.
+
+ -- Niko Tyni <ntyni@debian.org>  Sat, 06 Jun 2020 13:33:31 +0300
+
+perl (5.30.3-2) unstable; urgency=medium
+
+  [ Niko Tyni ]
+  * Fix version parsing logic in a maintainer test.
+  * Move perl-base specific library up on @INC. This eliminates the
+    chance of incompatible libperl5.xx modules overriding the perl-base
+    ones during upgrades and the like. (Closes: #962138)
+
+  [ Dominic Hargreaves ]
+  * Remove lingering references to old deprecated modules (Closes: #961928)
   * Fix FTBFS with IPv6-only host (Closes: #962019)
 
- -- Dominic Hargreaves <dom@earth.li>  Tue, 21 Jul 2020 20:27:00 +0100
+ -- Dominic Hargreaves <dom@earth.li>  Fri, 05 Jun 2020 00:21:01 +0100
+
+perl (5.30.3-1) unstable; urgency=medium
+
+  [ Dominic Hargreaves ]
+  * Update perlbug to no longer email deprecated bug address
+    (Closes: #958721)
+
+  [ Niko Tyni ]
+  * Update the build system to debhelper compatibility level 13.
+
+  [ Dominic Hargreaves ]
+  * Update to new upstream version (Closes: #962005)
+    + [SECURITY] CVE-2020-10543: Buffer overflow caused by a crafted
+      regular expression
+    + [SECURITY] CVE-2020-10878: Integer overflow via malformed bytecode
+      produced by a crafted regular expression
+    + [SECURITY] CVE-2020-12723: Buffer overflow caused by a crafted
+      regular expression
+
+ -- Dominic Hargreaves <dom@earth.li>  Mon, 01 Jun 2020 22:23:43 +0100
+
+perl (5.30.2-1) unstable; urgency=medium
+
+  [ Niko Tyni ]
+  * Convert rt.perl.org links to GitHub issues in patch descriptions.
+
+  [ Dominic Hargreaves ]
+  * Update to new upstream version 5.30.2.
+  * Fix test failure with certain sbuild configurations (Closes: #930095)
+
+ -- Dominic Hargreaves <dom@earth.li>  Sun, 17 May 2020 00:19:12 +0100
+
+perl (5.30.0-10) unstable; urgency=medium
+
+  [ Dominic Hargreaves ]
+  * Suggest libtap-harness-archive-perl for prove --archive
+    (Closes: #947797)
+
+  [ Niko Tyni ]
+  * Apply upstream patches fixing Configure on GCC 10. (Closes: #957675)
+  * Include commit hashes from upstream GitHub repo in patch descriptions.
+
+ -- Niko Tyni <ntyni@debian.org>  Fri, 17 Apr 2020 22:18:51 +0300
+
+perl (5.30.0-9) unstable; urgency=medium
+
+  * Improve debian/t/control.t robustness fixing spurious failures
+    when packages are missing from the current archive suite.
+    (Closes: #943380)
+  * Build with TZ=UTC again for reproducibility. (See #791362)
+  * Fix cross builds harder, still due to -Dmksymlinks in 5.30.0-2.
+  * Refresh cross build support files for most architectures.
+
+ -- Niko Tyni <ntyni@debian.org>  Sun, 27 Oct 2019 18:52:24 +0200
+
+perl (5.30.0-8) unstable; urgency=medium
+
+  * Minor fixes prompted by lintian:
+    + remove outdated lintian overrides
+    + outsource parsing debian/changelog to pkg-info.mk in dpkg-dev
+    + move debian/source.lintian-overrides under debian/source
+    + add Build-Depends-Package: libperl-dev to the libperl5.30 symbols file
+    + reorganize debian/copyright a bit to ensure correct file globbing
+  * Move perl-xs-dev Provides to libperl-dev, mark that Multi-Arch:
+    same, and add an unversioned cross-config symlink to the versioned
+    directory in libperl5.30 for easier consumption in depending packages.
+    .
+    Making perl-xs-dev not coinstallable between Perl major versions
+    should keep build dependencies unambiguous.
+
+ -- Niko Tyni <ntyni@debian.org>  Sun, 20 Oct 2019 14:51:34 +0300
+
+perl (5.30.0-7) unstable; urgency=medium
+
+  * Move perl-modules-5.30 to section "libs" to ease future Perl
+    transitions (Closes: #942220)
+  * Make libperl5.30 Provide perl-xs-dev and retire the
+    perl-cross-config virtual package. See the thread around
+     https://lists.debian.org/debian-perl/2019/10/msg00015.html
+
+ -- Niko Tyni <ntyni@debian.org>  Tue, 15 Oct 2019 16:35:07 +0300
+
+perl (5.30.0-6) unstable; urgency=medium
+
+  * Apply upstream patch fixing a regression in group id parsing that
+    broke setting supplementary group IDs. (Closes: #941985)
+
+ -- Niko Tyni <ntyni@debian.org>  Tue, 08 Oct 2019 20:25:35 +0300
+
+perl (5.30.0-5) unstable; urgency=medium
+
+  [ Niko Tyni ]
+  * Update $Config{myuname} et al. to Buster kernel versions.
+
+  [ Dominic Hargreaves ]
+  * Add 5.30.0 to debian/released-versions
+  * Upload to unstable
+
+ -- Dominic Hargreaves <dom@earth.li>  Sat, 05 Oct 2019 09:51:05 +0100
+
+perl (5.30.0-4) experimental; urgency=medium
+
+  * Restore the update-configure debian/rules target. (Closes: #931563)
+  * Fix cross builds broken by -Dmksymlinks in 5.30.0-2.
+  * Refresh cross build support files for hppa m68k riscv64 sh4
+
+ -- Niko Tyni <ntyni@debian.org>  Sat, 03 Aug 2019 21:11:59 +0300
+
+perl (5.30.0-3) experimental; urgency=medium
+
+  * Fix perl-base %Config entries for ccflags etc.
+  * Fix detection of old cross build information.
+  * Refresh cross build support files for most architectures.
+
+ -- Niko Tyni <ntyni@debian.org>  Thu, 20 Jun 2019 16:17:06 +0300
+
+perl (5.30.0-2) experimental; urgency=medium
+
+  * The Debian Perl Sprint 2019 release.
+
+  [ Niko Tyni ]
+  * Switch to git-debrebase for managing debian/patches.
+  * Switch to debhelper for building the package.
+    + Fix nonstandard /usr/share/doc symlinks. (Closes: #522827)
+  * Verify Configure regeneration in an autopkgtest check.
+    (Closes: #930073)
+  * Update cross build support files with 5.30.0-1 information.
+
+  [ Dominic Hargreaves ]
+  * Document git-debrebase
+  * Remove redundant Patch-Name headers from commits
+  * Add salsa-ci.yml
+
+ -- Niko Tyni <ntyni@debian.org>  Wed, 19 Jun 2019 18:10:54 +0300
+
+perl (5.30.0-1) experimental; urgency=medium
+
+  * New upstream release.
+
+ -- Niko Tyni <ntyni@debian.org>  Sat, 25 May 2019 10:14:26 +0300
+
+perl (5.30.0~rc2-1) experimental; urgency=medium
+
+  * New upstream release candidate.
+
+ -- Niko Tyni <ntyni@debian.org>  Mon, 20 May 2019 18:26:56 +0300
 
 perl (5.28.1-6) unstable; urgency=medium
 
@@ -1108,7 +1402,7 @@ perl (5.20.1-1) unstable; urgency=medium
 
   * New upstream release
   * [SECURITY] CVE-2014-4330: don't recurse infinitely in Data::Dumper
-    (Closes: #762256) 
+    (Closes: #762256)
   * Update Standards-Version (no changes)
   * Update maintainer tests to reflect the fact that libcgi-fast-perl
     is not being shipped
@@ -1343,7 +1637,7 @@ perl (5.18.0-2) experimental; urgency=low
 perl (5.18.0-1) experimental; urgency=low
 
   * New upstream release
-    - update Breaks version for libpod-simple-perl 
+    - update Breaks version for libpod-simple-perl
   * Additional bugs fixed since 5.14:
     - pending signals are processed in both the parent and child process
       after a fork() (Closes: 495788)
@@ -1484,7 +1778,7 @@ perl (5.16.1-1) experimental; urgency=low
 perl (5.16.0-1) experimental; urgency=low
 
   * New upstream release
-    - update debian/copyright 
+    - update debian/copyright
     - update Breaks versions in debian/control for dual-lived modules
     - remove Provides/Replaces/Breaks for removed modules
       libdevel-dprof-perl, libperl4-corelibs-perl, libshell-perl
@@ -1789,7 +2083,7 @@ perl (5.14.1-1) experimental; urgency=low
   * Revert obsolete patches:
     - debian/arm_optim.diff
     - debian/devel-ppport-ia64-optim.diff
-    - fixes/processPL.diff (Closes: #626094) 
+    - fixes/processPL.diff (Closes: #626094)
   * Support the 'build-arch' and 'build-indep' debian/rules targets
     as synonyms for 'build'.
   * Remove a stale perlcc reference from the libperl-dev long description.
@@ -1850,7 +2144,7 @@ perl (5.14.0-1) experimental; urgency=low
       * libhttp-tiny-perl
   * debian/patches/fixes/extutils-cbuilder-cflags: [perl #89478]
     Make ExtUtils::CBuilder append CFLAGS and LDFLAGS from the environment
-    to their Config.pm counterparts instead of overriding them. 
+    to their Config.pm counterparts instead of overriding them.
   * Totally rework debian/copyright.
 
   [ Dominic Hargreaves ]
@@ -1950,7 +2244,7 @@ perl (5.12.4-1) unstable; urgency=low
   * Revert obsolete patches:
     - debian/arm_optim.diff
     - debian/devel-ppport-ia64-optim.diff
-    - fixes/processPL.diff (Closes: #626094) 
+    - fixes/processPL.diff (Closes: #626094)
   * Split up patch debian/extutils_hacks.diff into several logically
     distinct patches (relates to: #624508)
   * Update Vcs-* references to point to combined git-dpm based
@@ -2288,7 +2582,7 @@ perl (5.10.1-12) unstable; urgency=low
     and libnet-perl.
   * Properly include the 5.10.0 site directories on @INC as per Perl policy.
     (Closes: #575030)
-  * Fix an errno stringification bug in taint mode. (Closes: #574129) 
+  * Fix an errno stringification bug in taint mode. (Closes: #574129)
   * Move Config_heavy.pl into perl-base and unapply the DynaLoader
     changes introduced in 5.10.1-5. (Closes: #575308)
   * Remove B and B::Deparse from perl-base, they haven't worked without
@@ -2458,7 +2752,7 @@ perl (5.10.1~rc2-1) experimental; urgency=low
     + revision information removed from perlfaq whatis entries
       (Closes: #402046)
   * Updated the conflicts list for the various dual-lived modules.
-  * Added conflicts/replaces/provides for 
+  * Added conflicts/replaces/provides for
     + libio-compress-perl
     + libcompress-raw-bzip2-perl
     + libthreads-perl
@@ -2490,7 +2784,7 @@ perl (5.10.0-24) unstable; urgency=low
   * POD fix for Module::Build::Cookbook.
   * Fix a memory leak with the map operator. (Closes: #528332)
   * Add gcc predefined macros to $Config{cppsymbols} on GNU/kFreeBSD.
-    (Closes: #533098) 
+    (Closes: #533098)
   * Fix CPAN and CPANPLUS configuration to consistently use the
     site directories with both Build.PL and Makefile.PL. (Closes: #533707)
   * Save local versions of CPANPLUS::Config::System into /etc/perl.
@@ -2522,7 +2816,7 @@ perl (5.10.0-21) unstable; urgency=low
     builds. (Closes: #523940)
   * Squelch 'Constant subroutine ... undefined' warnings from .ph files.
     (Closes: #379757)
-  * Elaborate PERL_SYS_* documentation a bit. 
+  * Elaborate PERL_SYS_* documentation a bit.
   * Fix a segmentation fault with array ties. (Closes: #525180)
   * Improve Archive::Tar error reporting on short corrupted archives.
     (Closes: #521613)
@@ -2542,7 +2836,7 @@ perl (5.10.0-20) experimental; urgency=low
     + Elaborate a confusing cross-reference in 'perldoc -f sort'.
       (Closes: #405470)
     + Fix a crash on binary-or lvalue operation on qr//. (Closes: #483150)
-    + Fix h2xs enum handling with C++ comments. (Closes: #320286) 
+    + Fix h2xs enum handling with C++ comments. (Closes: #320286)
     + Fix Data::Dumper::new() argument checking. (Closes: #512036)
     + setpgrp() no longer corrupts the stack. (Closes: #512796)
     + Document PERL_SYS_* macros. (Closes: #522099)
@@ -2762,7 +3056,7 @@ perl (5.10.0-7) experimental; urgency=low
     /usr/bin/corelist. (Closes: #470385)
   * Update the libmodule-corelist-perl conflict version to 2.13-1.
     (Closes: #471515)
-  * Apply upstream change 33554 to make IO::Socket::INET able to 
+  * Apply upstream change 33554 to make IO::Socket::INET able to
     resolve "udp" without /etc/protocols.
   * Make perl recommend netbase. Along with the new fallback defaults for the
     most common protocols, this should be a good compromise for the
@@ -4898,7 +5192,7 @@ Perl 5.002 Debian 5 Mon Feb  5 19:02:01 1996  Darren Stalder  <torin@daft.com>
 	* fix to Makefile.SH so that you don't *have* to have . in your
 	  path (Roderick Shertler)
 	* Dean upgraded h2xs to 1.15
-	
+
 Perl 5.002 Debian 4 Sat Feb  3 02:10:40 1996  Darren Stalder  <torin@daft.com>
 
 	* Ilya released a new version of the debugger
@@ -4968,7 +5262,7 @@ Perl 5.002 Debian 3 Tue Dec 19 01:47:19 1995  Darren Stalder  <torin@daft.com>
 
 	* Perl now uses the new sonames for libgdbm and libdb with
 	  dependencies on the new names (libdb1 and libgdbm1)
-	
+
 Perl 5.002 Debian 3 Mon Dec 18 03:23:04 1995  Darren Stalder  <torin@daft.com>
 
 	* Summary of additions:

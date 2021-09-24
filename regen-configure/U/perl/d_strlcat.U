@@ -1,0 +1,42 @@
+?RCS: $Id$
+?RCS:
+?RCS: Copyright (c) 2004 H.Merijn Brand
+?RCS:
+?RCS: You may distribute under the terms of either the GNU General Public
+?RCS: License or the Artistic License, as specified in the README file.
+?RCS:
+?MAKE:d_strlcat: Inlibc Hasproto d_gnulibc
+?MAKE:	-pick add $@ %<
+?S:d_strlcat:
+?S:	This variable conditionally defines the HAS_STRLCAT symbol, which
+?S:	indicates to the C program that the strlcat () routine is available.
+?S:.
+?C:HAS_STRLCAT:
+?C:	This symbol, if defined, indicates that the strlcat () routine is
+?C:	available to do string concatenation.
+?C:.
+?H:#$d_strlcat HAS_STRLCAT		/**/
+?H:.
+?T:d_strlcat_proto xx1 xx2 xx3 xx4
+?LINT:set d_strlcat
+: see if strlcat exists
+: We need both a prototype in string.h and the symbol in libc.
+echo " "
+d_strlcat_proto=''
+xx1="#$d_gnulibc HAS_GNULIBC"
+xx2='#if defined(HAS_GNULIBC) && !defined(_GNU_SOURCE)'
+xx3='#   define _GNU_SOURCE'
+xx4='#endif'
+set d_strlcat_proto strlcat literal "$xx1" literal "$xx2" literal "$xx3" literal "$xx4" define string.h
+eval $hasproto
+case "$d_strlcat_proto" in
+    define) # see if strlcat exists
+	set strlcat d_strlcat
+	eval $inlibc
+	;;
+    *)  val=$undef
+	set d_strlcat
+	eval $setvar
+	;;
+esac
+

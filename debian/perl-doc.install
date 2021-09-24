@@ -1,0 +1,20 @@
+#!/bin/sh
+cat <<EOF
+usr/bin/perldoc
+usr/share/perl/*/pod
+usr/share/man/man1/perldoc.1
+EOF
+
+cd debian/tmp
+
+# everything else than section 1 goes as-is
+find usr/share/man/ -maxdepth 1 -mindepth 1 -not -name man1
+
+# section 1 manual pages for installed programs go in perl not perl-doc
+find usr/share/man/man1 -type f -printf "%f\n" | \
+while read man; do
+    prog=$(echo $man | sed 's/\.1$//')
+    if ! test -f usr/bin/$prog; then
+        echo usr/share/man/man1/$man
+    fi
+done

@@ -1,4 +1,3 @@
-From d82a2fb804e409d6926b86ed22d35405dcfe5782 Mon Sep 17 00:00:00 2001
 From: Brendan O'Dea <bod@debian.org>
 Date: Tue, 8 Mar 2005 19:30:38 +1100
 Subject: Provide a sensible INSTALLDIRS default for modules installed from
@@ -7,17 +6,15 @@ Subject: Provide a sensible INSTALLDIRS default for modules installed from
 Some modules which are included in core set INSTALLDIRS => 'perl'
 explicitly in Makefile.PL or Build.PL.  This makes sense for the normal @INC
 ordering, but not ours.
-
-Patch-Name: debian/cpan_definstalldirs.diff
 ---
  cpan/CPAN/lib/CPAN/FirstTime.pm | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/cpan/CPAN/lib/CPAN/FirstTime.pm b/cpan/CPAN/lib/CPAN/FirstTime.pm
-index 49fa8ab7b9..cdf1dc220d 100644
+index af4a6d7..b7322fd 100644
 --- a/cpan/CPAN/lib/CPAN/FirstTime.pm
 +++ b/cpan/CPAN/lib/CPAN/FirstTime.pm
-@@ -1033,7 +1033,7 @@ sub init {
+@@ -1080,7 +1080,7 @@ sub init {
      my_prompt_loop(prefer_installer => 'MB', $matcher, 'MB|EUMM|RAND');
  
      if (!$matcher or 'makepl_arg make_arg' =~ /$matcher/) {
@@ -26,7 +23,7 @@ index 49fa8ab7b9..cdf1dc220d 100644
          my_dflt_prompt(make_arg => "", $matcher);
          if ( $CPAN::Config->{makepl_arg} =~ /LIBS=|INC=/ ) {
              $CPAN::Frontend->mywarn(
-@@ -1065,7 +1065,7 @@ sub init {
+@@ -1112,7 +1112,7 @@ sub init {
      my_dflt_prompt(make_install_arg => $CPAN::Config->{make_arg} || "",
                     $matcher);
  

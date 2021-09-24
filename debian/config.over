@@ -27,7 +27,7 @@ do
     dpkg --compare-versions "$ver" lt "$api_versionstring"  && continue
     inc_version_list="$ver $ver/$archname${inc_version_list:+ }$inc_version_list"
     inc_version_list_init="\"$ver\",\"$ver/$archname\",$inc_version_list_init"
-done <debian/released-versions
+done <../debian/released-versions
 if [ -n "$inc_version_list" ]; then
     d_inc_version_list=define
 fi
@@ -47,7 +47,7 @@ then
 fi
 
 # set configuration time to latest debian/changelog entry
-cf_time=$(LC_ALL=C date --utc -d "$(dpkg-parsechangelog | sed -n -e 's/^Date: //p')")
+cf_time=$(LC_ALL=C date --utc -d "$(cd .. && dpkg-parsechangelog | sed -n -e 's/^Date: //p')")
 # set generic email addresses, host/domain names
 cf_by="$(dpkg-vendor --query vendor)"
 cf_email=perl@packages.debian.org
@@ -127,7 +127,7 @@ esac
 
 case "$osname" in
   linux)
-      osvers=4.9.0
+      osvers=4.19.0
       osdesc="#1 smp debian $osvers"
       os=gnulinux
       ;;
@@ -137,7 +137,7 @@ case "$osname" in
       os=gnu
       ;;
   gnukfreebsd)
-      osvers=10.1
+      osvers=10.3
       osdesc="#0"
       os=gnukfreebsd
       ;;

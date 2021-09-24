@@ -1,0 +1,24 @@
+From: Niko Tyni <ntyni@debian.org>
+Date: Sat, 6 Jun 2020 11:12:42 +0300
+Subject: Suppress an ExtUtils::MakeMaker warning about our non-default @INC
+
+Config.pm gets loaded from a different path than archlibexp on Debian.
+
+Bug-Debian: https://bugs.debian.org/962138
+---
+ cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Any.pm | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Any.pm b/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Any.pm
+index 2658299..0745e70 100644
+--- a/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Any.pm
++++ b/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Any.pm
+@@ -2740,6 +2740,8 @@ sub arch_check {
+     my($pvol, $pthinks) = $self->splitpath($pconfig);
+     my($cvol, $cthinks) = $self->splitpath($cconfig);
+ 
++    return 1 if $pthinks =~ /perl-base/; # https://bugs.debian.org/962138
++
+     $pthinks = $self->canonpath($pthinks);
+     $cthinks = $self->canonpath($cthinks);
+ 

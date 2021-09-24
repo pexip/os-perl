@@ -1,0 +1,2 @@
+usr/lib/${DEB_HOST_MULTIARCH}/libperl.so.${env:version} usr/lib/${DEB_HOST_MULTIARCH}/libperl.so
+usr/lib/${DEB_HOST_MULTIARCH}/perl/cross-config-${env:fullversion} usr/lib/${DEB_HOST_MULTIARCH}/perl/cross-config

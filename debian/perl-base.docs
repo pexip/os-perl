@@ -1,5 +1,2 @@
-AUTHORS			perl
-debian/Documentation	perl
-debian/README.Debian	perl
-debian/copyright	perl
-debian/changelog	perl/changelog.Debian
+AUTHORS
+debian/Documentation

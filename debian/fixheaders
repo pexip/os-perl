@@ -1,4 +1,4 @@
-#!./perl.static -w
+#!perl -w
 
 #
 # Fix up generated .ph files

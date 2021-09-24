@@ -24,7 +24,8 @@ PERL_BUILD_DATE=$(LC_ALL=C date '+%b %e %Y %T' --utc -d "$(dpkg-parsechangelog |
 case "$1" in
     --static) # static perl
     	build_type=static
-	opts="-Uuseshrplib -Dotherlibdirs=\"/usr/lib/$archtriplet/perl-base\"";;
+	opts="-Uuseshrplib"
+	ccflags="$ccflags -DAPPLLIB_EXP=\"/usr/lib/$archtriplet/perl-base\"";;
 
     --debug) # debugperl
     	build_type=debug
@@ -43,30 +44,6 @@ case "$1" in
 
     --next-version)
 	exec echo $nextver;;
-
-    --strip)
-    	case ",$DEB_BUILD_OPTIONS," in
-	    *[,\ ]nostrip[,\ ]*)	exec echo no;;
-	    *)				exec echo yes;;
-	esac;;
-
-    --test-target)
-    	case ",$DEB_BUILD_OPTIONS," in
-	    *[,\ ]nocheck[,\ ]*)	exit;;
-	    *[,\ ]x-perl-notest[,\ ]*)	exit;;
-	    *)				exec echo test;;
-	esac;;
-
-    --install-type)
-	# The default installation type for /usr/bin/perl of shared or
-	# static may be changed by including x-perl-static or x-perl-shared
-	# in DEB_BUILD_OPTIONS.  The default used to vary based on the
-	# architecture but is now static everywhere. See #781476
-	case ",$DEB_BUILD_OPTIONS," in
-	    *[,\ ]x-perl-static[,\ ]*)	exec echo static;;
-	    *[,\ ]x-perl-shared[,\ ]*)	exec echo shared;;
-	esac
-	exec echo static;;
 
     *)	echo "$0: need --shared, --static, or --debug option"
     	exit 2;;
@@ -95,14 +72,18 @@ if which dpkg-buildflags >/dev/null 2>&1; then
     ldflags="$ldflags $(dpkg-buildflags --get LDFLAGS)"
 fi
 
+mkdir build-$build_type
+cd build-$build_type
+
 # post-configure tweaks
-cp debian/config.over .
+cp ../debian/config.over .
 
 if [ "$build_gnu_type" = "$host_gnu_type" ]
 then
     # native builds
     # need bash when sourcing config.over
-    eval /bin/bash Configure			\
+    eval /bin/bash ../Configure			\
+    -Dmksymlinks                \
     -Dusethreads				\
     -Duselargefiles				\
     -Dcc=$cc					\
@@ -144,7 +125,7 @@ then
     -dEs $opts
 
 	# note about the debian/cross files for the build log
-	crossconfig=debian/cross/${host_arch}/config.sh.static
+	crossconfig=../debian/cross/${host_arch}/config.sh.static
 	if [ "$build_type" = "static" ]; then
 	 if [ -f $crossconfig ]; then
 	  if ! diff --ignore-matching-lines="cf_time" \
@@ -171,7 +152,7 @@ else
 	# cross builds
 
 	# find a ready made config.sh, currently in debian/cross/<arch>
-	basedir=debian/cross/${host_arch}
+	basedir=../debian/cross/${host_arch}
 	baseconfig=${basedir}/config.sh.static
 	if [ ! -f $baseconfig ]; then
 	    echo "need $baseconfig for cross build!" 1>&2
@@ -207,18 +188,33 @@ else
 	# when building extensions because it tries to dynamically load
 	# XS modules from lib/, particularly as <*> uses File::Glob on
 	# full perls (but not miniperl)
-	if [ ! -x build-miniperl ]; then
+	if [ ! -x ../build-miniperl ]; then
 	    echo "Cross build: making a native miniperl for the build process"
+	    cd ..
 	    ./Configure -dE -Dusecrosscompile
 	    # host/ gets cleaned between builds by 'make distclean', so
 	    # stash the results
 	    cp host/miniperl build-miniperl
 	    cp host/generate_uudmap build-generate_uudmap
+	    cd build-$build_type
 	fi
 
-	# Actually use the old config.sh files
+	# create symlinks for build directory
+	# we can't seem to make Configure create these symlinks without probing
+	# so make a separate mksymlinks helper for now
+	sed '/^\?/d' ../regen-configure/U/perl/Mksymlinks.U > ../mksymlinks
+	src=$(pwd)/..
+	mkdir UU
+	cd UU
+	src="$src" lns="ln -s" issymlink="test -h" bash ../../mksymlinks 4>&2
+	cd ..
 
-	cp $baseconfig ./config.sh
+	# override configuration for cross building
+
+	# Actually use the old config.sh files,
+	# removing the absolute build path in 'src'
+	sed 's/^src=.*/src=./' $baseconfig > ./config.sh
+
 	if [ "$build_type" = "static" ]; then
 		# notes for the build log
 		echo "Cross build: recycling old probed configuration from $baseconfig"
@@ -237,15 +233,14 @@ else
 		md5sum $patchconfig
 	fi
 
-	# override configuration for cross building
 	crossargs="-Dusecrosscompile \
-               -Dhostgenerate=./build-generate_uudmap \
-               -Dhostperl=./build-miniperl \
+               -Dhostgenerate=../build-generate_uudmap \
+               -Dhostperl=../build-miniperl \
                -Dperl=/usr/bin/perl"
 fi
 
 # now continue with extracting Makefile et al.
-/bin/bash Configure -S $crossargs
+/bin/bash ./Configure -S $crossargs
 
 # append PERL_BUILD_DATE before the last #endif in config.h
 # massive quoting problems prevent passing this to Configure

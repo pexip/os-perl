@@ -1,0 +1,87 @@
+?RCS: $Id: d_lchown.U,v 3.0.1.1 1994/08/29 16:07:14 ram Exp $
+?RCS:
+?RCS: Copyright (c) 1991-1993, Raphael Manfredi
+?RCS:
+?RCS: You may redistribute only under the terms of the Artistic License,
+?RCS: as specified in the README file that comes with the distribution.
+?RCS: You may reuse parts of this distribution only within the terms of
+?RCS: that same Artistic License; a copy of which may be found at the root
+?RCS: of the source tree for dist 3.0.
+?RCS:
+?RCS: Original Author: Andy Dougherty <doughera@lafcol.lafayette.edu>
+?RCS:
+?RCS: $Log: d_lchown.U,v $
+?RCS: Revision 3.0.1.1  1994/08/29  16:07:14  ram
+?RCS: patch32: created by ADO
+?RCS:
+?MAKE:d_lchown: Compile Setvar cat echo i_unistd rm_try
+?MAKE:	-pick add $@ %<
+?S:d_lchown:
+?S:	This variable conditionally defines the HAS_LCHOWN symbol, which
+?S:	indicates to the C program that the lchown() routine is available
+?S:	to operate on a symbolic link (instead of following the link).
+?S:.
+?C:HAS_LCHOWN :
+?C:	This symbol, if defined, indicates that the lchown routine is
+?C:	available to operate on a symbolic link (instead of following the
+?C:	link).
+?C:.
+?H:#$d_lchown HAS_LCHOWN		/**/
+?H:.
+?F:!try
+?LINT:set d_lchown
+: see if lchown exists
+echo " "
+?X: Some functions (such as lchown()) are present in libc, but are
+?X: unimplemented.  That is, they always fail and set errno=ENOSYS.
+?X:
+?X: Thomas Bushnell provided the following sample code and the explanation
+?X: that follows.
+?X:
+?X: The choice of <assert.h> is essentially arbitrary.  The GNU libc
+?X: macros are found in <gnu/stubs.h>.  You can include that file instead
+?X: of <assert.h> (which itself includes <gnu/stubs.h>) if you test for
+?X: its existence first.  <assert.h> is assumed to exist on every system,
+?X: which is why it's used here.  Any GNU libc header file will include
+?X: the stubs macros.  If either __stub_NAME or __stub___NAME is defined,
+?X: then the function doesn't actually exist.  Tests using <assert.h> work
+?X: on every system around.
+?X:
+?X: The declaration of FOO is there to override builtin prototypes for
+?X: ANSI C functions.
+?X:
+?X:  I really ought to enhance the inlibc test to check for this, but
+?X:  I don't have time now.  --A.D.  5/1998
+?X:
+?X: Unfortunately, this trick fails under clang++-7.  Apparently to
+?X: cover both the stub issue and clang's requirements, we need to do
+?X: a compile and run test. -- A.D. 8/2019
+?X:
+$cat > try.c <<EOCP
+#include <pwd.h>
+#include <stdio.h>
+#include <stdlib.h>
+#$i_unistd	I_UNISTD
+#ifdef I_UNISTD
+#  include <unistd.h>
+#endif
+int main(int argc, char *argv[])
+{
+   if (lchown("./try.c", -1, getgid()) == -1) {
+       exit(EXIT_FAILURE);
+   }
+   exit(EXIT_SUCCESS);
+}
+EOCP
+set try
+if eval $compile && ./try; then
+    $echo "lchown() found." >&4
+    val="$define"
+else
+    $echo "lchown() NOT found." >&4
+    val="$undef"
+fi
+set d_lchown
+eval $setvar
+$rm_try
+

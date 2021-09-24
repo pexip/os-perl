@@ -1,13 +1,13 @@
-From 6113d33ddf611a4c33356d297232bec888dfb4ff Mon Sep 17 00:00:00 2001
 From: Brendan O'Dea <bod@debian.org>
 Date: Fri, 18 Mar 2005 22:22:25 +1100
 Subject: Tweak @INC ordering for Debian
 
 Our order is:
 
-    etc (for config files)
+    etc (Debian specific, for config files)
     site (5.8.1)
     vendor (all)
+    core in perl-base (Debian specific, via APPLLIB_EXP)
     core (5.8.1)
     site (version-indep)
     site (pre-5.8.1)
@@ -17,28 +17,35 @@ The rationale being that an admin (via site), or module packager
 version than is included in core.
 
 (later updates by Niko Tyni)
-
-Patch-Name: debian/mod_paths.diff
 ---
- perl.c | 58 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 58 insertions(+)
+ perl.c | 62 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 62 insertions(+)
 
 diff --git a/perl.c b/perl.c
-index e6dfa8dc05..c7828e69ce 100644
+index 071675c..6b33efe 100644
 --- a/perl.c
 +++ b/perl.c
-@@ -4674,6 +4674,10 @@ S_init_perllib(pTHX)
+@@ -4743,11 +4743,19 @@ S_init_perllib(pTHX)
+ /* Use the ~-expanded versions of APPLLIB (undocumented),
      SITEARCH, SITELIB, VENDORARCH, VENDORLIB, ARCHLIB and PRIVLIB
  */
-     INCPUSH_APPLLIB_EXP
 +#ifdef DEBIAN
 +    /* for configuration where /usr is mounted ro (CPAN::Config, Net::Config) */
 +    S_incpush_use_sep(aTHX_ STR_WITH_LEN("/etc/perl"), 0x0);
++#else
+     INCPUSH_APPLLIB_EXP
 +#endif
      INCPUSH_SITEARCH_EXP
      INCPUSH_SITELIB_EXP
      INCPUSH_PERL_VENDORARCH_EXP
-@@ -4685,6 +4689,60 @@ S_init_perllib(pTHX)
+     INCPUSH_PERL_VENDORLIB_EXP
++#ifdef DEBIAN
++    INCPUSH_APPLLIB_EXP
++#endif
+     INCPUSH_ARCHLIB_EXP
+     INCPUSH_PRIVLIB_EXP
+     INCPUSH_PERL_OTHERLIBDIRS
+@@ -4755,6 +4763,60 @@ S_init_perllib(pTHX)
      INCPUSH_APPLLIB_OLD_EXP
      INCPUSH_SITELIB_STEM
      INCPUSH_PERL_VENDORLIB_STEM

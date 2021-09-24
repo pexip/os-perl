@@ -6,4 +6,6 @@ then
 	--divert /usr/bin/perldoc.stub /usr/bin/perldoc
 fi
 
+#DEBHELPER#
+
 exit 0

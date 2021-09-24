@@ -1,0 +1,17 @@
+#!/bin/sh
+
+set -e
+upstream=$(dpkg-parsechangelog -SVersion | sed 's/-[0-9]*$//')
+upstream_major=$(echo $upstream | sed 's/\.[^.]*$//')
+
+old=$1
+
+if [ ! -f debian/libperl$old.symbols ]; then
+   echo "Usage: $0 <old-major-version>" 1>&2
+   exit 1
+fi
+
+cd debian/
+rename "s/$old/$upstream_major/" *
+sed -i "s/$old.0/$upstream/g" libperl*.symbols
+sed -i "s/$old/$upstream_major/g" control perl.postinst perl.README.Debian libperl*.symbols t/control.t

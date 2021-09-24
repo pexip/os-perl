@@ -1,4 +1,3 @@
-From 45f4a172340c7c7f60e12d6870b8df03e8f4f636 Mon Sep 17 00:00:00 2001
 From: Niko Tyni <ntyni@debian.org>
 Date: Fri, 9 Jan 2009 18:54:47 +0200
 Subject: Make perlivp skip include directories in /usr/local
@@ -19,14 +18,12 @@ On Sat, Jan 10, 2009 at 12:37:18AM +1100, Brendan O'Dea wrote:
 > created as required.
 
 Signed-off-by: Niko Tyni <ntyni@debian.org>
-
-Patch-Name: debian/perlivp.diff
 ---
  utils/perlivp.PL | 1 +
  1 file changed, 1 insertion(+)
 
 diff --git a/utils/perlivp.PL b/utils/perlivp.PL
-index 50d187a544..bd8091c548 100644
+index f175caa..509f943 100644
 --- a/utils/perlivp.PL
 +++ b/utils/perlivp.PL
 @@ -155,6 +155,7 @@ my $INC_total = 0;
