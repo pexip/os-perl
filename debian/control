@@ -21,7 +21,7 @@ Build-Depends: file,
  libc6-dev (>= 2.19-9) [s390x]
 Vcs-Git: https://salsa.debian.org/perl-team/interpreter/perl.git
 Vcs-Browser: https://salsa.debian.org/perl-team/interpreter/perl
-XS-Pexip-Upstream: http://ftp.debian.org/debian/ buster
+XS-Pexip-Upstream: http://deb.debian.org/debian/ bullseye
 
 Package: perl-base
 Essential: yes
