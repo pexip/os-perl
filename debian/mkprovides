@@ -1,4 +1,4 @@
-#!./perl.static -w
+#!perl -w
 
 #
 # Create perlapi-<ver> provides substvar

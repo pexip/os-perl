@@ -1,4 +1,3 @@
-From 97d604f7848fe04662759dd7a155c447b872524e Mon Sep 17 00:00:00 2001
 From: Brendan O'Dea <bod@debian.org>
 Date: Fri, 18 Mar 2005 22:22:25 +1100
 Subject: Postpone LD_LIBRARY_PATH evaluation to the binary targets.
@@ -9,14 +8,12 @@ time the rule is evaluated rather than when the Makefile is created.
 This is required when building packages with dpkg-buildpackage and fakeroot,
 since fakeroot (which now sets LD_LIBRARY_PATH) is not used for the "build"
 rule where the Makefile is created, but is for the clean/binary* targets.
-
-Patch-Name: debian/fakeroot.diff
 ---
  Makefile.SH | 7 ++-----
  1 file changed, 2 insertions(+), 5 deletions(-)
 
 diff --git a/Makefile.SH b/Makefile.SH
-index 5197009290..48151bce65 100755
+index 124db32..a593df6 100755
 --- a/Makefile.SH
 +++ b/Makefile.SH
 @@ -48,10 +48,7 @@ case "$useshrplib" in
@@ -31,7 +28,7 @@ index 5197009290..48151bce65 100755
  
  	pldlflags="$cccdlflags"
  	static_ldflags=''
-@@ -122,7 +119,7 @@ true)
+@@ -130,7 +127,7 @@ true)
  	    ;;
  	esac
  	case "$ldlibpthname" in

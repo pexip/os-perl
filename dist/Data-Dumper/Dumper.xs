@@ -61,9 +61,10 @@
 #endif
 
 /* This struct contains almost all the user's desired configuration, and it
- * is treated as constant by the recursive function. This arrangement has
- * the advantage of needing less memory than passing all of them on the
- * stack all the time (as was the case in an earlier implementation). */
+ * is treated as mostly constant (except for maxrecursed) by the recursive
+ * function.  This arrangement has the advantage of needing less memory
+ * than passing all of them on the stack all the time (as was the case in
+ * an earlier implementation). */
 typedef struct {
     SV *pad;
     SV *xpad;
@@ -74,6 +75,7 @@ typedef struct {
     SV *toaster;
     SV *bless;
     IV maxrecurse;
+    bool maxrecursed; /* at some point we exceeded the maximum recursion level */
     I32 indent;
     I32 purity;
     I32 deepcopy;
@@ -89,12 +91,15 @@ static STRLEN num_q (const char *s, STRLEN slen);
 static STRLEN esc_q (char *dest, const char *src, STRLEN slen);
 static STRLEN esc_q_utf8 (pTHX_ SV *sv, const char *src, STRLEN slen, I32 do_utf8, I32 useqq);
 static bool globname_needs_quote(const char *s, STRLEN len);
+#ifndef GvNAMEUTF8
+static bool globname_supra_ascii(const char *s, STRLEN len);
+#endif
 static bool key_needs_quote(const char *s, STRLEN len);
 static bool safe_decimal_number(const char *p, STRLEN len);
 static SV *sv_x (pTHX_ SV *sv, const char *str, STRLEN len, I32 n);
 static I32 DD_dump (pTHX_ SV *val, const char *name, STRLEN namelen, SV *retval,
                     HV *seenhv, AV *postav, const I32 level, SV *apad,
-                    const Style *style);
+                    Style *style);
 
 #ifndef HvNAME_get
 #define HvNAME_get HvNAME
@@ -154,9 +159,10 @@ Perl_utf8_to_uvchr_buf(pTHX_ U8 *s, U8 *send, STRLEN *retlen)
 
 /* does a glob name need to be protected? */
 static bool
-globname_needs_quote(const char *s, STRLEN len)
+globname_needs_quote(const char *ss, STRLEN len)
 {
-    const char *send = s+len;
+    const U8 *s = (const U8 *) ss;
+    const U8 *send = s+len;
 TOP:
     if (s[0] == ':') {
 	if (++s<send) {
@@ -180,6 +186,22 @@ TOP:
 
     return FALSE;
 }
+
+#ifndef GvNAMEUTF8
+/* does a glob name contain supra-ASCII characters? */
+static bool
+globname_supra_ascii(const char *ss, STRLEN len)
+{
+    const U8 *s = (const U8 *) ss;
+    const U8 *send = s+len;
+    while (s < send) {
+        if (!isASCII(*s))
+            return TRUE;
+        s++;
+    }
+    return FALSE;
+}
+#endif
 
 /* does a hash key need to be quoted (to the left of => ).
    Previously this used (globname_)needs_quote() which accepted strings
@@ -386,15 +408,16 @@ esc_q_utf8(pTHX_ SV* sv, const char *src, STRLEN slen, I32 do_utf8, I32 useqq)
         *r++ = '"';
 
         for (s = src; s < send; s += increment) {
+            U8 c0 = *(U8 *)s;
             UV k;
 
             if (do_utf8
-                && ! isASCII(*s)
+                && ! isASCII(c0)
                     /* Exclude non-ASCII low ordinal controls.  This should be
                      * optimized out by the compiler on ASCII platforms; if not
                      * could wrap it in a #ifdef EBCDIC, but better to avoid
                      * #if's if possible */
-                && *(U8*)s > ' '
+                && c0 > ' '
             ) {
 
                 /* When in UTF-8, we output all non-ascii chars as \x{}
@@ -536,7 +559,22 @@ deparsed_output(pTHX_ SV *val)
      * modifies it (so we also can't reuse it below) */
     SV *pkg = newSVpvs("B::Deparse");
 
+    /* Commit ebdc88085efa6fca8a1b0afaa388f0491bdccd5a (first released as part
+     * of 5.19.7) changed core S_process_special_blocks() to use a new stack
+     * for anything using a BEGIN block, on the grounds that doing so "avoids
+     * the stack moving underneath anything that directly or indirectly calls
+     * Perl_load_module()". If we're in an older Perl, we can't rely on that
+     * stack, and must create a fresh sacrificial stack of our own. */
+#if PERL_VERSION < 20
+    PUSHSTACKi(PERLSI_REQUIRE);
+#endif
+
     load_module(PERL_LOADMOD_NOIMPORT, pkg, 0);
+
+#if PERL_VERSION < 20
+    POPSTACK;
+    SPAGAIN;
+#endif
 
     SAVETMPS;
 
@@ -579,7 +617,7 @@ deparsed_output(pTHX_ SV *val)
  */
 static I32
 DD_dump(pTHX_ SV *val, const char *name, STRLEN namelen, SV *retval, HV *seenhv,
-	AV *postav, const I32 level, SV *apad, const Style *style)
+	AV *postav, const I32 level, SV *apad, Style *style)
 {
     char tmpbuf[128];
     Size_t i;
@@ -605,6 +643,9 @@ DD_dump(pTHX_ SV *val, const char *name, STRLEN namelen, SV *retval, HV *seenhv,
 
     if (!val)
 	return 0;
+
+    if (style->maxrecursed)
+        return 0;
 
     /* If the output buffer has less than some arbitrary amount of space
        remaining, then enlarge it. For the test case (25M of output),
@@ -757,7 +798,7 @@ DD_dump(pTHX_ SV *val, const char *name, STRLEN namelen, SV *retval, HV *seenhv,
 	}
 
         if (style->maxrecurse > 0 && level >= style->maxrecurse) {
-            croak("Recursion limit of %" IVdf " exceeded", style->maxrecurse);
+            style->maxrecursed = TRUE;
 	}
 
 	if (realpack && !no_bless) {				/* we have a blessed ref */
@@ -767,12 +808,13 @@ DD_dump(pTHX_ SV *val, const char *name, STRLEN namelen, SV *retval, HV *seenhv,
 	    sv_catpvs(retval, "( ");
             if (style->indent >= 2) {
 		blesspad = apad;
-		apad = newSVsv(apad);
+		apad = sv_2mortal(newSVsv(apad));
 		sv_x(aTHX_ apad, " ", 1, blesslen+2);
 	    }
 	}
 
         ipad = sv_x(aTHX_ Nullsv, SvPVX_const(style->xpad), SvCUR(style->xpad), level+1);
+        sv_2mortal(ipad);
 
         if (is_regex) 
         {
@@ -837,7 +879,7 @@ DD_dump(pTHX_ SV *val, const char *name, STRLEN namelen, SV *retval, HV *seenhv,
 		realtype <= SVt_PVMG
 #endif
 	) {			     /* scalar ref */
-	    SV * const namesv = newSVpvs("${");
+	    SV * const namesv = sv_2mortal(newSVpvs("${"));
 	    sv_catpvn(namesv, name, namelen);
 	    sv_catpvs(namesv, "}");
 	    if (realpack) {				     /* blessed */
@@ -851,7 +893,6 @@ DD_dump(pTHX_ SV *val, const char *name, STRLEN namelen, SV *retval, HV *seenhv,
 		DD_dump(aTHX_ ival, SvPVX_const(namesv), SvCUR(namesv), retval, seenhv,
 			postav, level+1, apad, style);
 	    }
-	    SvREFCNT_dec(namesv);
 	}
 	else if (realtype == SVt_PVGV) {		     /* glob ref */
 	    SV * const namesv = newSVpvs("*{");
@@ -867,9 +908,10 @@ DD_dump(pTHX_ SV *val, const char *name, STRLEN namelen, SV *retval, HV *seenhv,
 	    SSize_t ix = 0;
 	    const SSize_t ixmax = av_len((AV *)ival);
 	
-	    SV * const ixsv = newSViv(0);
+	    SV * const ixsv = sv_2mortal(newSViv(0));
 	    /* allowing for a 24 char wide array index */
 	    New(0, iname, namelen+28, char);
+            SAVEFREEPV(iname);
 	    (void) strlcpy(iname, name, namelen+28);
 	    inamelen = namelen;
 	    if (name[0] == '@') {
@@ -899,7 +941,7 @@ DD_dump(pTHX_ SV *val, const char *name, STRLEN namelen, SV *retval, HV *seenhv,
 		iname[inamelen++] = '-'; iname[inamelen++] = '>';
 	    }
 	    iname[inamelen++] = '['; iname[inamelen] = '\0';
-            totpad = newSVsv(style->sep);
+            totpad = sv_2mortal(newSVsv(style->sep));
             sv_catsv(totpad, style->pad);
 	    sv_catsv(totpad, apad);
 
@@ -929,8 +971,12 @@ DD_dump(pTHX_ SV *val, const char *name, STRLEN namelen, SV *retval, HV *seenhv,
 		}
 		sv_catsv(retval, totpad);
 		sv_catsv(retval, ipad);
+                ENTER;
+                SAVETMPS;
 		DD_dump(aTHX_ elem, iname, ilen, retval, seenhv, postav,
 			level+1, apad, style);
+                FREETMPS;
+                LEAVE;
 		if (ix < ixmax || (style->trailingcomma && style->indent >= 1))
 		    sv_catpvs(retval, ",");
 	    }
@@ -944,9 +990,6 @@ DD_dump(pTHX_ SV *val, const char *name, STRLEN namelen, SV *retval, HV *seenhv,
 		sv_catpvs(retval, ")");
 	    else
 		sv_catpvs(retval, "]");
-	    SvREFCNT_dec(ixsv);
-	    SvREFCNT_dec(totpad);
-	    Safefree(iname);
 	}
 	else if (realtype == SVt_PVHV) {
 	    SV *totpad, *newapad;
@@ -956,7 +999,7 @@ DD_dump(pTHX_ SV *val, const char *name, STRLEN namelen, SV *retval, HV *seenhv,
 	    SV *hval;
 	    AV *keys = NULL;
 	
-	    SV * const iname = newSVpvn(name, namelen);
+	    SV * const iname = newSVpvn_flags(name, namelen, SVs_TEMP);
 	    if (name[0] == '%') {
 		sv_catpvs(retval, "(");
 		(SvPVX(iname))[0] = '$';
@@ -980,7 +1023,7 @@ DD_dump(pTHX_ SV *val, const char *name, STRLEN namelen, SV *retval, HV *seenhv,
 		sv_catpvs(iname, "->");
 	    }
 	    sv_catpvs(iname, "{");
-            totpad = newSVsv(style->sep);
+            totpad = sv_2mortal(newSVsv(style->sep));
             sv_catsv(totpad, style->pad);
 	    sv_catsv(totpad, apad);
 	
@@ -1076,6 +1119,10 @@ DD_dump(pTHX_ SV *val, const char *name, STRLEN namelen, SV *retval, HV *seenhv,
 
                 sv_catsv(retval, totpad);
                 sv_catsv(retval, ipad);
+
+                ENTER;
+                SAVETMPS;
+
                 /* The (very)
                    old logic was first to check utf8 flag, and if utf8 always
                    call esc_q_utf8.  This caused test to break under -Mutf8,
@@ -1102,6 +1149,7 @@ DD_dump(pTHX_ SV *val, const char *name, STRLEN namelen, SV *retval, HV *seenhv,
                     else {
 		        nticks = num_q(key, klen);
 			New(0, nkey_buffer, klen+nticks+3, char);
+                        SAVEFREEPV(nkey_buffer);
                         nkey = nkey_buffer;
 			nkey[0] = '\'';
 			if (nticks)
@@ -1119,7 +1167,8 @@ DD_dump(pTHX_ SV *val, const char *name, STRLEN namelen, SV *retval, HV *seenhv,
                     nlen = klen;
                     sv_catpvn(retval, nkey, klen);
 		}
-                sname = newSVsv(iname);
+
+                sname = sv_2mortal(newSVsv(iname));
                 sv_catpvn(sname, nkey, nlen);
                 sv_catpvs(sname, "}");
 
@@ -1127,7 +1176,7 @@ DD_dump(pTHX_ SV *val, const char *name, STRLEN namelen, SV *retval, HV *seenhv,
                 if (style->indent >= 2) {
 		    char *extra;
                     STRLEN elen = 0;
-		    newapad = newSVsv(apad);
+		    newapad = sv_2mortal(newSVsv(apad));
 		    New(0, extra, klen+4+1, char);
 		    while (elen < (klen+4))
 			extra[elen++] = ' ';
@@ -1140,10 +1189,9 @@ DD_dump(pTHX_ SV *val, const char *name, STRLEN namelen, SV *retval, HV *seenhv,
 
 		DD_dump(aTHX_ hval, SvPVX_const(sname), SvCUR(sname), retval, seenhv,
 			postav, level+1, newapad, style);
-		SvREFCNT_dec(sname);
-		Safefree(nkey_buffer);
-                if (style->indent >= 2)
-		    SvREFCNT_dec(newapad);
+
+                FREETMPS;
+                LEAVE;
 	    }
 	    if (i) {
                 SV *opad = sv_x(aTHX_ Nullsv, SvPVX_const(style->xpad),
@@ -1158,8 +1206,6 @@ DD_dump(pTHX_ SV *val, const char *name, STRLEN namelen, SV *retval, HV *seenhv,
 		sv_catpvs(retval, ")");
 	    else
 		sv_catpvs(retval, "}");
-	    SvREFCNT_dec(iname);
-	    SvREFCNT_dec(totpad);
 	}
 	else if (realtype == SVt_PVCV) {
             if (style->deparse) {
@@ -1206,7 +1252,6 @@ DD_dump(pTHX_ SV *val, const char *name, STRLEN namelen, SV *retval, HV *seenhv,
             STRLEN plen, pticks;
 
             if (style->indent >= 2) {
-		SvREFCNT_dec(apad);
 		apad = blesspad;
 	    }
 	    sv_catpvs(retval, ", '");
@@ -1235,7 +1280,6 @@ DD_dump(pTHX_ SV *val, const char *name, STRLEN namelen, SV *retval, HV *seenhv,
 		sv_catpvs(retval, "()");
 	    }
 	}
-	SvREFCNT_dec(ipad);
     }
     else {
 	STRLEN i;
@@ -1320,11 +1364,11 @@ DD_dump(pTHX_ SV *val, const char *name, STRLEN namelen, SV *retval, HV *seenhv,
 		SvCUR_set(retval, SvCUR(retval)+2);
                 i = 3 + esc_q_utf8(aTHX_ retval, c, i,
 #ifdef GvNAMEUTF8
-			!!GvNAMEUTF8(val)
+			!!GvNAMEUTF8(val), style->useqq
 #else
-			0
+			0, style->useqq || globname_supra_ascii(c, i)
 #endif
-			, style->useqq);
+			);
 		sv_grow(retval, SvCUR(retval)+2);
 		r = SvPVX(retval)+SvCUR(retval);
 		r[0] = '}'; r[1] = '\0';
@@ -1492,6 +1536,7 @@ Data_Dumper_Dumpxs(href, ...)
             style.indent = 2;
             style.quotekeys = 1;
             style.maxrecurse = 1000;
+            style.maxrecursed = FALSE;
             style.purity = style.deepcopy = style.useqq = style.maxdepth
                 = style.use_sparse_seen_hash = style.trailingcomma = 0;
             style.pad = style.xpad = style.sep = style.pair = style.sortkeys
@@ -1499,7 +1544,7 @@ Data_Dumper_Dumpxs(href, ...)
 	    seenhv = NULL;
 	    name = sv_newmortal();
 	
-	    retval = newSVpvs("");
+	    retval = newSVpvs_flags("", SVs_TEMP);
 	    if (SvROK(href)
 		&& (hv = (HV*)SvRV((SV*)href))
 		&& SvTYPE(hv) == SVt_PVHV)		{
@@ -1571,12 +1616,13 @@ Data_Dumper_Dumpxs(href, ...)
                         style.sortkeys = &PL_sv_yes;
 		}
 		postav = newAV();
+                sv_2mortal((SV*)postav);
 
 		if (todumpav)
 		    imax = av_len(todumpav);
 		else
 		    imax = -1;
-		valstr = newSVpvs("");
+		valstr = newSVpvs_flags("", SVs_TEMP);
 		for (i = 0; i <= imax; ++i) {
 		    SV *newapad;
 		
@@ -1628,20 +1674,21 @@ Data_Dumper_Dumpxs(href, ...)
 		
                     if (style.indent >= 2 && !terse) {
 			SV * const tmpsv = sv_x(aTHX_ NULL, " ", 1, SvCUR(name)+3);
-			newapad = newSVsv(apad);
+			newapad = sv_2mortal(newSVsv(apad));
 			sv_catsv(newapad, tmpsv);
 			SvREFCNT_dec(tmpsv);
 		    }
 		    else
 			newapad = apad;
 		
+                    ENTER;
+                    SAVETMPS;
 		    PUTBACK;
 		    DD_dump(aTHX_ val, SvPVX_const(name), SvCUR(name), valstr, seenhv,
                             postav, 0, newapad, &style);
 		    SPAGAIN;
-		
-                    if (style.indent >= 2 && !terse)
-			SvREFCNT_dec(newapad);
+                    FREETMPS;
+                    LEAVE;
 
 		    postlen = av_len(postav);
 		    if (postlen >= 0 || !terse) {
@@ -1672,18 +1719,23 @@ Data_Dumper_Dumpxs(href, ...)
 		    }
 		    SvPVCLEAR(valstr);
 		    if (gimme == G_ARRAY) {
-			XPUSHs(sv_2mortal(retval));
+			XPUSHs(retval);
 			if (i < imax)	/* not the last time thro ? */
-			    retval = newSVpvs("");
+			    retval = newSVpvs_flags("", SVs_TEMP);
 		    }
 		}
-		SvREFCNT_dec(postav);
-		SvREFCNT_dec(valstr);
+
+                /* we defer croaking until here so that temporary SVs and
+                 * buffers won't be leaked */
+                if (style.maxrecursed)
+                    croak("Recursion limit of %" IVdf " exceeded",
+                            style.maxrecurse);
+		
 	    }
 	    else
 		croak("Call to new() method failed to return HASH ref");
 	    if (gimme != G_ARRAY)
-		XPUSHs(sv_2mortal(retval));
+		XPUSHs(retval);
 	}
 
 SV *

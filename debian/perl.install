@@ -1,0 +1,19 @@
+#!/bin/sh
+
+cat <<EOF
+usr/bin
+debian/perl.perldoc usr/bin
+debian/libnet.cfg etc/perl/Net
+EOF
+
+cd debian/tmp
+# section 1 manual pages go in perl only for installed programs
+find usr/bin -type f -not -name perl -a -not -name perldoc -printf "%f\n" | \
+while read prog; do
+    man=usr/share/man/man1/$prog.1
+    if test -f $man; then
+        echo $man
+    else
+        echo "warning: no manual page for $prog" >&2
+    fi
+done

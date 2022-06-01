@@ -1,0 +1,89 @@
+From: Niko Tyni <ntyni@debian.org>
+Date: Sat, 4 Jul 2020 22:17:41 +0100
+Subject: Disable getaddrinfo(3) AI_ADDRCONFIG for localhost and IPv4 numeric
+ addresses
+
+I_ADDRCONFIG can be a bad default for systems with a dual protocol
+loopback device but just IPv6 connectivity. In such a case,
+getaddrinfo(3) on 127.0.0.1 or 0.0.0.0 will fail with EAI_ADDRFAMILY
+even though the loopback device is able to handle them.
+
+Forwarded: https://rt.cpan.org/Public/Bug/Display.html?id=132760
+---
+ cpan/IO-Socket-IP/lib/IO/Socket/IP.pm | 24 +++++++++++++++++++++---
+ 1 file changed, 21 insertions(+), 3 deletions(-)
+
+diff --git a/cpan/IO-Socket-IP/lib/IO/Socket/IP.pm b/cpan/IO-Socket-IP/lib/IO/Socket/IP.pm
+index 5a5ee7d..2481c63 100644
+--- a/cpan/IO-Socket-IP/lib/IO/Socket/IP.pm
++++ b/cpan/IO-Socket-IP/lib/IO/Socket/IP.pm
+@@ -30,6 +30,7 @@ use Socket 1.97 qw(
+ );
+ my $AF_INET6 = eval { Socket::AF_INET6() }; # may not be defined
+ my $AI_ADDRCONFIG = eval { Socket::AI_ADDRCONFIG() } || 0;
++my $AI_NUMERICHOST = eval { Socket::AI_NUMERICHOST() } || 0;
+ use POSIX qw( dup2 );
+ use Errno qw( EINVAL EINPROGRESS EISCONN ENOTCONN ETIMEDOUT EWOULDBLOCK EOPNOTSUPP );
+ 
+@@ -409,6 +410,8 @@ sub _io_socket_ip__configure
+    my ( $arg ) = @_;
+ 
+    my %hints;
++   my $localflags;
++   my $peerflags;
+    my @localinfos;
+    my @peerinfos;
+ 
+@@ -420,9 +423,20 @@ sub _io_socket_ip__configure
+ 
+    if( defined $arg->{GetAddrInfoFlags} ) {
+       $hints{flags} = $arg->{GetAddrInfoFlags};
++      $localflags  = $arg->{GetAddrInfoFlags};
++      $peerflags  = $arg->{GetAddrInfoFlags};
+    }
+    else {
+-      $hints{flags} = $AI_ADDRCONFIG;
++      if (defined $arg->{LocalHost} and $arg->{LocalHost} =~ /^\d+\.\d+\.\d+\.\d+$/) {
++              $localflags = $AI_NUMERICHOST;
++      } else {
++              $localflags = $AI_ADDRCONFIG;
++      }
++      if (defined $arg->{PeerHost} and $arg->{PeerHost} =~ /^\d+\.\d+\.\d+\.\d+$/) {
++              $peerflags = $AI_NUMERICHOST;
++      } elsif (defined $arg->{PeerHost} and $arg->{PeerHost} ne 'localhost') {
++              $peerflags = $AI_ADDRCONFIG;
++      }
+    }
+ 
+    if( defined( my $family = $arg->{Family} ) ) {
+@@ -479,6 +493,7 @@ sub _io_socket_ip__configure
+          my $fallback_port = $1;
+ 
+       my %localhints = %hints;
++      $localhints{flags} = $localflags;
+       $localhints{flags} |= AI_PASSIVE;
+       ( my $err, @localinfos ) = getaddrinfo( $host, $service, \%localhints );
+ 
+@@ -507,10 +522,12 @@ sub _io_socket_ip__configure
+       defined $service and $service =~ s/\((\d+)\)$// and
+          my $fallback_port = $1;
+ 
+-      ( my $err, @peerinfos ) = getaddrinfo( $host, $service, \%hints );
++      my %peerhints = %hints;
++      $peerhints{flags} = $peerflags;
++      ( my $err, @peerinfos ) = getaddrinfo( $host, $service, \%peerhints );
+ 
+       if( $err and defined $fallback_port ) {
+-         ( $err, @peerinfos ) = getaddrinfo( $host, $fallback_port, \%hints );
++         ( $err, @peerinfos ) = getaddrinfo( $host, $fallback_port, \%peerhints );
+       }
+ 
+       if( $err ) {
+@@ -590,6 +607,7 @@ sub _io_socket_ip__configure
+       # If there wasn't, use getaddrinfo()'s AI_ADDRCONFIG side-effect to guess a
+       # suitable family first.
+       else {
++         $hints{flags} |= $AI_ADDRCONFIG;
+          ( my $err, @infos ) = getaddrinfo( "", "0", \%hints );
+          if( $err ) {
+             $@ = "$err";

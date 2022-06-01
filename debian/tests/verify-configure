@@ -1,0 +1,5 @@
+#!/bin/sh
+mkdir $AUTOPKGTEST_TMP/source
+find . -print0 | cpio -p0d $AUTOPKGTEST_TMP/source
+cd $AUTOPKGTEST_TMP/source
+make -f debian/rules verify-configure-stamp

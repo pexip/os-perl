@@ -1,0 +1,53 @@
+#!perl -w
+
+#
+# Strip POD documentation out of base modules
+#
+# We install separate copies of these modules with the documentation intact
+# into libperl5.xx / perl-modules-5.xx, which are pulled in by perl-doc
+#
+
+use strict;
+use File::Find;
+use File::Path;
+
+my @args = @ARGV;
+@ARGV = ();
+find sub { push @ARGV, $File::Find::name if -f and /\.pm$/ }, @args;
+die "$0: no modules under @args?\n" unless @ARGV;
+
+$^I = '';
+$/ = '';
+
+my $in_pod;
+my $pod;
+
+while (<>)
+{
+    if ($in_pod ||= /^=\w/)
+    {
+
+	if (/^=cut\n/)
+	{
+	    $in_pod = 0;
+	}
+	else
+	{
+	    next;
+	}
+    }
+    else
+    {
+	print;
+    }
+}
+continue
+{
+    if (eof)
+    {
+	close ARGV;
+	$in_pod = 0;
+    }
+}
+
+exit

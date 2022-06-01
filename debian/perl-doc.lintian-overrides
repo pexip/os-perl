@@ -1,2 +1,5 @@
-# perl-doc needs perl
-doc-package-depends-on-main-package
+# Used as an example
+FSSTND-dir-in-manual-page usr/share/man/man1/perlretut.1.gz:1176 /usr/dict/
+FSSTND-dir-in-manual-page usr/share/man/man1/perlretut.1.gz:2665 /usr/dict/
+FSSTND-dir-in-manual-page usr/share/man/man1/perlretut.1.gz:363 /usr/dict/
+FSSTND-dir-in-manual-page usr/share/man/man1/perlretut.1.gz:919 /usr/dict/

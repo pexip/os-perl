@@ -1,0 +1,19 @@
+--- config.sh.static	2021-02-22 16:50:29.299544359 +0200
++++ config.sh.debug	2021-02-22 16:50:29.287516679 +0200
+@@ -17 +17 @@
+-config_args='-Dmksymlinks -Dusethreads -Duselargefiles -Dcc=ia64-linux-gnu-gcc -Dcpp=ia64-linux-gnu-cpp -Dld=ia64-linux-gnu-gcc -Dccflags=-DDEBIAN -DAPPLLIB_EXP="/usr/lib/ia64-linux-gnu/perl-base" -Wdate-time -D_FORTIFY_SOURCE=2 -g -O2 -ffile-prefix-map=/dummy/build/dir=. -Wformat -Werror=format-security -Dldflags=  -Dlddlflags=-shared  -Dcccdlflags=-fPIC -Darchname=ia64-linux-gnu -Dprefix=/usr -Dprivlib=/usr/share/perl/5.32 -Darchlib=/usr/lib/ia64-linux-gnu/perl/5.32 -Dvendorprefix=/usr -Dvendorlib=/usr/share/perl5 -Dvendorarch=/usr/lib/ia64-linux-gnu/perl5/5.32 -Dsiteprefix=/usr/local -Dsitelib=/usr/local/share/perl/5.32.1 -Dsitearch=/usr/local/lib/ia64-linux-gnu/perl/5.32.1 -Dman1dir=/usr/share/man/man1 -Dman3dir=/usr/share/man/man3 -Dsiteman1dir=/usr/local/man/man1 -Dsiteman3dir=/usr/local/man/man3 -Duse64bitint -Dman1ext=1 -Dman3ext=3perl -Dpager=/usr/bin/sensible-pager -Uafs -Ud_csh -Ud_ualarm -Uusesfio -Uusenm -Ui_libutil -Ui_xlocale -Uversiononly -DDEBUGGING=-g -Doptimize=-O2 -dEs -Uuseshrplib'
++config_args='-Dmksymlinks -Dusethreads -Duselargefiles -Dcc=ia64-linux-gnu-gcc -Dcpp=ia64-linux-gnu-cpp -Dld=ia64-linux-gnu-gcc -Dccflags=-DDEBIAN -Wdate-time -D_FORTIFY_SOURCE=2 -g -O2 -ffile-prefix-map=/dummy/build/dir=. -Wformat -Werror=format-security -Dldflags=  -Dlddlflags=-shared  -Dcccdlflags=-fPIC -Darchname=ia64-linux-gnu -Dprefix=/usr -Dprivlib=/usr/share/perl/5.32 -Darchlib=/usr/lib/ia64-linux-gnu/perl/5.32 -Dvendorprefix=/usr -Dvendorlib=/usr/share/perl5 -Dvendorarch=/usr/lib/ia64-linux-gnu/perl5/5.32 -Dsiteprefix=/usr/local -Dsitelib=/usr/local/share/perl/5.32.1 -Dsitearch=/usr/local/lib/ia64-linux-gnu/perl/5.32.1 -Dman1dir=/usr/share/man/man1 -Dman3dir=/usr/share/man/man3 -Dsiteman1dir=/usr/local/man/man1 -Dsiteman3dir=/usr/local/man/man3 -Duse64bitint -Dman1ext=1 -Dman3ext=3perl -Dpager=/usr/bin/sensible-pager -Uafs -Ud_csh -Ud_ualarm -Uusesfio -Uusenm -Ui_libutil -Ui_xlocale -Uversiononly -DDEBUGGING=both -Doptimize=-O2 -dEs -Uuseshrplib'
+@@ -25 +25 @@
+-config_arg7='-Dccflags=-DDEBIAN -DAPPLLIB_EXP="/usr/lib/ia64-linux-gnu/perl-base" -Wdate-time -D_FORTIFY_SOURCE=2 -g -O2 -ffile-prefix-map=/dummy/build/dir=. -Wformat -Werror=format-security'
++config_arg7='-Dccflags=-DDEBIAN -Wdate-time -D_FORTIFY_SOURCE=2 -g -O2 -ffile-prefix-map=/dummy/build/dir=. -Wformat -Werror=format-security'
+@@ -55 +55 @@
+-config_arg37='-DDEBUGGING=-g'
++config_arg37='-DDEBUGGING=both'
+@@ -103 +103 @@
+-ccflags='-D_REENTRANT -D_GNU_SOURCE -DDEBIAN -DAPPLLIB_EXP="/usr/lib/ia64-linux-gnu/perl-base" -Wdate-time -D_FORTIFY_SOURCE=2 -g -O2 -ffile-prefix-map=/dummy/build/dir=. -Wformat -Werror=format-security -fwrapv -fno-strict-aliasing -pipe -I/usr/local/include -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64'
++ccflags='-D_REENTRANT -D_GNU_SOURCE -DDEBIAN -Wdate-time -D_FORTIFY_SOURCE=2 -g -O2 -ffile-prefix-map=/dummy/build/dir=. -Wformat -Werror=format-security -fwrapv -DDEBUGGING -fno-strict-aliasing -pipe -I/usr/local/include -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64'
+@@ -125 +125 @@
+-cppflags='-D_REENTRANT -D_GNU_SOURCE -DDEBIAN -DAPPLLIB_EXP="/usr/lib/ia64-linux-gnu/perl-base" -Wdate-time -D_FORTIFY_SOURCE=2 -g -O2 -ffile-prefix-map=/dummy/build/dir=. -Wformat -Werror=format-security -fwrapv -fno-strict-aliasing -pipe -I/usr/local/include'
++cppflags='-D_REENTRANT -D_GNU_SOURCE -DDEBIAN -Wdate-time -D_FORTIFY_SOURCE=2 -g -O2 -ffile-prefix-map=/dummy/build/dir=. -Wformat -Werror=format-security -fwrapv -DDEBUGGING -fno-strict-aliasing -pipe -I/usr/local/include'
+@@ -1264 +1263,0 @@
+-# Extracted from Debian package version 5.32.1-2

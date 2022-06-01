@@ -1,0 +1,6 @@
+usr/lib/${DEB_HOST_MULTIARCH}/perl
+usr/lib/${DEB_HOST_MULTIARCH}/libperl.so.${env:fullversion}
+usr/bin/perl
+usr/bin/cpan
+debian/cross/README usr/lib/${DEB_HOST_MULTIARCH}/perl/debian-config-data-${env:fullversion}
+debian/errno.ph usr/lib/${DEB_HOST_MULTIARCH}/perl/${env:fullversion}

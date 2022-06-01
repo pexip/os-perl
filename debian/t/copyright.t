@@ -1,6 +1,7 @@
 #!/usr/bin/perl -w
 use strict;
-use Test::More tests => 8;
+use Test::More tests => 9;
+use File::Glob ':bsd_glob';
 
 my $upstream_version;
 ok(open(P, "dpkg-parsechangelog |"), "successfully piping from dpkg-parsechangelog");
@@ -24,6 +25,34 @@ close C;
 
 is($checked_version, $upstream_version,
     "debian/copyright last checked for the current upstream version");
+
+subtest 'Checking for stale Files: sections in debian/copyright' => sub {
+  ok(open(C, "<debian/copyright"), "successfully opened debian/copyright");
+  my $in_files = 0;
+  my $files_count = 0;
+  while (<C>) {
+    chomp;
+    s/^Files:/ / and do {
+        $in_files = 1;
+    };
+    if ($in_files) {
+        /^\S/ and do {
+            $in_files = 0;
+            next;
+        };
+        /^\s+(\S+)/ and do {
+            $files_count++;
+            my $glob = $1;
+            my @globbed = bsd_glob($glob, GLOB_ERR);
+            ok(@globbed, "'Files: $glob' in copyright file references existing files");
+        };
+    }
+  }
+  close C;
+  ok($files_count > 0, "found Files: sections in debian/copyright");
+  isnt($checked_version, "", "found checked version from debian/copyright");
+  done_testing($files_count + 3);
+};
 
 SKIP: {
     system('which cme >/dev/null 2>&1');

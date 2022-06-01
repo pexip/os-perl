@@ -1,0 +1,69 @@
+From: Karl Williamson <khw@cpan.org>
+Date: Sat, 27 Feb 2021 11:43:41 -0700
+Subject: regcomp.c: Remove memory leak
+
+This fixes GH #18604.  There was a path through the code where a
+particular SV did not get its reference count decremented.
+
+I did an audit of the function and came up with several other
+possiblities that are included in this commit.
+
+Further, there would be leaks for some instances of finding syntax
+errors in the input pattern, or when warnings are fatalized.  Those
+would require mortalizing some SVs, but that is beyond the scope of this
+commit.
+
+Origin: backport, https://github.com/Perl/perl5/commit/5f41fa466a67b5535aa8bcf4b814f242545ac7bd
+Bug: https://github.com/Perl/perl5/issues/18604
+Bug-Debian: https://bugs.debian.org/994834
+---
+ regcomp.c     | 7 +++++++
+ t/op/svleak.t | 3 ++-
+ 2 files changed, 9 insertions(+), 1 deletion(-)
+
+diff --git a/regcomp.c b/regcomp.c
+index 0da659c..5c72ff7 100644
+--- a/regcomp.c
++++ b/regcomp.c
+@@ -18626,6 +18626,12 @@ S_regclass(pTHX_ RExC_state_t *pRExC_state, I32 *flagp, U32 depth,
+ 	RExC_end = save_end;
+ 	RExC_in_multi_char_class = 0;
+         SvREFCNT_dec_NN(multi_char_matches);
++        SvREFCNT_dec(properties);
++        SvREFCNT_dec(cp_list);
++        SvREFCNT_dec(simple_posixes);
++        SvREFCNT_dec(posixes);
++        SvREFCNT_dec(nposixes);
++        SvREFCNT_dec(cp_foldable_list);
+         return ret;
+     }
+ 
+@@ -19983,6 +19989,7 @@ S_regclass(pTHX_ RExC_state_t *pRExC_state, I32 *flagp, U32 depth,
+                                            RExC_parse - orig_parse);;
+     SvREFCNT_dec(cp_list);;
+     SvREFCNT_dec(only_utf8_locale_list);
++    SvREFCNT_dec(upper_latin1_only_utf8_matches);
+     return ret;
+ }
+ 
+diff --git a/t/op/svleak.t b/t/op/svleak.t
+index 6acc298..3df4838 100644
+--- a/t/op/svleak.t
++++ b/t/op/svleak.t
+@@ -15,7 +15,7 @@ BEGIN {
+ 
+ use Config;
+ 
+-plan tests => 150;
++plan tests => 151;
+ 
+ # run some code N times. If the number of SVs at the end of loop N is
+ # greater than (N-1)*delta at the end of loop 1, we've got a leak
+@@ -278,6 +278,7 @@ eleak(2,0,'/[[:ascii:]]/');
+ eleak(2,0,'/[[.zog.]]/');
+ eleak(2,0,'/[.zog.]/');
+ eleak(2,0,'/|\W/', '/|\W/ [perl #123198]');
++eleak(2,0,'/a\sb/', '/a\sb/ [GH #18604]');
+ eleak(2,0,'no warnings; /(?[])/');
+ eleak(2,0,'no warnings; /(?[[a]+[b]])/');
+ eleak(2,0,'no warnings; /(?[[a]-[b]])/');

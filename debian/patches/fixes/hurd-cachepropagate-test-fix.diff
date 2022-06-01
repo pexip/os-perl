@@ -1,0 +1,32 @@
+From: Samuel Thibault <sthibault@debian.org>
+Date: Thu, 18 Jun 2020 13:47:36 +0200
+Subject: GNU/Hurd doesn't support SO_PROTOCOL
+
+Bug-Debian: https://bugs.debian.org/963214
+Origin: https://github.com/Perl/perl5/pull/17873
+---
+ dist/IO/t/cachepropagate-unix.t | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/dist/IO/t/cachepropagate-unix.t b/dist/IO/t/cachepropagate-unix.t
+index e0dde1e..718d01d 100644
+--- a/dist/IO/t/cachepropagate-unix.t
++++ b/dist/IO/t/cachepropagate-unix.t
+@@ -50,7 +50,7 @@ my $p = $listener->protocol();
+     # This is a TODO instead of a skip so if these ever implement SO_PROTOCOL
+     # we'll be notified about the passing TODO so the test can be updated.
+     local $TODO = "$^O doesn't support SO_PROTOCOL on AF_UNIX"
+-        if $^O =~ /^(netbsd|darwin|cygwin|hpux|solaris|dragonfly|os390)$/;
++        if $^O =~ /^(netbsd|darwin|cygwin|hpux|solaris|dragonfly|os390|gnu)$/;
+     ok(defined($p), 'protocol defined');
+ }
+ my $d = $listener->sockdomain();
+@@ -105,7 +105,7 @@ SKIP: {
+     {
+         # see comment above
+         local $TODO = "$^O doesn't support SO_PROTOCOL on AF_UNIX"
+-            if $^O =~ /^(netbsd|darwin|cygwin|hpux|solaris|dragonfly|os390)$/;
++            if $^O =~ /^(netbsd|darwin|cygwin|hpux|solaris|dragonfly|os390|gnu)$/;
+         ok(defined($p), 'protocol defined');
+     }
+     $d = $listener->sockdomain();

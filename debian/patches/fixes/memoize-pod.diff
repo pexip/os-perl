@@ -1,17 +1,15 @@
-From 74fb9e7591d6a1e45c0dc8637c195135b2725e82 Mon Sep 17 00:00:00 2001
 From: Niko Tyni <ntyni@debian.org>
 Date: Sat, 6 Feb 2016 20:15:19 +0200
 Subject: Fix POD errors in Memoize
 
 Bug: https://rt.cpan.org/Public/Bug/Display.html?id=89441
 Author: Dominic Hargreaves <dom@cpan.org>
-Patch-Name: fixes/memoize-pod.diff
 ---
  cpan/Memoize/Memoize.pm | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/cpan/Memoize/Memoize.pm b/cpan/Memoize/Memoize.pm
-index f4e6522d48..2f28b361f8 100644
+index f4e6522d4..2f28b36 100644
 --- a/cpan/Memoize/Memoize.pm
 +++ b/cpan/Memoize/Memoize.pm
 @@ -752,6 +752,8 @@ cache that was populated by the first call.  C<complicated> ends up

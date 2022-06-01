@@ -1,9 +1,8 @@
-From cc1af2a2f603824003c4725c33fd09e86d86f49b Mon Sep 17 00:00:00 2001
 From: Jonathan Nieder <jrnieder@gmail.com>
 Date: Fri, 27 Jul 2012 10:35:07 -0500
 Subject: Memoize::Storable: respect 'nstore' option not respected
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 
 Memoize(3perl) says:
@@ -46,14 +45,13 @@ Reported by Tim Retout (RT#77790)
 Bug-Debian: http://bugs.debian.org/587650
 Bug: https://rt.cpan.org/Public/Bug/Display.html?id=77790
 Forwarded: https://rt.cpan.org/Public/Bug/Display.html?id=77790
-Patch-Name: fixes/memoize_storable_nstore.diff
 ---
  cpan/Memoize/Memoize/Storable.pm |  2 +-
  cpan/Memoize/t/tie_storable.t    | 24 ++++++++++++++++++++----
  2 files changed, 21 insertions(+), 5 deletions(-)
 
 diff --git a/cpan/Memoize/Memoize/Storable.pm b/cpan/Memoize/Memoize/Storable.pm
-index 1314797297..87876f227e 100644
+index 1314797..87876f2 100644
 --- a/cpan/Memoize/Memoize/Storable.pm
 +++ b/cpan/Memoize/Memoize/Storable.pm
 @@ -55,7 +55,7 @@ sub DESTROY {
@@ -66,7 +64,7 @@ index 1314797297..87876f227e 100644
    } else {
      Storable::store($self->{H}, $self->{FILENAME});
 diff --git a/cpan/Memoize/t/tie_storable.t b/cpan/Memoize/t/tie_storable.t
-index de3b8dc26b..a62423850e 100644
+index de3b8dc..a624238 100644
 --- a/cpan/Memoize/t/tie_storable.t
 +++ b/cpan/Memoize/t/tie_storable.t
 @@ -31,18 +31,34 @@ if ($@) {

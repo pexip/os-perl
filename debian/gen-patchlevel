@@ -52,11 +52,13 @@ do
     < $patchdir/$patch sed -e '/^Subject:/ { N; s/\n / / }' | sed -n -e '
 
     # massage the patch headers
-    s|^Bug: .*https\?://rt\.perl\.org/.*id=\(.*\).*|[perl #\1]|; tprepend;
+    s|^Bug: .*https\?://rt\.perl\.org/.*id=\(.*\).*|[RT #\1]|; tprepend;
     s|^Bug: .*https\?://rt\.cpan\.org/.*id=\(.*\).*|[rt.cpan.org #\1]|; tprepend;
+    s|^Bug: .*https\?://github\.com/Perl/perl5/issues/\(.*\)|[GH #\1]|; tprepend;
     s|^Bug-Debian: [^0-9]*\([0-9]\{5,\}\)|https://bugs.debian.org/\1|; tprepend;
     s/^\(Subject\|Description\): //; tappend;
     s|^Origin: .*https\?://perl5\.git\.perl\.org/perl\.git/commit\(diff\)\?/\(.......\).*|[\2]|; tprepend;
+    s|^Origin: .*https\?://github\.com/Perl/perl5/commit\(diff\)\?/\(.......\).*|[\2]|; tprepend;
 
     # post-process at the end of input
     $ { x;

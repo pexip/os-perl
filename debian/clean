@@ -1,0 +1,15 @@
+# Makefile stamp files
+*-stamp
+# the build directories
+build-debug/
+build-shared/
+build-static/
+# generated from debian/patches/series
+patchlevel-debian.h
+# Configure regeneration leftovers
+Configure.orig
+config_h.SH.orig
+U
+Wanted
+.package
+Obsolete

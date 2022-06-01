@@ -1,2 +1,6 @@
 # see #914013
 missing-depends-on-sensible-utils
+# There is logic in the unicode handling code which deals with this typo
+spelling-error-in-binary usr/bin/debugperl Inseperable Inseparable
+# Not a spelling error
+spelling-error-in-binary usr/bin/debugperl alow allow

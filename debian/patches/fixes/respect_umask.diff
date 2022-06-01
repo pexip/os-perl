@@ -1,19 +1,16 @@
-From 552d05c7b55289a3264f66a0d1a3b668a27db811 Mon Sep 17 00:00:00 2001
 From: Brendan O'Dea <bod@debian.org>
 Date: Tue, 8 Mar 2005 19:30:38 +1100
 Subject: Respect umask during installation
 
 This is needed to satisfy Debian policy regarding group-writable
 site directories.
-
-Patch-Name: fixes/respect_umask.diff
 ---
- cpan/ExtUtils-Install/lib/ExtUtils/Install.pm  | 18 +++++++++---------
- .../ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm | 18 +++++++++---------
+ cpan/ExtUtils-Install/lib/ExtUtils/Install.pm   | 18 +++++++++---------
+ cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm | 18 +++++++++---------
  2 files changed, 18 insertions(+), 18 deletions(-)
 
 diff --git a/cpan/ExtUtils-Install/lib/ExtUtils/Install.pm b/cpan/ExtUtils-Install/lib/ExtUtils/Install.pm
-index 047c007145..cd7e4f234c 100644
+index 047c007..cd7e4f2 100644
 --- a/cpan/ExtUtils-Install/lib/ExtUtils/Install.pm
 +++ b/cpan/ExtUtils-Install/lib/ExtUtils/Install.pm
 @@ -463,7 +463,7 @@ sub _can_write_dir {
@@ -88,10 +85,10 @@ index 047c007145..cd7e4f234c 100644
          if ($need_filtering) {
              run_filter($pm_filter, $from, $to);
 diff --git a/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm b/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm
-index fe53be12ef..274e35c6fc 100644
+index ce12927..b759d3f1 100644
 --- a/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm
 +++ b/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm
-@@ -2229,7 +2229,7 @@ doc__install : doc_site_install
+@@ -2310,7 +2310,7 @@ doc__install : doc_site_install
  	$(NOECHO) $(ECHO) INSTALLDIRS not defined, defaulting to INSTALLDIRS=site
  
  pure_perl_install :: all
@@ -100,7 +97,7 @@ index fe53be12ef..274e35c6fc 100644
  };
  
      push @m,
-@@ -2249,7 +2249,7 @@ q{		"$(INST_LIB)" "$(DESTINSTALLPRIVLIB)" \
+@@ -2330,7 +2330,7 @@ q{		"$(INST_LIB)" "$(DESTINSTALLPRIVLIB)" \
  
  
  pure_site_install :: all
@@ -109,7 +106,7 @@ index fe53be12ef..274e35c6fc 100644
  };
      push @m,
  q{		read "}.$self->catfile('$(SITEARCHEXP)','auto','$(FULLEXT)','.packlist').q{" \
-@@ -2267,7 +2267,7 @@ q{		"$(INST_LIB)" "$(DESTINSTALLSITELIB)" \
+@@ -2348,7 +2348,7 @@ q{		"$(INST_LIB)" "$(DESTINSTALLSITELIB)" \
  		"}.$self->catdir('$(PERL_ARCHLIB)','auto','$(FULLEXT)').q{"
  
  pure_vendor_install :: all
@@ -118,7 +115,7 @@ index fe53be12ef..274e35c6fc 100644
  };
      push @m,
  q{		read "}.$self->catfile('$(VENDORARCHEXP)','auto','$(FULLEXT)','.packlist').q{" \
-@@ -2299,8 +2299,8 @@ doc_vendor_install :: all
+@@ -2380,8 +2380,8 @@ doc_vendor_install :: all
      push @m, q{
  doc_perl_install :: all
  	$(NOECHO) $(ECHO) Appending installation info to "$(DESTINSTALLARCHLIB)/perllocal.pod"
@@ -129,7 +126,7 @@ index fe53be12ef..274e35c6fc 100644
  		"Module" "$(NAME)" \
  		"installed into" "$(INSTALLPRIVLIB)" \
  		LINKTYPE "$(LINKTYPE)" \
-@@ -2310,8 +2310,8 @@ doc_perl_install :: all
+@@ -2391,8 +2391,8 @@ doc_perl_install :: all
  
  doc_site_install :: all
  	$(NOECHO) $(ECHO) Appending installation info to "$(DESTINSTALLARCHLIB)/perllocal.pod"
@@ -140,7 +137,7 @@ index fe53be12ef..274e35c6fc 100644
  		"Module" "$(NAME)" \
  		"installed into" "$(INSTALLSITELIB)" \
  		LINKTYPE "$(LINKTYPE)" \
-@@ -2321,8 +2321,8 @@ doc_site_install :: all
+@@ -2402,8 +2402,8 @@ doc_site_install :: all
  
  doc_vendor_install :: all
  	$(NOECHO) $(ECHO) Appending installation info to "$(DESTINSTALLARCHLIB)/perllocal.pod"
