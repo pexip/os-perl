@@ -1,3 +1,9 @@
+perl (5.32.1-4+deb11u2pexip4) pexip-bullseye; urgency=medium
+
+  * Bullseye rebuild for ARM64 inclusion
+
+ -- Mark Hymers <mark.hymers@pexip.com>  Mon, 05 Sep 2022 10:34:57 +0100
+
 perl (5.32.1-4+deb11u2pexip3) pexip-bullseye; urgency=medium
 
   * Rebuild for override changes
