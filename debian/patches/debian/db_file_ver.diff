@@ -10,7 +10,7 @@ Package dependencies ensure the correct library is linked at run-time.
  1 file changed, 2 insertions(+)
 
 diff --git a/cpan/DB_File/version.c b/cpan/DB_File/version.c
-index ecf73de..8846b4a 100644
+index 7df0d5a..1430443 100644
 --- a/cpan/DB_File/version.c
 +++ b/cpan/DB_File/version.c
 @@ -48,6 +48,7 @@ __getBerkeleyDBInfo()
@@ -23,9 +23,9 @@ index ecf73de..8846b4a 100644
                  /* || Patch != DB_VERSION_PATCH) */
 @@ -55,6 +56,7 @@ __getBerkeleyDBInfo()
          croak("\nDB_File was build with libdb version %d.%d.%d,\nbut you are attempting to run it with libdb version %d.%d.%d\n",
-                 DB_VERSION_MAJOR, DB_VERSION_MINOR, DB_VERSION_PATCH, 
+                 DB_VERSION_MAJOR, DB_VERSION_MINOR, DB_VERSION_PATCH,
                  Major, Minor, Patch) ;
 +#endif /* DEBIAN */
-     
+ 
      /* check that libdb is recent enough  -- we need 2.3.4 or greater */
      if (Major == 2 && (Minor < 3 || (Minor ==  3 && Patch < 4)))

@@ -10,10 +10,10 @@ Bug-Debian: https://bugs.debian.org/962138
  1 file changed, 2 insertions(+)
 
 diff --git a/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Any.pm b/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Any.pm
-index 2658299..0745e70 100644
+index 92f841f..0ec2fd8 100644
 --- a/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Any.pm
 +++ b/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Any.pm
-@@ -2740,6 +2740,8 @@ sub arch_check {
+@@ -2741,6 +2741,8 @@ sub arch_check {
      my($pvol, $pthinks) = $self->splitpath($pconfig);
      my($cvol, $cthinks) = $self->splitpath($cconfig);
  

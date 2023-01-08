@@ -242,6 +242,9 @@ fi
 # now continue with extracting Makefile et al.
 /bin/bash ./Configure -S $crossargs
 
+# mimic what 'Configure -e' does, unbreaking parallel builds (#996953)
+make depend
+
 # append PERL_BUILD_DATE before the last #endif in config.h
 # massive quoting problems prevent passing this to Configure
 sed -i "\$i #define PERL_BUILD_DATE \"$PERL_BUILD_DATE\"" config.h

@@ -146,3 +146,8 @@ if [ -n "$osdesc" ]; then
   myarchname="${machine_uname}-${osname}"
   myuname="$osname $myhostname $osvers $osdesc $machine_uname $os "
 fi
+
+full_sed='/bin/sed'
+aphostname='hostname'
+lns='ln -s'
+rm_try='rm -f try try$_exe a.out .out try.[cho] try.$_o core core.try* try.core*'

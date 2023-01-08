@@ -1,0 +1,43 @@
+From: Tony Cook <tony@develop-help.com>
+Date: Thu, 18 Aug 2022 11:10:51 +1000
+Subject: test that <> doesn't clear the stream error state
+
+Bug-Debian: https://bugs.debian.org/1016369
+Bug: https://github.com/Perl/perl5/issues/6799
+Origin: backport, https://github.com/Perl/perl5/commit/0b602161d2f4c5e6b22144e9f8b9f8128a35f440
+---
+ t/op/readline.t | 14 +++++++++++++-
+ 1 file changed, 13 insertions(+), 1 deletion(-)
+
+diff --git a/t/op/readline.t b/t/op/readline.t
+index ba4efa7..088ce2f 100644
+--- a/t/op/readline.t
++++ b/t/op/readline.t
+@@ -6,7 +6,7 @@ BEGIN {
+     set_up_inc('../lib');
+ }
+ 
+-plan tests => 32;
++plan tests => 36;
+ 
+ # [perl #19566]: sv_gets writes directly to its argument via
+ # TARG. Test that we respect SvREADONLY.
+@@ -289,6 +289,18 @@ is ${^LAST_FH}, undef, '${^LAST_FH} after readline undef';
+         '[perl #123790] *x=<y> used to fail an assertion';
+ }
+ 
++SKIP:
++{
++    skip_without_dynamic_extension("IO", 4);
++    my $tmpfile = tempfile();
++    open my $fh, ">", $tmpfile
++        or die "Cannot open $tmpfile: $!";
++    ok(!$fh->error, "no error before we try to read");
++    ok(!<$fh>, "fail to readline file opened for write");
++    ok($fh->error, "error after trying to readline file opened for write");
++    ok(!close($fh), "closing the file should fail");
++}
++
+ __DATA__
+ moo
+ moo

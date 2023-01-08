@@ -12,12 +12,12 @@ binary interface on some platforms.
  1 file changed, 4 insertions(+)
 
 diff --git a/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MakeMaker.pm b/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MakeMaker.pm
-index 6dceb98..99960bb 100644
+index 8ee3ca8..1d4c106 100644
 --- a/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MakeMaker.pm
 +++ b/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MakeMaker.pm
-@@ -1842,6 +1842,10 @@ currently used by MakeMaker but may be handy in Makefile.PLs.
- String that will be included in the compiler call command line between
- the arguments INC and OPTIMIZE.
+@@ -1842,6 +1842,10 @@ the default value directly, e.g.:
+ 
+     CCFLAGS => "$Config::Config{ccflags} ..."
  
 +The default value is taken from $Config{ccflags}. When overriding
 +CCFLAGS, make sure to include the $Config{ccflags} settings to avoid

@@ -8,7 +8,7 @@ Bug-Debian: https://bugs.debian.org/922609
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/utils/perlbug.PL b/utils/perlbug.PL
-index f78b63c..67d7ca8 100644
+index 4715e9d..7918266 100644
 --- a/utils/perlbug.PL
 +++ b/utils/perlbug.PL
 @@ -267,7 +267,7 @@ sub Init {

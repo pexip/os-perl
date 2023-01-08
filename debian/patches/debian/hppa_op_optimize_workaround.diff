@@ -14,10 +14,10 @@ Bug-Debian: https://bugs.debian.org/838613
  1 file changed, 6 insertions(+)
 
 diff --git a/cflags.SH b/cflags.SH
-index 96bfcd9..fee3dd8 100755
+index 443f5fc..bf3a30d 100755
 --- a/cflags.SH
 +++ b/cflags.SH
-@@ -503,6 +503,12 @@ for file do
+@@ -473,6 +473,12 @@ for file do
      # or customize here
  
      case "$file" in

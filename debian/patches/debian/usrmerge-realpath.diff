@@ -1,0 +1,34 @@
+From: Niko Tyni <ntyni@debian.org>
+Date: Tue, 24 Aug 2021 23:48:58 +0300
+Subject: Configure / libpth.U: use realpath --no-symlinks on Debian
+
+This makes the libpth probe results identical on usrmerged (/lib -> /usr/lib etc.)
+vs. non-usrmerged systems.
+
+Bug-Debian: https://bugs.debian.org/914128
+---
+ regen-configure/U/modified/libpth.U | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/regen-configure/U/modified/libpth.U b/regen-configure/U/modified/libpth.U
+index f654146..836eb76 100644
+--- a/regen-configure/U/modified/libpth.U
++++ b/regen-configure/U/modified/libpth.U
+@@ -112,7 +112,7 @@ case "$ccname" in
+ 	if $test $# -gt 0; then
+ 	    for i in $*; do
+ 		case $realpath in
+-		    */realpath) i=`$realpath $i` ;;
++		    */realpath) i=`$realpath --no-symlinks $i` ;;
+ 		esac
+ 		incpth="$incpth $i"
+ 		j="`$echo $i | $sed 's,/include[^/]*,/lib,'`"
+@@ -124,7 +124,7 @@ case "$ccname" in
+ 	    for xxx in $inclibpth $loclibpth $plibpth $glibpth; do
+ 		if $test -d $xxx; then
+ 		    case $realpath in
+-			*/realpath) xxx=`$realpath $xxx` ;;
++			*/realpath) xxx=`$realpath --no-symlinks $xxx` ;;
+ 		    esac
+ 		    case " $libpth " in
+ 		    *" $xxx "*) ;;

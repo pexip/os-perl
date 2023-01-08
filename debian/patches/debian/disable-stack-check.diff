@@ -19,10 +19,10 @@ Bug-Debian: https://bugs.debian.org/902779
  2 files changed, 6 insertions(+)
 
 diff --git a/dump.c b/dump.c
-index f03c3f6..737be76 100644
+index 6887ec3..0ea3324 100644
 --- a/dump.c
 +++ b/dump.c
-@@ -2535,6 +2535,8 @@ Perl_runops_debug(pTHX)
+@@ -2641,6 +2641,8 @@ Perl_runops_debug(pTHX)
          ++PL_op_exec_cnt[PL_op->op_type];
  #endif
  #if defined DEBUGGING && !defined DEBUGGING_RE_ONLY
@@ -31,20 +31,20 @@ index f03c3f6..737be76 100644
          if (PL_curstackinfo->si_stack_hwm < PL_stack_sp - PL_stack_base)
              Perl_croak_nocontext(
                  "panic: previous op failed to extend arg stack: "
-@@ -2542,6 +2544,7 @@ Perl_runops_debug(pTHX)
+@@ -2648,6 +2650,7 @@ Perl_runops_debug(pTHX)
                      PL_stack_base, PL_stack_sp,
                      PL_stack_base + PL_curstackinfo->si_stack_hwm);
          PL_curstackinfo->si_stack_hwm = PL_stack_sp - PL_stack_base;
 +#endif
  #endif
- 	if (PL_debug) {
+         if (PL_debug) {
              ENTER;
 diff --git a/pp_hot.c b/pp_hot.c
-index 95f6d64..4f29316 100644
+index d3a0aa1..baf627c 100644
 --- a/pp_hot.c
 +++ b/pp_hot.c
-@@ -5277,6 +5277,8 @@ PP(pp_entersub)
- 	CvXSUB(cv)(aTHX_ cv);
+@@ -5352,6 +5352,8 @@ PP(pp_entersub)
+         CvXSUB(cv)(aTHX_ cv);
  
  #if defined DEBUGGING && !defined DEBUGGING_RE_ONLY
 +/* disabled on Debian due to https://bugs.debian.org/902779 */
@@ -52,11 +52,11 @@ index 95f6d64..4f29316 100644
          /* This duplicates the check done in runops_debug(), but provides more
           * information in the common case of the fault being with an XSUB.
           *
-@@ -5290,6 +5292,7 @@ PP(pp_entersub)
+@@ -5365,6 +5367,7 @@ PP(pp_entersub)
                      HvNAME(GvSTASH(CvGV(cv))), GvNAME(CvGV(cv)), CvFILE(cv),
                      PL_stack_base, PL_stack_sp,
                      PL_stack_base + PL_curstackinfo->si_stack_hwm);
 +#endif
  #endif
- 	/* Enforce some sanity in scalar context. */
- 	if (is_scalar) {
+         /* Enforce some sanity in scalar context. */
+         if (is_scalar) {

@@ -1,0 +1,124 @@
+From: Niko Tyni <ntyni@debian.org>
+Date: Wed, 31 Aug 2022 21:41:14 +0300
+Subject: Work around a MakeMaker regression breaking GNU/Hurd hint files
+
+The idiom of
+
+  do './hints/linux.pl' or die $@;
+
+broke with https://github.com/Perl-Toolchain-Gang/ExtUtils-MakeMaker/pull/367
+which made $self a lexical variable so it is no longer visible in a file
+loaded with 'do'.
+
+This silently makes the loaded Linux hints a no-op, leading to missing
+symbols, broken modules and test failures in at least NDBM_File
+and ODBM_File on GNU/Hurd, as reported by Samuel Thibault in
+https://bugs.debian.org/1018289 .
+
+The replacement of eval `cat hints/linux.pl` is not very sophisticated
+but should be enough for this, and alternatives seem overly verbose.
+
+The ExtUtils::MakeMaker change will be reverted in a future release,
+and this patch can be dropped after that.
+
+Bug-Debian: https://bugs.debian.org/1018289
+Bug: https://github.com/Perl/perl5/pull/20267
+---
+ dist/Storable/hints/gnukfreebsd.pl  | 2 +-
+ dist/Storable/hints/gnuknetbsd.pl   | 2 +-
+ ext/DynaLoader/hints/gnukfreebsd.pl | 2 +-
+ ext/DynaLoader/hints/gnuknetbsd.pl  | 2 +-
+ ext/NDBM_File/hints/gnu.pl          | 2 +-
+ ext/NDBM_File/hints/gnukfreebsd.pl  | 2 +-
+ ext/NDBM_File/hints/gnuknetbsd.pl   | 2 +-
+ ext/ODBM_File/hints/gnu.pl          | 2 +-
+ ext/ODBM_File/hints/gnukfreebsd.pl  | 2 +-
+ ext/ODBM_File/hints/gnuknetbsd.pl   | 2 +-
+ ext/POSIX/hints/gnukfreebsd.pl      | 2 +-
+ ext/POSIX/hints/gnuknetbsd.pl       | 2 +-
+ 12 files changed, 12 insertions(+), 12 deletions(-)
+
+diff --git a/dist/Storable/hints/gnukfreebsd.pl b/dist/Storable/hints/gnukfreebsd.pl
+index db63567..013a2ed 100644
+--- a/dist/Storable/hints/gnukfreebsd.pl
++++ b/dist/Storable/hints/gnukfreebsd.pl
+@@ -1 +1 @@
+-do './hints/linux.pl' or die $@;
++eval `cat hints/linux.pl` or die $@;
+diff --git a/dist/Storable/hints/gnuknetbsd.pl b/dist/Storable/hints/gnuknetbsd.pl
+index db63567..013a2ed 100644
+--- a/dist/Storable/hints/gnuknetbsd.pl
++++ b/dist/Storable/hints/gnuknetbsd.pl
+@@ -1 +1 @@
+-do './hints/linux.pl' or die $@;
++eval `cat hints/linux.pl` or die $@;
+diff --git a/ext/DynaLoader/hints/gnukfreebsd.pl b/ext/DynaLoader/hints/gnukfreebsd.pl
+index db63567..013a2ed 100644
+--- a/ext/DynaLoader/hints/gnukfreebsd.pl
++++ b/ext/DynaLoader/hints/gnukfreebsd.pl
+@@ -1 +1 @@
+-do './hints/linux.pl' or die $@;
++eval `cat hints/linux.pl` or die $@;
+diff --git a/ext/DynaLoader/hints/gnuknetbsd.pl b/ext/DynaLoader/hints/gnuknetbsd.pl
+index db63567..013a2ed 100644
+--- a/ext/DynaLoader/hints/gnuknetbsd.pl
++++ b/ext/DynaLoader/hints/gnuknetbsd.pl
+@@ -1 +1 @@
+-do './hints/linux.pl' or die $@;
++eval `cat hints/linux.pl` or die $@;
+diff --git a/ext/NDBM_File/hints/gnu.pl b/ext/NDBM_File/hints/gnu.pl
+index db63567..013a2ed 100644
+--- a/ext/NDBM_File/hints/gnu.pl
++++ b/ext/NDBM_File/hints/gnu.pl
+@@ -1 +1 @@
+-do './hints/linux.pl' or die $@;
++eval `cat hints/linux.pl` or die $@;
+diff --git a/ext/NDBM_File/hints/gnukfreebsd.pl b/ext/NDBM_File/hints/gnukfreebsd.pl
+index db63567..013a2ed 100644
+--- a/ext/NDBM_File/hints/gnukfreebsd.pl
++++ b/ext/NDBM_File/hints/gnukfreebsd.pl
+@@ -1 +1 @@
+-do './hints/linux.pl' or die $@;
++eval `cat hints/linux.pl` or die $@;
+diff --git a/ext/NDBM_File/hints/gnuknetbsd.pl b/ext/NDBM_File/hints/gnuknetbsd.pl
+index db63567..013a2ed 100644
+--- a/ext/NDBM_File/hints/gnuknetbsd.pl
++++ b/ext/NDBM_File/hints/gnuknetbsd.pl
+@@ -1 +1 @@
+-do './hints/linux.pl' or die $@;
++eval `cat hints/linux.pl` or die $@;
+diff --git a/ext/ODBM_File/hints/gnu.pl b/ext/ODBM_File/hints/gnu.pl
+index db63567..013a2ed 100644
+--- a/ext/ODBM_File/hints/gnu.pl
++++ b/ext/ODBM_File/hints/gnu.pl
+@@ -1 +1 @@
+-do './hints/linux.pl' or die $@;
++eval `cat hints/linux.pl` or die $@;
+diff --git a/ext/ODBM_File/hints/gnukfreebsd.pl b/ext/ODBM_File/hints/gnukfreebsd.pl
+index db63567..013a2ed 100644
+--- a/ext/ODBM_File/hints/gnukfreebsd.pl
++++ b/ext/ODBM_File/hints/gnukfreebsd.pl
+@@ -1 +1 @@
+-do './hints/linux.pl' or die $@;
++eval `cat hints/linux.pl` or die $@;
+diff --git a/ext/ODBM_File/hints/gnuknetbsd.pl b/ext/ODBM_File/hints/gnuknetbsd.pl
+index db63567..013a2ed 100644
+--- a/ext/ODBM_File/hints/gnuknetbsd.pl
++++ b/ext/ODBM_File/hints/gnuknetbsd.pl
+@@ -1 +1 @@
+-do './hints/linux.pl' or die $@;
++eval `cat hints/linux.pl` or die $@;
+diff --git a/ext/POSIX/hints/gnukfreebsd.pl b/ext/POSIX/hints/gnukfreebsd.pl
+index db63567..013a2ed 100644
+--- a/ext/POSIX/hints/gnukfreebsd.pl
++++ b/ext/POSIX/hints/gnukfreebsd.pl
+@@ -1 +1 @@
+-do './hints/linux.pl' or die $@;
++eval `cat hints/linux.pl` or die $@;
+diff --git a/ext/POSIX/hints/gnuknetbsd.pl b/ext/POSIX/hints/gnuknetbsd.pl
+index db63567..013a2ed 100644
+--- a/ext/POSIX/hints/gnuknetbsd.pl
++++ b/ext/POSIX/hints/gnuknetbsd.pl
+@@ -1 +1 @@
+-do './hints/linux.pl' or die $@;
++eval `cat hints/linux.pl` or die $@;

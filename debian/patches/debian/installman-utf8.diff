@@ -13,7 +13,7 @@ Bug-Debian: https://bugs.debian.org/840211
  1 file changed, 1 insertion(+)
 
 diff --git a/installman b/installman
-index 0154be4..fff0ff0 100755
+index 686862d..4aeed23 100755
 --- a/installman
 +++ b/installman
 @@ -161,6 +161,7 @@ sub pod2man {

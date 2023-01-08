@@ -14,10 +14,10 @@ Forwarded: https://rt.cpan.org/Public/Bug/Display.html?id=132760
  1 file changed, 21 insertions(+), 3 deletions(-)
 
 diff --git a/cpan/IO-Socket-IP/lib/IO/Socket/IP.pm b/cpan/IO-Socket-IP/lib/IO/Socket/IP.pm
-index 5a5ee7d..2481c63 100644
+index 3158ef5..8d0c83e 100644
 --- a/cpan/IO-Socket-IP/lib/IO/Socket/IP.pm
 +++ b/cpan/IO-Socket-IP/lib/IO/Socket/IP.pm
-@@ -30,6 +30,7 @@ use Socket 1.97 qw(
+@@ -33,6 +33,7 @@ use Socket 1.97 qw(
  );
  my $AF_INET6 = eval { Socket::AF_INET6() }; # may not be defined
  my $AI_ADDRCONFIG = eval { Socket::AI_ADDRCONFIG() } || 0;
@@ -25,7 +25,7 @@ index 5a5ee7d..2481c63 100644
  use POSIX qw( dup2 );
  use Errno qw( EINVAL EINPROGRESS EISCONN ENOTCONN ETIMEDOUT EWOULDBLOCK EOPNOTSUPP );
  
-@@ -409,6 +410,8 @@ sub _io_socket_ip__configure
+@@ -415,6 +416,8 @@ sub _io_socket_ip__configure
     my ( $arg ) = @_;
  
     my %hints;
@@ -34,7 +34,7 @@ index 5a5ee7d..2481c63 100644
     my @localinfos;
     my @peerinfos;
  
-@@ -420,9 +423,20 @@ sub _io_socket_ip__configure
+@@ -426,9 +429,20 @@ sub _io_socket_ip__configure
  
     if( defined $arg->{GetAddrInfoFlags} ) {
        $hints{flags} = $arg->{GetAddrInfoFlags};
@@ -56,7 +56,7 @@ index 5a5ee7d..2481c63 100644
     }
  
     if( defined( my $family = $arg->{Family} ) ) {
-@@ -479,6 +493,7 @@ sub _io_socket_ip__configure
+@@ -485,6 +499,7 @@ sub _io_socket_ip__configure
           my $fallback_port = $1;
  
        my %localhints = %hints;
@@ -64,7 +64,7 @@ index 5a5ee7d..2481c63 100644
        $localhints{flags} |= AI_PASSIVE;
        ( my $err, @localinfos ) = getaddrinfo( $host, $service, \%localhints );
  
-@@ -507,10 +522,12 @@ sub _io_socket_ip__configure
+@@ -513,10 +528,12 @@ sub _io_socket_ip__configure
        defined $service and $service =~ s/\((\d+)\)$// and
           my $fallback_port = $1;
  
@@ -79,7 +79,7 @@ index 5a5ee7d..2481c63 100644
        }
  
        if( $err ) {
-@@ -590,6 +607,7 @@ sub _io_socket_ip__configure
+@@ -596,6 +613,7 @@ sub _io_socket_ip__configure
        # If there wasn't, use getaddrinfo()'s AI_ADDRCONFIG side-effect to guess a
        # suitable family first.
        else {

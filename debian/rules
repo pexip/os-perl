@@ -92,6 +92,11 @@ update-configure: update-configure-stamp
 	test -f Configure
 
 update-configure-stamp:
+	if [ -e regen-configure/bin ]; then \
+	    echo "regen-configure/bin is present but should have been repacked away, aborting" 1>&2; \
+	    echo '(see README.source and https://bugs.debian.org/992200)' 1>&2; \
+	    exit 1; \
+	fi
 	mv Configure Configure.orig
 	mv config_h.SH config_h.SH.orig
 	ln -s regen-configure/U

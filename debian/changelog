@@ -1,14 +1,101 @@
-perl (5.32.1-4+deb11u2) bullseye; urgency=medium
+perl (5.36.0-7) unstable; urgency=medium
 
-  * Apply upstream patch fixing a regexp memory leak. (Closes: #994834)
+  * Break backuppc (<< 4.4.0-7~) due to Data::Dumper changes in 5.36
+    (Closes: #1026270)
 
- -- Niko Tyni <ntyni@debian.org>  Fri, 24 Sep 2021 19:10:58 +0300
+ -- Niko Tyni <ntyni@debian.org>  Sun, 08 Jan 2023 23:28:47 +0200
 
-perl (5.32.1-4+deb11u1) bullseye-security; urgency=high
+perl (5.36.0-6) unstable; urgency=medium
 
+  * Break duck (<< 0.14.1) due to #1025722
+
+ -- Niko Tyni <ntyni@debian.org>  Sat, 10 Dec 2022 10:15:23 +0200
+
+perl (5.36.0-5) unstable; urgency=medium
+
+  * Backported upstream changes:
+    + only clear the stream error state in readline() for glob()
+      (Closes: #1016369)
+    + skip failing tests in libperl.t when building with LTO.
+      (Closes: #1015579)
+  * Refresh cross build support files for all architectures.
+
+ -- Niko Tyni <ntyni@debian.org>  Tue, 06 Dec 2022 11:43:06 +0200
+
+perl (5.36.0-4) unstable; urgency=medium
+
+  * Add 5.36.0 to debian/released-versions.
+  * Upload to unstable.
+
+ -- Niko Tyni <ntyni@debian.org>  Tue, 18 Oct 2022 19:44:58 +0300
+
+perl (5.36.0-3) experimental; urgency=medium
+
+  * Temporarily work around a MakeMaker regression breaking GNU/Hurd
+    hint files. (Closes: #1018289)
+  * Downgrade the perl-modules-5.36 priority to optional. (See #1018687)
+  * Add upstream patch fixing warnings in JSON::PP. (Closes: #1019757)
+
+ -- Niko Tyni <ntyni@debian.org>  Tue, 11 Oct 2022 23:01:11 +0300
+
+perl (5.36.0-2) experimental; urgency=medium
+
+  * Add Provides/Breaks/Replaces for libtext-balanced-perl.
+    (Closes: #1014282)
+  * Refresh cross build support files for most architectures.
+
+ -- Niko Tyni <ntyni@debian.org>  Sun, 10 Jul 2022 20:46:56 +0300
+
+perl (5.36.0-1) experimental; urgency=medium
+
+  * Update to new upstream version 5.36.0.
+
+ -- Niko Tyni <ntyni@debian.org>  Sun, 19 Jun 2022 09:44:30 +0300
+
+perl (5.34.0-4) unstable; urgency=medium
+
+  * Refresh cross build support files for all architectures.
+  * Fix massively parallel builds by first making 'depend'.
+    (Closes: #996953)
+  * Backport upstream patch to perl.h fixing build warnings on clang.
+    (Closes: #1009149)
+
+ -- Niko Tyni <ntyni@debian.org>  Fri, 08 Apr 2022 20:12:38 +0300
+
+perl (5.34.0-3) unstable; urgency=medium
+
+  * Add 5.34.0 to debian/released-versions.
+  * Upload to unstable.
+
+ -- Niko Tyni <ntyni@debian.org>  Sat, 05 Feb 2022 12:20:54 +0200
+
+perl (5.34.0-2) experimental; urgency=medium
+
+  * Apply upstream patch fixing issues with gdbm 1.20. (Closes: #993514)
+
+ -- Niko Tyni <ntyni@debian.org>  Fri, 27 Aug 2021 22:02:26 +0300
+
+perl (5.34.0-1) experimental; urgency=medium
+
+  * Update to new upstream version 5.34.0.
+  * Add a build time sanity check to make sure we filter away generated
+    files from the regen-configure tarball. (Closes: #992200)
+  * Fix usrmerge related reproducibility issues. Thanks to Vagrant
+    Cascadian. (Closes: #914128)
+  * Update cross build support files.
+  * Skip io/msg.t on x32 due to broken System V message queues.
+    (See #988900)
   * [SECURITY] CVE-2021-36770: Encode loading code from working directory
 
- -- Niko Tyni <ntyni@debian.org>  Thu, 05 Aug 2021 22:26:55 +0300
+ -- Niko Tyni <ntyni@debian.org>  Thu, 26 Aug 2021 21:20:41 +0300
+
+perl (5.34.0~rc2-1) experimental; urgency=medium
+
+  * Update to upstream release candidate 5.34.0-RC2.
+    + File::Temp file creation permissions are documented now.
+      (Closes: #987995)
+
+ -- Niko Tyni <ntyni@debian.org>  Mon, 17 May 2021 22:09:52 +0300
 
 perl (5.32.1-4) unstable; urgency=medium
 

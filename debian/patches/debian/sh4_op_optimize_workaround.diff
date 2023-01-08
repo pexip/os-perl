@@ -12,10 +12,10 @@ Bug-Debian: https://bugs.debian.org/869373
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/cflags.SH b/cflags.SH
-index f6c3b1f..b594d44 100755
+index 02a5e71..6cb3cae 100755
 --- a/cflags.SH
 +++ b/cflags.SH
-@@ -503,9 +503,9 @@ for file do
+@@ -473,9 +473,9 @@ for file do
      # or customize here
  
      case "$file" in

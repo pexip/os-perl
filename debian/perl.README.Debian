@@ -5,14 +5,14 @@ Perl Packages for Debian
   perl-base        - The Pathologically Eclectic Rubbish Lister.
   perl-doc         - Perl documentation.
   perl-debug       - Debug-enabled Perl interpreter.
-  libperl5.32      - Shared Perl library.
-  perl-modules-5.32 - Architecture independent core Perl modules.
+  libperl5.36      - Shared Perl library.
+  perl-modules-5.36 - Architecture independent core Perl modules.
   libperl-dev      - Perl library: development files.
 
 To provide a minimal working perl, the ``perl-base'' package provides
 the /usr/bin/perl binary plus a basic set of libraries.
 
-The remainder of the application is included in the perl, perl-modules-5.32
+The remainder of the application is included in the perl, perl-modules-5.36
 and perl-doc packages.
 
 See the 'README.source' file in the perl source package for information

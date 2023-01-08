@@ -13,11 +13,11 @@ compatible, but built on a different machine.
  1 file changed, 16 deletions(-)
 
 diff --git a/ext/Errno/Errno_pm.PL b/ext/Errno/Errno_pm.PL
-index 84fd151..9d1454c 100644
+index ee2f4a3..2c52aa5 100644
 --- a/ext/Errno/Errno_pm.PL
 +++ b/ext/Errno/Errno_pm.PL
-@@ -292,22 +292,6 @@ package Errno;
- require Exporter;
+@@ -283,22 +283,6 @@ package Errno;
+ use Exporter 'import';
  use strict;
  
 -EDQ
@@ -38,4 +38,4 @@ index 84fd151..9d1454c 100644
 -    print <<"EDQ";
  our \$VERSION = "$VERSION";
  \$VERSION = eval \$VERSION;
- our \@ISA = 'Exporter';
+ 

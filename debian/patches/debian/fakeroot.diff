@@ -13,7 +13,7 @@ rule where the Makefile is created, but is for the clean/binary* targets.
  1 file changed, 2 insertions(+), 5 deletions(-)
 
 diff --git a/Makefile.SH b/Makefile.SH
-index 124db32..a593df6 100755
+index efeb8d6..beba596 100755
 --- a/Makefile.SH
 +++ b/Makefile.SH
 @@ -48,10 +48,7 @@ case "$useshrplib" in
@@ -28,8 +28,8 @@ index 124db32..a593df6 100755
  
  	pldlflags="$cccdlflags"
  	static_ldflags=''
-@@ -130,7 +127,7 @@ true)
- 	    ;;
+@@ -129,7 +126,7 @@ true)
+             ;;
  	esac
  	case "$ldlibpthname" in
 -	'') ;;

@@ -12,16 +12,16 @@ from the debian/patches/ directory when building the package.
  1 file changed, 3 insertions(+)
 
 diff --git a/patchlevel.h b/patchlevel.h
-index 3c504ee..527f2bb 100644
+index b2b2bee..da0d8a0 100644
 --- a/patchlevel.h
 +++ b/patchlevel.h
-@@ -137,6 +137,9 @@ static const char * const local_patches[] = {
- 	,"uncommitted-changes"
+@@ -161,6 +161,9 @@ static const char * const local_patches[] = {
+         ,"uncommitted-changes"
  #endif
- 	PERL_GIT_UNPUSHED_COMMITS    	/* do not remove this line */
+         PERL_GIT_UNPUSHED_COMMITS    	/* do not remove this line */
 +#ifdef DEBIAN
 +#include "patchlevel-debian.h"
 +#endif
- 	,NULL
+         ,NULL
  };
  

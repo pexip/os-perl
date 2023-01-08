@@ -14,10 +14,10 @@ Bug-Debian: http://bugs.debian.org/290336
  2 files changed, 7 insertions(+), 4 deletions(-)
 
 diff --git a/cpan/Encode/bin/enc2xs b/cpan/Encode/bin/enc2xs
-index 1209baa..8571d64 100644
+index c1c9796..be3d1d6 100644
 --- a/cpan/Encode/bin/enc2xs
 +++ b/cpan/Encode/bin/enc2xs
-@@ -997,11 +997,11 @@ use vars qw(
+@@ -1002,11 +1002,11 @@ use vars qw(
  sub find_e2x{
      eval { require File::Find; };
      my (@inc, %e2x_dir);
@@ -31,7 +31,7 @@ index 1209baa..8571d64 100644
           my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,
               $atime,$mtime,$ctime,$blksize,$blocks)
               = lstat($_) or return;
-@@ -1011,7 +1011,7 @@ sub find_e2x{
+@@ -1016,7 +1016,7 @@ sub find_e2x{
               $e2x_dir{$File::Find::dir} ||= $mtime;
           }
           return;
@@ -40,7 +40,7 @@ index 1209baa..8571d64 100644
      warn join("\n", keys %e2x_dir), "\n";
      for my $d (sort {$e2x_dir{$a} <=> $e2x_dir{$b}} keys %e2x_dir){
      $_E2X = $d;
-@@ -1075,7 +1075,7 @@ sub make_configlocal_pm {
+@@ -1080,7 +1080,7 @@ sub make_configlocal_pm {
  	    $LocalMod{$enc} ||= $mod;
  	}
      };
