@@ -9,10 +9,10 @@ CORE directory to match other static libraries.
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm b/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm
-index eadc051..e2550ae 100644
+index 23d93f1..3562f76 100644
 --- a/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm
 +++ b/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Unix.pm
-@@ -2645,7 +2645,7 @@ MAP_PRELIBS   = $Config{perllibs} $Config{cryptlib}
+@@ -2656,7 +2656,7 @@ MAP_PRELIBS   = $Config{perllibs} $Config{cryptlib}
  	($lperl = $libperl) =~ s/\$\(A\)/$self->{LIB_EXT}/;
      }
      unless ($libperl && -f $lperl) { # Ilya's code...

@@ -1,0 +1,28 @@
+From: Vagrant Cascadian <vagrant@reproducible-builds.org>
+Date: Thu, 15 Jul 2021 20:20:07 +0000
+Subject: Configure / libpth.U: Do not adjust glibpth when /usr/lib64 is
+ present.
+
+This results in differing values when built on a usrmerge system.
+
+[Niko Tyni: Debian systems have /lib64/ld-linux-x86-64.so.2 and nothing
+else, so but so called "usrmerged" systems with symlinks like /lib64 ->
+/usr/lib64 would trigger the unnecessary addition of both in glibpth.]
+
+Bug-Debian: https://bugs.debian.org/914128
+---
+ regen-configure/U/modified/libpth.U | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/regen-configure/U/modified/libpth.U b/regen-configure/U/modified/libpth.U
+index 1bd69cf..f654146 100644
+--- a/regen-configure/U/modified/libpth.U
++++ b/regen-configure/U/modified/libpth.U
+@@ -83,7 +83,6 @@
+ ?X:	/usr/shlib is for OSF/1 systems.
+ ?INIT:test -f /usr/shlib/libc.so && glibpth="/usr/shlib $glibpth"
+ ?INIT:test -f /shlib/libc.so     && glibpth="/shlib $glibpth"
+-?INIT:test -d /usr/lib64         && glibpth="$glibpth /lib64 /usr/lib64 /usr/local/lib64"
+ ?INIT:
+ ?INIT:: Private path used by Configure to find libraries.  Its value
+ ?INIT:: is prepended to libpth. This variable takes care of special

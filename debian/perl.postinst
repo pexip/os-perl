@@ -7,7 +7,7 @@ then
 
     if which dpkg-trigger >/dev/null 2>&1 && \
        [ -n "$2" ] && \
-       dpkg --compare-versions "$2" lt 5.32.0~
+       dpkg --compare-versions "$2" lt 5.36.0~
     then
         dpkg-trigger --no-await perl-major-upgrade
     fi

@@ -1,9 +1,9 @@
---- config.sh.static	2021-02-22 16:50:32.249540242 +0200
-+++ config.sh.shared	2021-02-22 16:50:32.241526559 +0200
+--- config.sh.static	2022-12-03 21:09:16.165134114 +0200
++++ config.sh.shared	2022-12-03 21:09:16.153133721 +0200
 @@ -17,2 +17,2 @@
--config_args='-Dmksymlinks -Dusethreads -Duselargefiles -Dcc=powerpc64le-linux-gnu-gcc -Dcpp=powerpc64le-linux-gnu-cpp -Dld=powerpc64le-linux-gnu-gcc -Dccflags=-DDEBIAN -DAPPLLIB_EXP="/usr/lib/powerpc64le-linux-gnu/perl-base" -Wdate-time -D_FORTIFY_SOURCE=2 -g -O2 -ffile-prefix-map=/dummy/build/dir=. -fstack-protector-strong -Wformat -Werror=format-security -Dldflags= -Wl,-z,relro -Dlddlflags=-shared -Wl,-z,relro -Dcccdlflags=-fPIC -Darchname=powerpc64le-linux-gnu -Dprefix=/usr -Dprivlib=/usr/share/perl/5.32 -Darchlib=/usr/lib/powerpc64le-linux-gnu/perl/5.32 -Dvendorprefix=/usr -Dvendorlib=/usr/share/perl5 -Dvendorarch=/usr/lib/powerpc64le-linux-gnu/perl5/5.32 -Dsiteprefix=/usr/local -Dsitelib=/usr/local/share/perl/5.32.1 -Dsitearch=/usr/local/lib/powerpc64le-linux-gnu/perl/5.32.1 -Dman1dir=/usr/share/man/man1 -Dman3dir=/usr/share/man/man3 -Dsiteman1dir=/usr/local/man/man1 -Dsiteman3dir=/usr/local/man/man3 -Duse64bitint -Dman1ext=1 -Dman3ext=3perl -Dpager=/usr/bin/sensible-pager -Uafs -Ud_csh -Ud_ualarm -Uusesfio -Uusenm -Ui_libutil -Ui_xlocale -Uversiononly -DDEBUGGING=-g -Doptimize=-O2 -dEs -Uuseshrplib'
+-config_args='-Dmksymlinks -Dusethreads -Duselargefiles -Dcc=powerpc64le-linux-gnu-gcc -Dcpp=powerpc64le-linux-gnu-cpp -Dld=powerpc64le-linux-gnu-gcc -Dccflags=-DDEBIAN -DAPPLLIB_EXP="/usr/lib/powerpc64le-linux-gnu/perl-base" -Wdate-time -D_FORTIFY_SOURCE=2 -g -O2 -ffile-prefix-map=/dummy/build/dir=. -fstack-protector-strong -Wformat -Werror=format-security -Dldflags= -Wl,-z,relro -Dlddlflags=-shared -Wl,-z,relro -Dcccdlflags=-fPIC -Darchname=powerpc64le-linux-gnu -Dprefix=/usr -Dprivlib=/usr/share/perl/5.36 -Darchlib=/usr/lib/powerpc64le-linux-gnu/perl/5.36 -Dvendorprefix=/usr -Dvendorlib=/usr/share/perl5 -Dvendorarch=/usr/lib/powerpc64le-linux-gnu/perl5/5.36 -Dsiteprefix=/usr/local -Dsitelib=/usr/local/share/perl/5.36.0 -Dsitearch=/usr/local/lib/powerpc64le-linux-gnu/perl/5.36.0 -Dman1dir=/usr/share/man/man1 -Dman3dir=/usr/share/man/man3 -Dsiteman1dir=/usr/local/man/man1 -Dsiteman3dir=/usr/local/man/man3 -Duse64bitint -Dman1ext=1 -Dman3ext=3perl -Dpager=/usr/bin/sensible-pager -Uafs -Ud_csh -Ud_ualarm -Uusesfio -Uusenm -Ui_libutil -Ui_xlocale -Uversiononly -DDEBUGGING=-g -Doptimize=-O2 -dEs -Uuseshrplib'
 -config_argc=40
-+config_args='-Dmksymlinks -Dusethreads -Duselargefiles -Dcc=powerpc64le-linux-gnu-gcc -Dcpp=powerpc64le-linux-gnu-cpp -Dld=powerpc64le-linux-gnu-gcc -Dccflags=-DDEBIAN -Wdate-time -D_FORTIFY_SOURCE=2 -g -O2 -ffile-prefix-map=/dummy/build/dir=. -fstack-protector-strong -Wformat -Werror=format-security -Dldflags= -Wl,-z,relro -Dlddlflags=-shared -Wl,-z,relro -Dcccdlflags=-fPIC -Darchname=powerpc64le-linux-gnu -Dprefix=/usr -Dprivlib=/usr/share/perl/5.32 -Darchlib=/usr/lib/powerpc64le-linux-gnu/perl/5.32 -Dvendorprefix=/usr -Dvendorlib=/usr/share/perl5 -Dvendorarch=/usr/lib/powerpc64le-linux-gnu/perl5/5.32 -Dsiteprefix=/usr/local -Dsitelib=/usr/local/share/perl/5.32.1 -Dsitearch=/usr/local/lib/powerpc64le-linux-gnu/perl/5.32.1 -Dman1dir=/usr/share/man/man1 -Dman3dir=/usr/share/man/man3 -Dsiteman1dir=/usr/local/man/man1 -Dsiteman3dir=/usr/local/man/man3 -Duse64bitint -Dman1ext=1 -Dman3ext=3perl -Dpager=/usr/bin/sensible-pager -Uafs -Ud_csh -Ud_ualarm -Uusesfio -Uusenm -Ui_libutil -Ui_xlocale -Uversiononly -DDEBUGGING=-g -Doptimize=-O2 -dEs -Duseshrplib -Dlibperl=libperl.so.5.32.1'
++config_args='-Dmksymlinks -Dusethreads -Duselargefiles -Dcc=powerpc64le-linux-gnu-gcc -Dcpp=powerpc64le-linux-gnu-cpp -Dld=powerpc64le-linux-gnu-gcc -Dccflags=-DDEBIAN -Wdate-time -D_FORTIFY_SOURCE=2 -g -O2 -ffile-prefix-map=/dummy/build/dir=. -fstack-protector-strong -Wformat -Werror=format-security -Dldflags= -Wl,-z,relro -Dlddlflags=-shared -Wl,-z,relro -Dcccdlflags=-fPIC -Darchname=powerpc64le-linux-gnu -Dprefix=/usr -Dprivlib=/usr/share/perl/5.36 -Darchlib=/usr/lib/powerpc64le-linux-gnu/perl/5.36 -Dvendorprefix=/usr -Dvendorlib=/usr/share/perl5 -Dvendorarch=/usr/lib/powerpc64le-linux-gnu/perl5/5.36 -Dsiteprefix=/usr/local -Dsitelib=/usr/local/share/perl/5.36.0 -Dsitearch=/usr/local/lib/powerpc64le-linux-gnu/perl/5.36.0 -Dman1dir=/usr/share/man/man1 -Dman3dir=/usr/share/man/man3 -Dsiteman1dir=/usr/local/man/man1 -Dsiteman3dir=/usr/local/man/man3 -Duse64bitint -Dman1ext=1 -Dman3ext=3perl -Dpager=/usr/bin/sensible-pager -Uafs -Ud_csh -Ud_ualarm -Uusesfio -Uusenm -Ui_libutil -Ui_xlocale -Uversiononly -DDEBUGGING=-g -Doptimize=-O2 -dEs -Duseshrplib -Dlibperl=libperl.so.5.36.0'
 +config_argc=41
 @@ -25 +25 @@
 -config_arg7='-Dccflags=-DDEBIAN -DAPPLLIB_EXP="/usr/lib/powerpc64le-linux-gnu/perl-base" -Wdate-time -D_FORTIFY_SOURCE=2 -g -O2 -ffile-prefix-map=/dummy/build/dir=. -fstack-protector-strong -Wformat -Werror=format-security'
@@ -11,18 +11,18 @@
 @@ -58 +58,2 @@
 -config_arg40='-Uuseshrplib'
 +config_arg40='-Duseshrplib'
-+config_arg41='-Dlibperl=libperl.so.5.32.1'
++config_arg41='-Dlibperl=libperl.so.5.36.0'
 @@ -103 +104 @@
 -ccflags='-D_REENTRANT -D_GNU_SOURCE -DDEBIAN -DAPPLLIB_EXP="/usr/lib/powerpc64le-linux-gnu/perl-base" -Wdate-time -D_FORTIFY_SOURCE=2 -g -O2 -ffile-prefix-map=/dummy/build/dir=. -fstack-protector-strong -Wformat -Werror=format-security -fwrapv -fno-strict-aliasing -pipe -I/usr/local/include -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64'
 +ccflags='-D_REENTRANT -D_GNU_SOURCE -DDEBIAN -Wdate-time -D_FORTIFY_SOURCE=2 -g -O2 -ffile-prefix-map=/dummy/build/dir=. -fstack-protector-strong -Wformat -Werror=format-security -fwrapv -fno-strict-aliasing -pipe -I/usr/local/include -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64'
-@@ -125 +126 @@
+@@ -126 +127 @@
 -cppflags='-D_REENTRANT -D_GNU_SOURCE -DDEBIAN -DAPPLLIB_EXP="/usr/lib/powerpc64le-linux-gnu/perl-base" -Wdate-time -D_FORTIFY_SOURCE=2 -g -O2 -ffile-prefix-map=/dummy/build/dir=. -fstack-protector-strong -Wformat -Werror=format-security -fwrapv -fno-strict-aliasing -pipe -I/usr/local/include'
 +cppflags='-D_REENTRANT -D_GNU_SOURCE -DDEBIAN -Wdate-time -D_FORTIFY_SOURCE=2 -g -O2 -ffile-prefix-map=/dummy/build/dir=. -fstack-protector-strong -Wformat -Werror=format-security -fwrapv -fno-strict-aliasing -pipe -I/usr/local/include'
-@@ -928 +929 @@
+@@ -936 +937 @@
 -libperl='libperl.a'
-+libperl='libperl.so.5.32.1'
-@@ -1211 +1212 @@
++libperl='libperl.so.5.36.0'
+@@ -1222 +1223 @@
 -useshrplib='false'
 +useshrplib='true'
-@@ -1264 +1264,0 @@
--# Extracted from Debian package version 5.32.1-2
+@@ -1276 +1276,0 @@
+-# Extracted from Debian package version 5.36.0-4

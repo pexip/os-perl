@@ -71,6 +71,8 @@ sub check {
 	return if $_ eq 'IO' || $_ eq 're';
 	# "use feature" dies without an argument
 	return if $_ eq 'feature';
+	# builtin only works at compile time, and is always built in
+	return if $_ eq 'builtin';
 	# this file does not return a true value, and is not to be used
 	# directly
 	return if $_ eq 'unicore/To/Isc.pl';

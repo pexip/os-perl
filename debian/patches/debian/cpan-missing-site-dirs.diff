@@ -16,10 +16,10 @@ Bug-Debian: http://bugs.debian.org/688842
  1 file changed, 27 insertions(+), 4 deletions(-)
 
 diff --git a/cpan/CPAN/lib/CPAN/FirstTime.pm b/cpan/CPAN/lib/CPAN/FirstTime.pm
-index b7322fd..d3517ac 100644
+index 54d5131..6f185cc 100644
 --- a/cpan/CPAN/lib/CPAN/FirstTime.pm
 +++ b/cpan/CPAN/lib/CPAN/FirstTime.pm
-@@ -2136,11 +2136,34 @@ sub _print_urllist {
+@@ -2166,11 +2166,34 @@ sub _print_urllist {
      };
  }
  

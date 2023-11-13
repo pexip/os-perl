@@ -19,10 +19,10 @@ functionality].
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/cpan/CPAN/lib/CPAN/Distribution.pm b/cpan/CPAN/lib/CPAN/Distribution.pm
-index 3412108..c737a2f 100644
+index d346a6b..c39bb90 100644
 --- a/cpan/CPAN/lib/CPAN/Distribution.pm
 +++ b/cpan/CPAN/lib/CPAN/Distribution.pm
-@@ -4516,7 +4516,7 @@ sub _display_url {
+@@ -4584,7 +4584,7 @@ sub _display_url {
        if $CPAN::DEBUG;
  
      # should we define it in the config instead?

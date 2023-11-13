@@ -1,17 +1,25 @@
 From: Niko Tyni <ntyni@debian.org>
-Date: Sat, 14 Oct 2017 17:47:09 +0300
+Date: Wed, 25 Aug 2021 21:24:38 +0300
 Subject: Regenerate Configure et al. after probe unit changes
 
 Bug-Debian: https://bugs.debian.org/762638
 ---
- Configure | 5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+ Configure | 10 ++++------
+ 1 file changed, 4 insertions(+), 6 deletions(-)
 
 diff --git a/Configure b/Configure
-index fbc2258..0b5bdd4 100755
+index bd96249..a7a64f7 100755
 --- a/Configure
 +++ b/Configure
-@@ -1491,8 +1491,7 @@ archname=''
+@@ -1472,7 +1472,6 @@ glibpth="/lib /usr/lib $xlibpth"
+ glibpth="$glibpth /usr/ccs/lib /usr/ucblib /usr/local/lib"
+ test -f /usr/shlib/libc.so && glibpth="/usr/shlib $glibpth"
+ test -f /shlib/libc.so     && glibpth="/shlib $glibpth"
+-test -d /usr/lib64         && glibpth="$glibpth /lib64 /usr/lib64 /usr/local/lib64"
+ 
+ : Private path used by Configure to find libraries.  Its value
+ : is prepended to libpth. This variable takes care of special
+@@ -1503,8 +1502,7 @@ archname=''
  usereentrant='undef'
  : List of libraries we want.
  : If anyone needs extra -lxxx, put those in a hint file.
@@ -21,7 +29,25 @@ index fbc2258..0b5bdd4 100755
  : We probably want to search /usr/shlib before most other libraries.
  : This is only used by the lib/ExtUtils/MakeMaker.pm routine extliblist.
  glibpth=`echo " $glibpth " | sed -e 's! /usr/shlib ! !'`
-@@ -23899,7 +23898,7 @@ sunos*X4*)
+@@ -4936,7 +4934,7 @@ case "$ccname" in
+ 	if $test $# -gt 0; then
+ 	    for i in $*; do
+ 		case $realpath in
+-		    */realpath) i=`$realpath $i` ;;
++		    */realpath) i=`$realpath --no-symlinks $i` ;;
+ 		esac
+ 		incpth="$incpth $i"
+ 		j="`$echo $i | $sed 's,/include[^/]*,/lib,'`"
+@@ -4948,7 +4946,7 @@ case "$ccname" in
+ 	    for xxx in $inclibpth $loclibpth $plibpth $glibpth; do
+ 		if $test -d $xxx; then
+ 		    case $realpath in
+-			*/realpath) xxx=`$realpath $xxx` ;;
++			*/realpath) xxx=`$realpath --no-symlinks $xxx` ;;
+ 		    esac
+ 		    case " $libpth " in
+ 		    *" $xxx "*) ;;
+@@ -24381,7 +24379,7 @@ sunos*X4*)
      ;;
  *) case "$usedl" in
      $define|true|[yY]*)

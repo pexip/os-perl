@@ -14,7 +14,7 @@ Bug-Debian: https://bugs.debian.org/796798
  1 file changed, 1 insertion(+)
 
 diff --git a/t/op/stat.t b/t/op/stat.t
-index 5ad119c..230e8d8 100644
+index b391dd0..9cbf1a1 100644
 --- a/t/op/stat.t
 +++ b/t/op/stat.t
 @@ -101,6 +101,7 @@ sleep 3 if $funky_FAT_timestamps;

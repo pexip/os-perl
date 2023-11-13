@@ -1,0 +1,26 @@
+From: Kenichi Ishigaki <ishigaki@cpan.org>
+Date: Sun, 9 Oct 2022 08:41:56 +0900
+Subject: Call unimport first to silence warnings
+
+Trivially backported to JSON-PP 4.07 (as shipped with Perl 5.36)
+by Niko Tyni <ntyni@debian.org>
+
+Bug-Debian: https://bugs.debian.org/1019757
+Bug: https://github.com/makamaka/JSON-PP/issues/76
+Origin: backport, https://github.com/makamaka/JSON-PP/pull/79
+---
+ cpan/JSON-PP/lib/JSON/PP/Boolean.pm | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/cpan/JSON-PP/lib/JSON/PP/Boolean.pm b/cpan/JSON-PP/lib/JSON/PP/Boolean.pm
+index d1ee0a4..073da7b 100644
+--- a/cpan/JSON-PP/lib/JSON/PP/Boolean.pm
++++ b/cpan/JSON-PP/lib/JSON/PP/Boolean.pm
+@@ -3,6 +3,7 @@ package JSON::PP::Boolean;
+ use strict;
+ require overload;
+ local $^W;
++overload::unimport('overload', qw(0+ ++ -- fallback));
+ overload::import('overload',
+     "0+"     => sub { ${$_[0]} },
+     "++"     => sub { $_[0] = ${$_[0]} + 1 },

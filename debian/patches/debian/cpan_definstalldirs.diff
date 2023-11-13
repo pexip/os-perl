@@ -11,10 +11,10 @@ ordering, but not ours.
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/cpan/CPAN/lib/CPAN/FirstTime.pm b/cpan/CPAN/lib/CPAN/FirstTime.pm
-index af4a6d7..b7322fd 100644
+index 8934f4a..54d5131 100644
 --- a/cpan/CPAN/lib/CPAN/FirstTime.pm
 +++ b/cpan/CPAN/lib/CPAN/FirstTime.pm
-@@ -1080,7 +1080,7 @@ sub init {
+@@ -1094,7 +1094,7 @@ sub init {
      my_prompt_loop(prefer_installer => 'MB', $matcher, 'MB|EUMM|RAND');
  
      if (!$matcher or 'makepl_arg make_arg' =~ /$matcher/) {
@@ -23,7 +23,7 @@ index af4a6d7..b7322fd 100644
          my_dflt_prompt(make_arg => "", $matcher);
          if ( $CPAN::Config->{makepl_arg} =~ /LIBS=|INC=/ ) {
              $CPAN::Frontend->mywarn(
-@@ -1112,7 +1112,7 @@ sub init {
+@@ -1126,7 +1126,7 @@ sub init {
      my_dflt_prompt(make_install_arg => $CPAN::Config->{make_arg} || "",
                     $matcher);
  

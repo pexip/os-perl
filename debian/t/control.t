@@ -73,7 +73,7 @@ my %known_epochs = (
 # Replaces+Provides
 my %triplet_check_skip = (
 	"perl-base" => [ "libfile-spec-perl" ],
-	"libperl5.32" => [ "libfilter-perl" ],
+	"libperl5.36" => [ "libfilter-perl" ],
 );
 
 # list special cases where the name of the Debian package does not

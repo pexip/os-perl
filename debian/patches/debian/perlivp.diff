@@ -23,7 +23,7 @@ Signed-off-by: Niko Tyni <ntyni@debian.org>
  1 file changed, 1 insertion(+)
 
 diff --git a/utils/perlivp.PL b/utils/perlivp.PL
-index f175caa..509f943 100644
+index 597ed6f..5459c07 100644
 --- a/utils/perlivp.PL
 +++ b/utils/perlivp.PL
 @@ -155,6 +155,7 @@ my $INC_total = 0;

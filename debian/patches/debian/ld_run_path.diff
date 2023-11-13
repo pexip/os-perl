@@ -7,15 +7,15 @@ Subject: Remove standard libs from LD_RUN_PATH as per Debian policy.
  1 file changed, 2 insertions(+)
 
 diff --git a/cpan/ExtUtils-MakeMaker/lib/ExtUtils/Liblist/Kid.pm b/cpan/ExtUtils-MakeMaker/lib/ExtUtils/Liblist/Kid.pm
-index e040a89..01d09c5 100644
+index 01a4a48..240fb69 100644
 --- a/cpan/ExtUtils-MakeMaker/lib/ExtUtils/Liblist/Kid.pm
 +++ b/cpan/ExtUtils-MakeMaker/lib/ExtUtils/Liblist/Kid.pm
-@@ -64,6 +64,8 @@ sub _unix_os2_ext {
+@@ -68,6 +68,8 @@ sub _unix_os2_ext {
          $potential_libs =~ s/(^|\s)(-(?:weak_|reexport_|lazy_)?framework)\s+(\S+)/$1-Wl,$2 -Wl,$3/g;
          $potential_libs =~ s/(^|\s)(-F)\s*(\S+)/$1-Wl,$2 -Wl,$3/g;
      }
 +    # Debian-specific: don't use LD_RUN_PATH for standard dirs
 +    $ld_run_path_seen{$_}++ for @libpath;
  
-     foreach my $thislib ( Text::ParseWords::quotewords( '\s+', 0, $potential_libs) ) {
+     foreach my $thislib ( Text::ParseWords::shellwords($potential_libs) ) {
          my ( $custom_name ) = '';

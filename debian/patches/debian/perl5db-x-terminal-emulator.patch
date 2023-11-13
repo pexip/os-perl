@@ -12,10 +12,10 @@ Forwarded: not-needed
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/lib/perl5db.pl b/lib/perl5db.pl
-index 69a9bb6..53d60f9 100644
+index 64f7fcb..0354f06 100644
 --- a/lib/perl5db.pl
 +++ b/lib/perl5db.pl
-@@ -6988,7 +6988,7 @@ properly set up.
+@@ -6993,7 +6993,7 @@ properly set up.
  sub xterm_get_fork_TTY {
      ( my $name = $0 ) =~ s,^.*[/\\],,s;
      open XT,
