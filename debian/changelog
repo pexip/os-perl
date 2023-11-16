@@ -1,3 +1,9 @@
+perl (5.36.0-7pexip1) pexip-bookworm; urgency=medium
+
+  * Initial bookworm build
+
+ -- Mark Hymers <mark.hymers@pexip.com>  Thu, 16 Nov 2023 10:19:10 +0000
+
 perl (5.36.0-7) unstable; urgency=medium
 
   * Break backuppc (<< 4.4.0-7~) due to Data::Dumper changes in 5.36
