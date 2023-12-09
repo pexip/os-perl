@@ -1,3 +1,10 @@
+perl (5.36.0-7+deb12u1) bookworm; urgency=medium
+
+  * [SECURITY] CVE-2023-47038: Write past buffer end via illegal
+    user-defined Unicode property. (Closes: #1056746)
+
+ -- Niko Tyni <ntyni@debian.org>  Sat, 25 Nov 2023 22:59:54 +0200
+
 perl (5.36.0-7pexip1) pexip-bookworm; urgency=medium
 
   * Initial bookworm build

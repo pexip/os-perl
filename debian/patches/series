@@ -50,3 +50,4 @@ fixes/json-pp-warnings.diff
 fixes/readline-stream-errors.diff
 fixes/readline-stream-errors-test.diff
 fixes/lto-test-fix.diff
+fixes/CVE-2023-47038.diff
