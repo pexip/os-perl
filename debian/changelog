@@ -1,3 +1,9 @@
+perl (5.36.0-7+deb12u1pexip1) pexip-bookworm; urgency=medium
+
+  * New upstream release.
+
+ -- Mark Hymers <mark.hymers@pexip.com>  Sat, 09 Dec 2023 11:14:58 +0000
+
 perl (5.36.0-7+deb12u1) bookworm; urgency=medium
 
   * [SECURITY] CVE-2023-47038: Write past buffer end via illegal
