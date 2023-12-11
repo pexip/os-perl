@@ -1,3 +1,9 @@
+perl (5.36.0-7+deb12u1pexip3) pexip-bookworm; urgency=medium
+
+  * Rebuild for override changes.
+
+ -- Mark Hymers <mark.hymers@pexip.com>  Mon, 11 Dec 2023 12:53:33 +0000
+
 perl (5.36.0-7+deb12u1pexip2) pexip-bookworm; urgency=medium
 
   * Bookworm build for product distribution
