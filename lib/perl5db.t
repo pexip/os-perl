@@ -404,9 +404,11 @@ results.
 
 =head1 DESCRIPTION
 
-DebugWrap is a simple class that executes a set of debugger commands
-against a program under the debugger and provides some simple methods
-to examine the results.
+DebugWrap is a simple class used when testing the Perl debugger that
+executes a set of debugger commands against a program under the
+debugger and provides some simple methods to examine the results.
+
+It is not installed to your system.
 
 =head2 Creating a DebugWrap object
 
@@ -459,7 +461,7 @@ include the output from the program under test.
 Test that the debugger output matches the given regular expression
 object (as with qr//).
 
-Equivelent to:
+Equivalent to:
 
   like($wrapper->get_contents, $re, $test_name);
 
@@ -468,7 +470,7 @@ Equivelent to:
 Test that the debugger output does not match the given regular
 expression object (as with qr//).
 
-Equivelent to:
+Equivalent to:
 
   unlike($wrapper->get_contents, $re, $test_name);
 
@@ -484,7 +486,7 @@ capturing stderr.
 Test that the program output matches the given regular expression
 object (as with qr//).
 
-Equivelent to:
+Equivalent to:
 
   like($wrapper->get_output, $re, $test_name);
 
@@ -493,7 +495,7 @@ Equivelent to:
 Test that the program output does not match the given regular
 expression object (as with qr//).
 
-Equivelent to:
+Equivalent to:
 
   unlike($wrapper->get_output, $re, $test_name);
 
@@ -3292,6 +3294,201 @@ EOS
     $wrapper->output_unlike(qr/AddressSanitizer/, "[github #19198] no bad access");
     $wrapper->contents_like(qr/^Test::AUTOLOAD\(.*?\):\s+\d+:\s+my \$sub = \$AUTOLOAD;/m,
                           "[github #19198] check we stopped correctly");
+}
+
+{
+    # gh-21350: verify that nonsense linespecs are rejected #1
+    my $wrapper = DebugWrap->new(
+        {
+            cmds =>
+            [
+                'l ...',
+                'q',
+            ],
+            prog => '../lib/perl5db/t/gh-21350',
+        }
+    );
+
+    $wrapper->contents_like(
+        qr/Invalid line specification '...'/,
+        q/gh-21350: multiple periods rejected/,
+    );
+}
+
+{
+    # gh-21350: verify that nonsense linespecs are rejected #2
+    my $wrapper = DebugWrap->new(
+        {
+            cmds =>
+            [
+                'l $',
+                'q',
+            ],
+            prog => '../lib/perl5db/t/gh-21350',
+        }
+    );
+
+    $wrapper->contents_like(
+        qr/Invalid line specification '\$'/,
+        q/gh-21350: $ rejected/,
+    );
+}
+
+{
+    # gh-21350: verify that nonsense linespecs are rejected #3
+    my $wrapper = DebugWrap->new(
+        {
+            cmds =>
+            [
+                'l 2.71828',
+                'q',
+            ],
+            prog => '../lib/perl5db/t/gh-21350',
+        }
+    );
+
+    $wrapper->contents_like(
+        qr/Invalid line specification '2\.71828'/,
+        q/gh-21350: floating-point rejected/,
+    );
+}
+
+{
+    # gh-21350: verify that nonsense linespecs are rejected #4
+    my $wrapper = DebugWrap->new(
+        {
+            cmds =>
+            [
+                'l 1.1.1.1',
+                'q',
+            ],
+            prog => '../lib/perl5db/t/gh-21350',
+        }
+    );
+
+    $wrapper->contents_like(
+        qr/Invalid line specification '1\.1\.1\.1'/,
+        q/gh-21350: IPv4 address rejected/,
+    );
+}
+
+{
+    # gh-21350: verify that nonsense linespecs are rejected #5
+    my $wrapper = DebugWrap->new(
+        {
+            cmds =>
+            [
+                'l -.',
+                'q',
+            ],
+            prog => '../lib/perl5db/t/gh-21350',
+        }
+    );
+
+    $wrapper->contents_like(
+        qr/Invalid line specification '-\.'/,
+        q/gh-21350: invalid partial range rejected/,
+    );
+}
+
+{
+    # gh-21350: verify that nonsense linespecs are rejected #6
+    my $wrapper = DebugWrap->new(
+        {
+            cmds =>
+            [
+                'l -$.',
+                'q',
+            ],
+            prog => '../lib/perl5db/t/gh-21350',
+        }
+    );
+
+    $wrapper->contents_like(
+        qr/Invalid line specification '\-\$\.'/,
+        q/gh-21350: formerly acceptable nonsense rejected/,
+    );
+}
+
+{
+    # gh-21350: verify that nonsense linespecs are rejected #7
+    my $wrapper = DebugWrap->new(
+        {
+            cmds =>
+            [
+                'l -12',
+                'q',
+            ],
+            prog => '../lib/perl5db/t/gh-21350',
+        }
+    );
+
+    $wrapper->contents_like(
+        qr/Invalid line specification '-12'/,
+        q/gh-21350: negative line number rejected/,
+    );
+}
+
+{
+    # gh-21350: verify that nonsense linespecs are rejected #8
+    my $wrapper = DebugWrap->new(
+        {
+            cmds =>
+            [
+                'l 17$',
+                'q',
+            ],
+            prog => '../lib/perl5db/t/gh-21350',
+        }
+    );
+
+    $wrapper->contents_like(
+        qr/Invalid line specification '17\$'/,
+        q/gh-21350: line number with trailing $ rejected/,
+    );
+}
+
+{
+    # gh-21350: verify that nonsense linespecs are rejected #9
+    my $wrapper = DebugWrap->new(
+        {
+            cmds =>
+            [
+                'l $2250$',
+                'q',
+            ],
+            prog => '../lib/perl5db/t/gh-21350',
+        }
+    );
+
+    $wrapper->contents_like(
+        qr/Invalid line specification '\$2250\$'/,
+        q/gh-21350: match variable with trailing $ rejected/,
+    );
+}
+
+{
+    # https://github.com/Perl/perl5/issues/21564
+    # not a debugger bug, but with the way the fix for #19198 was broken
+    # this needs to be tested with a debugger of some sort (even a no-op
+    # debugger) so test it here.
+    my $wrapper = DebugWrap->new(
+        {
+            cmds =>
+            [
+                'c', # just run it, we check the output of the code
+                'q'
+            ],
+            prog => \<<'EOS',
+use v5.12;
+no strict;
+use B qw(svref_2object SVf_IOK);
+my $sv = svref_2object(\(${"_<$0"}[3])); # the "use B;" line
+say +($sv->FLAGS & SVf_IOK) ? "OK" : "FAIL";
+EOS
+        }
+    );
+    $wrapper->output_like(qr/\bOK\b/, "check the line is IOK");
 }
 
 done_testing();

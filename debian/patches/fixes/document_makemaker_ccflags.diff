@@ -12,10 +12,10 @@ binary interface on some platforms.
  1 file changed, 4 insertions(+)
 
 diff --git a/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MakeMaker.pm b/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MakeMaker.pm
-index 8ee3ca8..1d4c106 100644
+index e8c3808..89dd530 100644
 --- a/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MakeMaker.pm
 +++ b/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MakeMaker.pm
-@@ -1842,6 +1842,10 @@ the default value directly, e.g.:
+@@ -1827,6 +1827,10 @@ the default value directly, e.g.:
  
      CCFLAGS => "$Config::Config{ccflags} ..."
  

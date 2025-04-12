@@ -859,9 +859,7 @@ int BZ_API(BZ2_bzDecompress) ( bz_stream *strm )
       }
    }
 
-   AssertH ( 0, 6001 );
-
-   return 0;  /*NOTREACHED*/
+    /*NOTREACHED*/
 }
 
 
@@ -1415,7 +1413,7 @@ BZFILE * bzopen_or_bzdopen
       case 's':
          smallMode = 1; break;
       default:
-         if (isdigit((int)(*mode))) {
+         if (isdigit((unsigned char)(*mode))) {
             blockSize100k = *mode-BZ_HDR_0;
          }
       }

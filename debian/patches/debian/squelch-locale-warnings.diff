@@ -17,10 +17,10 @@ the warning will be triggered normally again at that point.
  2 files changed, 11 insertions(+)
 
 diff --git a/locale.c b/locale.c
-index c83076d..d108594 100644
+index 6492b10..9a1868e 100644
 --- a/locale.c
 +++ b/locale.c
-@@ -3227,6 +3227,9 @@ Perl_init_i18nl10n(pTHX_ int printwarn)
+@@ -8750,6 +8750,9 @@ Perl_init_i18nl10n(pTHX_ int printwarn)
  
      const bool locwarn = (printwarn > 1
                            || (          printwarn
@@ -31,10 +31,10 @@ index c83076d..d108594 100644
                                    || (
                                           /* disallow with "" or "0" */
 diff --git a/pod/perllocale.pod b/pod/perllocale.pod
-index 30940a5..684fe3a 100644
+index 498cc4f..d930886 100644
 --- a/pod/perllocale.pod
 +++ b/pod/perllocale.pod
-@@ -1312,6 +1312,14 @@ B<NOTE>: C<PERL_BADLANG> only gives you a way to hide the warning message.
+@@ -1370,6 +1370,14 @@ B<NOTE>: C<PERL_BADLANG> only gives you a way to hide the warning message.
  The message tells about some problem in your system's locale support,
  and you should investigate what the problem is.
  

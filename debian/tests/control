@@ -3,6 +3,7 @@ Depends: perl-base
 
 Tests: perl-base-self-contained
 Depends: perl-base
+Restrictions: superficial
 
 Tests: compression db gdbm ndbm storable
 Depends: perl, db-util, gdbmtool
@@ -15,15 +16,16 @@ Restrictions: allow-stderr
 Test-Command: prove debian/t/control.t
 Depends: perl, libapt-pkg-perl, dpkg-dev, libdpkg-perl
 Features: test-name=control
-Restrictions: skip-not-installable
+Restrictions: superficial, skip-not-installable
 
 Test-Command: prove debian/t/released-versions.t
 Depends: perl, dpkg-dev
 Features: test-name=released_versions
+Restrictions: superficial
 
 Test-Command: /usr/share/pkg-perl-autopkgtest/runtime-deps-and-recommends.d/syntax.t
 Depends: @, pkg-perl-autopkgtest
-Restrictions: allow-stderr
+Restrictions: superficial, allow-stderr
 Features: test-name=syntax
 
 Tests: verify-configure

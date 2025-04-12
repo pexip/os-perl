@@ -199,7 +199,7 @@ use strict;
     # find which ops use 0,1,2,3 or 4 bits of op_private for arg count info
 
     $args0{$_} = 1 for qw(entersub avhvswitch
-                       rv2hv);                  # UNOPs that usurp bit 0
+                       rv2hv aelemfastlex_store);                  # UNOPs that usurp bit 0
 
     # Historically, bit ops used bit 0 to indicate 'use integer' in scope;
     # For now, ban use of bits 0..1 as an arg count, in order to detect
@@ -318,7 +318,7 @@ addbits($_, 7 => qw(OPpLVAL_INTRO LVINTRO))
     for qw(gvsv rv2sv rv2hv rv2gv rv2av aelem helem aslice split
            hslice delete padsv padav padhv enteriter entersub padrange
            pushmark cond_expr refassign lvref lvrefslice lvavref multideref
-           multiconcat),
+           multiconcat padsv_store undef emptyavhv),
            'list', # this gets set in my_attrs() for some reason
            ;
 
@@ -362,7 +362,7 @@ addbits($_, 7 => qw(OPpLVAL_INTRO LVINTRO))
 #	  before other args are processed.
 #
 #	Suspicious wrt "additional mode of failure" (and only it):
-#	schop, chop, postinc/dec, bit_and etc, negate, complement.
+#	schop, chop, postinc/dec, bit_and etc, complement.
 #
 #	Also suspicious: 4-arg substr, sprintf, uc/lc (POK_only), reverse, pack.
 #
@@ -482,7 +482,8 @@ addbits($_, 7 => qw(OPpOFFBYONE  +1)) for qw(caller wantarray runcv);
 # label is in UTF8 */
 addbits($_, 7 => qw(OPpPV_IS_UTF8 UTF)) for qw(last redo next goto dump);
 
-
+# suppress looking up a class name as an IO handle in a method call
+addbits($_, 1  => qw(OPpMETH_NO_BAREWORD_IO NO_BAREWORD_IO)) for ops_with_flag('.');
 
 # ====================================================================
 #
@@ -499,7 +500,8 @@ addbits($_, 7 => qw(OPpPV_IS_UTF8 UTF)) for qw(last redo next goto dump);
 #   \state $foo = ...
 
 addbits($_, 6 => qw(OPpPAD_STATE STATE))  for qw(padav padhv padsv lvavref
-                                                 lvref refassign pushmark);
+                                                 lvref refassign pushmark
+                                                 padsv_store undef emptyavhv);
 
 # NB: both sassign and aassign use the 'OPpASSIGN' naming convention
 # for their private flags
@@ -589,6 +591,29 @@ addbits('entersub',
     # 7    => OPpLVAL_INTRO, already defined above
 );
 
+# OpENTERSUB_HASTARG is checked by dXSTARG, used by many XSUBs, to see if
+# a TARG is available.
+#
+# A normal entersub, or these builtin:: ops allocate the  TARG and sets this
+# flag in their ck functions.  entersub allocates it since it will be the active
+# op during execution of the XSUB and this saves creating a new mortal.
+#
+# goto never allocates the targ and never sets the flag, but it can call
+# XSUBs that check the flag (see github #22542)
+#
+# call_sv() can create an entersub that has neither the TARG nor the
+# flag set (and it would be difficult to do so), so we do need the
+# flag or an equivalent.
+#
+# The listed builtin:: pp_ functions need this flag (rather than
+# assuming a TARG) because their XSUB implementations just call the
+# pp_ func, which may be called from goto or call_sv() and not have a
+# TARG allocated.
+
+addbits($_,
+        2      => qw(OPpENTERSUB_HASTARG  TARG  ),
+) for qw(refaddr reftype ceil floor goto);
+
 # note that some of these flags are just left-over from when an entersub
 # is converted into an rv2cv, and could probably be cleared/re-assigned
 
@@ -626,7 +651,7 @@ addbits('padrange',
 
 
 
-for (qw(aelemfast aelemfast_lex)) {
+for (qw(aelemfast aelemfast_lex aelemfastlex_store)) {
     addbits($_,
         '0..7' =>  {
                 label     => 'key',
@@ -659,7 +684,18 @@ addbits('const',
     2 => qw(OPpCONST_SHORTCIRCUIT SHORT),   # e.g. the constant 5 in (5 || foo)
     3 => qw(OPpCONST_STRICT       STRICT),  # bareword subject to strict 'subs'
     4 => qw(OPpCONST_ENTERED      ENTERED), # Has been entered as symbol
-    6 => qw(OPpCONST_BARE         BARE),    # Was a bare word (filehandle?)
+    5 => qw(OPpCONST_BARE         BARE),    # Was a bare word (filehandle?)
+    '6..7' => {                             # value derived from __LINE__ etc
+        mask_def      => 'OPpCONST_TOKEN_MASK',
+        baseshift_def => 'OPpCONST_TOKEN_SHIFT',
+        bitcount_def  => 'OPpCONST_TOKEN_BITS',
+        label         => 'TOKEN',
+        enum          => [ qw(
+                             1   OPpCONST_TOKEN_LINE    LINE
+                             2   OPpCONST_TOKEN_FILE    FILE
+                             3   OPpCONST_TOKEN_PACKAGE PACKAGE
+                         )],
+    },
 );
 
 
@@ -738,6 +774,8 @@ addbits('entereval',
     3 => qw(OPpEVAL_BYTES        BYTES  ),
     4 => qw(OPpEVAL_COPHH        COPHH  ), # Construct %^H from COP hints
     5 => qw(OPpEVAL_RE_REPARSING REPARSE), # eval_sv(..., G_RE_REPARSING)
+    6 => qw(OPpEVAL_EVALSV       EVALSV ), # called from eval_sv()
+
 );
 
 
@@ -849,6 +887,39 @@ addbits('multiconcat',
 
 addbits('pushdefer',
     7 => qw(OPpDEFER_FINALLY FINALLY),
+);
+
+# undef does not have the T flag set in regen/opcodes (and therefore
+# automatically get the TARGMY flag added), as this causes S_maybe_targlex
+# to do an unwanted optimization prior to Perl_rpeep.
+addbits('undef',
+    4 => qw(OPpTARGET_MY TARGMY),
+    5 => qw(OPpUNDEF_KEEP_PV KEEP_PV),
+);
+
+addbits('emptyavhv',
+  # 7       OPpLVAL_INTRO
+  # 6       OPpPAD_STATE
+    5 => qw(OPpEMPTYAVHV_IS_HV ANONHASH),
+  # 4       OPpTARGET_MY
+);
+
+addbits('argdefelem',
+    7 => qw(OPpARG_IF_UNDEF  IF_UNDEF),
+    6 => qw(OPpARG_IF_FALSE  IF_FALSE),
+);
+
+addbits('helemexistsor',
+    7 => qw(OPpHELEMEXISTSOR_DELETE DELETE),
+);
+
+addbits('methstart',
+    7 => qw(OPpINITFIELDS INITFIELDS),
+);
+
+addbits('initfield',
+    1 => qw(OPpINITFIELD_AV INITFIELD_AV),
+    2 => qw(OPpINITFIELD_HV INITFIELD_HV),
 );
 
 1;

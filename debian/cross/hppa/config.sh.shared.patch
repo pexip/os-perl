@@ -1,28 +1,28 @@
---- config.sh.static	2022-12-03 21:09:11.416978751 +0200
-+++ config.sh.shared	2022-12-03 21:09:11.408978489 +0200
+--- config.sh.static	2025-02-16 16:42:32.011620050 +0200
++++ config.sh.shared	2025-02-16 16:42:31.999619983 +0200
 @@ -17,2 +17,2 @@
--config_args='-Dmksymlinks -Dusethreads -Duselargefiles -Dcc=hppa-linux-gnu-gcc -Dcpp=hppa-linux-gnu-cpp -Dld=hppa-linux-gnu-gcc -Dccflags=-DDEBIAN -DAPPLLIB_EXP="/usr/lib/hppa-linux-gnu/perl-base" -Wdate-time -D_FORTIFY_SOURCE=2 -g -O2 -ffile-prefix-map=/dummy/build/dir=. -Wformat -Werror=format-security -Dldflags=  -Dlddlflags=-shared  -Dcccdlflags=-fPIC -Darchname=hppa-linux-gnu -Dprefix=/usr -Dprivlib=/usr/share/perl/5.36 -Darchlib=/usr/lib/hppa-linux-gnu/perl/5.36 -Dvendorprefix=/usr -Dvendorlib=/usr/share/perl5 -Dvendorarch=/usr/lib/hppa-linux-gnu/perl5/5.36 -Dsiteprefix=/usr/local -Dsitelib=/usr/local/share/perl/5.36.0 -Dsitearch=/usr/local/lib/hppa-linux-gnu/perl/5.36.0 -Dman1dir=/usr/share/man/man1 -Dman3dir=/usr/share/man/man3 -Dsiteman1dir=/usr/local/man/man1 -Dsiteman3dir=/usr/local/man/man3 -Duse64bitint -Dman1ext=1 -Dman3ext=3perl -Dpager=/usr/bin/sensible-pager -Uafs -Ud_csh -Ud_ualarm -Uusesfio -Uusenm -Ui_libutil -Ui_xlocale -Uversiononly -DDEBUGGING=-g -Doptimize=-O2 -dEs -Uuseshrplib'
--config_argc=40
-+config_args='-Dmksymlinks -Dusethreads -Duselargefiles -Dcc=hppa-linux-gnu-gcc -Dcpp=hppa-linux-gnu-cpp -Dld=hppa-linux-gnu-gcc -Dccflags=-DDEBIAN -Wdate-time -D_FORTIFY_SOURCE=2 -g -O2 -ffile-prefix-map=/dummy/build/dir=. -Wformat -Werror=format-security -Dldflags=  -Dlddlflags=-shared  -Dcccdlflags=-fPIC -Darchname=hppa-linux-gnu -Dprefix=/usr -Dprivlib=/usr/share/perl/5.36 -Darchlib=/usr/lib/hppa-linux-gnu/perl/5.36 -Dvendorprefix=/usr -Dvendorlib=/usr/share/perl5 -Dvendorarch=/usr/lib/hppa-linux-gnu/perl5/5.36 -Dsiteprefix=/usr/local -Dsitelib=/usr/local/share/perl/5.36.0 -Dsitearch=/usr/local/lib/hppa-linux-gnu/perl/5.36.0 -Dman1dir=/usr/share/man/man1 -Dman3dir=/usr/share/man/man3 -Dsiteman1dir=/usr/local/man/man1 -Dsiteman3dir=/usr/local/man/man3 -Duse64bitint -Dman1ext=1 -Dman3ext=3perl -Dpager=/usr/bin/sensible-pager -Uafs -Ud_csh -Ud_ualarm -Uusesfio -Uusenm -Ui_libutil -Ui_xlocale -Uversiononly -DDEBUGGING=-g -Doptimize=-O2 -dEs -Duseshrplib -Dlibperl=libperl.so.5.36.0'
-+config_argc=41
+-config_args='-Dmksymlinks -Dusethreads -Duselargefiles -Dcc=hppa-linux-gnu-gcc -Dcpp=hppa-linux-gnu-cpp -Dld=hppa-linux-gnu-gcc -Dccflags=-DDEBIAN -DAPPLLIB_EXP="/usr/lib/hppa-linux-gnu/perl-base" -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -D_TIME_BITS=64 -Wdate-time -D_FORTIFY_SOURCE=2 -g -O2 -Werror=implicit-function-declaration -ffile-prefix-map=/dummy/build/dir=. -Wformat -Werror=format-security -Dldflags=  -Dlddlflags=-shared  -Dcccdlflags=-fPIC -Darchname=hppa-linux-gnu -Dprefix=/usr -Dprivlib=/usr/share/perl/5.40 -Darchlib=/usr/lib/hppa-linux-gnu/perl/5.40 -Dvendorprefix=/usr -Dvendorlib=/usr/share/perl5 -Dvendorarch=/usr/lib/hppa-linux-gnu/perl5/5.40 -Dsiteprefix=/usr/local -Dsitelib=/usr/local/share/perl/5.40.1 -Dsitearch=/usr/local/lib/hppa-linux-gnu/perl/5.40.1 -Dman1dir=/usr/share/man/man1 -Dman3dir=/usr/share/man/man3 -Dsiteman1dir=/usr/local/man/man1 -Dsiteman3dir=/usr/local/man/man3 -Duse64bitint -Dman1ext=1 -Dman3ext=3perl -Dpager=/usr/bin/sensible-pager -Uafs -Ud_csh -Ud_ualarm -Uusesfio -Uusenm -Ui_libutil -Ui_xlocale -Uversiononly -Ud_strlcpy -Ud_strlcat -DDEBUGGING=-g -Doptimize=-O2 -dEs -Uuseshrplib'
+-config_argc=42
++config_args='-Dmksymlinks -Dusethreads -Duselargefiles -Dcc=hppa-linux-gnu-gcc -Dcpp=hppa-linux-gnu-cpp -Dld=hppa-linux-gnu-gcc -Dccflags=-DDEBIAN -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -D_TIME_BITS=64 -Wdate-time -D_FORTIFY_SOURCE=2 -g -O2 -Werror=implicit-function-declaration -ffile-prefix-map=/dummy/build/dir=. -Wformat -Werror=format-security -Dldflags=  -Dlddlflags=-shared  -Dcccdlflags=-fPIC -Darchname=hppa-linux-gnu -Dprefix=/usr -Dprivlib=/usr/share/perl/5.40 -Darchlib=/usr/lib/hppa-linux-gnu/perl/5.40 -Dvendorprefix=/usr -Dvendorlib=/usr/share/perl5 -Dvendorarch=/usr/lib/hppa-linux-gnu/perl5/5.40 -Dsiteprefix=/usr/local -Dsitelib=/usr/local/share/perl/5.40.1 -Dsitearch=/usr/local/lib/hppa-linux-gnu/perl/5.40.1 -Dman1dir=/usr/share/man/man1 -Dman3dir=/usr/share/man/man3 -Dsiteman1dir=/usr/local/man/man1 -Dsiteman3dir=/usr/local/man/man3 -Duse64bitint -Dman1ext=1 -Dman3ext=3perl -Dpager=/usr/bin/sensible-pager -Uafs -Ud_csh -Ud_ualarm -Uusesfio -Uusenm -Ui_libutil -Ui_xlocale -Uversiononly -Ud_strlcpy -Ud_strlcat -DDEBUGGING=-g -Doptimize=-O2 -dEs -Duseshrplib -Dlibperl=libperl.so.5.40.1'
++config_argc=43
 @@ -25 +25 @@
--config_arg7='-Dccflags=-DDEBIAN -DAPPLLIB_EXP="/usr/lib/hppa-linux-gnu/perl-base" -Wdate-time -D_FORTIFY_SOURCE=2 -g -O2 -ffile-prefix-map=/dummy/build/dir=. -Wformat -Werror=format-security'
-+config_arg7='-Dccflags=-DDEBIAN -Wdate-time -D_FORTIFY_SOURCE=2 -g -O2 -ffile-prefix-map=/dummy/build/dir=. -Wformat -Werror=format-security'
-@@ -58 +58,2 @@
--config_arg40='-Uuseshrplib'
-+config_arg40='-Duseshrplib'
-+config_arg41='-Dlibperl=libperl.so.5.36.0'
-@@ -103 +104 @@
--ccflags='-D_REENTRANT -D_GNU_SOURCE -DDEBIAN -DAPPLLIB_EXP="/usr/lib/hppa-linux-gnu/perl-base" -Wdate-time -D_FORTIFY_SOURCE=2 -g -O2 -ffile-prefix-map=/dummy/build/dir=. -Wformat -Werror=format-security -fwrapv -fno-strict-aliasing -pipe -I/usr/local/include -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64'
-+ccflags='-D_REENTRANT -D_GNU_SOURCE -DDEBIAN -Wdate-time -D_FORTIFY_SOURCE=2 -g -O2 -ffile-prefix-map=/dummy/build/dir=. -Wformat -Werror=format-security -fwrapv -fno-strict-aliasing -pipe -I/usr/local/include -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64'
-@@ -126 +127 @@
--cppflags='-D_REENTRANT -D_GNU_SOURCE -DDEBIAN -DAPPLLIB_EXP="/usr/lib/hppa-linux-gnu/perl-base" -Wdate-time -D_FORTIFY_SOURCE=2 -g -O2 -ffile-prefix-map=/dummy/build/dir=. -Wformat -Werror=format-security -fwrapv -fno-strict-aliasing -pipe -I/usr/local/include'
-+cppflags='-D_REENTRANT -D_GNU_SOURCE -DDEBIAN -Wdate-time -D_FORTIFY_SOURCE=2 -g -O2 -ffile-prefix-map=/dummy/build/dir=. -Wformat -Werror=format-security -fwrapv -fno-strict-aliasing -pipe -I/usr/local/include'
-@@ -936 +937 @@
+-config_arg7='-Dccflags=-DDEBIAN -DAPPLLIB_EXP="/usr/lib/hppa-linux-gnu/perl-base" -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -D_TIME_BITS=64 -Wdate-time -D_FORTIFY_SOURCE=2 -g -O2 -Werror=implicit-function-declaration -ffile-prefix-map=/dummy/build/dir=. -Wformat -Werror=format-security'
++config_arg7='-Dccflags=-DDEBIAN -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -D_TIME_BITS=64 -Wdate-time -D_FORTIFY_SOURCE=2 -g -O2 -Werror=implicit-function-declaration -ffile-prefix-map=/dummy/build/dir=. -Wformat -Werror=format-security'
+@@ -60 +60,2 @@
+-config_arg42='-Uuseshrplib'
++config_arg42='-Duseshrplib'
++config_arg43='-Dlibperl=libperl.so.5.40.1'
+@@ -105 +106 @@
+-ccflags='-D_REENTRANT -D_GNU_SOURCE -DDEBIAN -DAPPLLIB_EXP="/usr/lib/hppa-linux-gnu/perl-base" -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -D_TIME_BITS=64 -Wdate-time -D_FORTIFY_SOURCE=2 -g -O2 -Werror=implicit-function-declaration -ffile-prefix-map=/dummy/build/dir=. -Wformat -Werror=format-security -fwrapv -fno-strict-aliasing -pipe -fstack-protector-strong -I/usr/local/include -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64'
++ccflags='-D_REENTRANT -D_GNU_SOURCE -DDEBIAN -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -D_TIME_BITS=64 -Wdate-time -D_FORTIFY_SOURCE=2 -g -O2 -Werror=implicit-function-declaration -ffile-prefix-map=/dummy/build/dir=. -Wformat -Werror=format-security -fwrapv -fno-strict-aliasing -pipe -fstack-protector-strong -I/usr/local/include -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64'
+@@ -128 +129 @@
+-cppflags='-D_REENTRANT -D_GNU_SOURCE -DDEBIAN -DAPPLLIB_EXP="/usr/lib/hppa-linux-gnu/perl-base" -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -D_TIME_BITS=64 -Wdate-time -D_FORTIFY_SOURCE=2 -g -O2 -Werror=implicit-function-declaration -ffile-prefix-map=/dummy/build/dir=. -Wformat -Werror=format-security -fwrapv -fno-strict-aliasing -pipe -fstack-protector-strong -I/usr/local/include'
++cppflags='-D_REENTRANT -D_GNU_SOURCE -DDEBIAN -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -D_TIME_BITS=64 -Wdate-time -D_FORTIFY_SOURCE=2 -g -O2 -Werror=implicit-function-declaration -ffile-prefix-map=/dummy/build/dir=. -Wformat -Werror=format-security -fwrapv -fno-strict-aliasing -pipe -fstack-protector-strong -I/usr/local/include'
+@@ -944 +945 @@
 -libperl='libperl.a'
-+libperl='libperl.so.5.36.0'
-@@ -1222 +1223 @@
++libperl='libperl.so.5.40.1'
+@@ -1236 +1237 @@
 -useshrplib='false'
 +useshrplib='true'
-@@ -1276 +1276,0 @@
--# Extracted from Debian package version 5.36.0-4
+@@ -1290 +1290,0 @@
+-# Extracted from Debian package version 5.40.1-1

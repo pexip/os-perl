@@ -14,7 +14,7 @@ Bug-Debian: https://bugs.debian.org/247370
  2 files changed, 5 insertions(+), 5 deletions(-)
 
 diff --git a/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Any.pm b/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Any.pm
-index 826a4a5..92f841f 100644
+index 4513682..babbbf2 100644
 --- a/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Any.pm
 +++ b/cpan/ExtUtils-MakeMaker/lib/ExtUtils/MM_Any.pm
 @@ -1091,7 +1091,7 @@ END

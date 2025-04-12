@@ -13,10 +13,10 @@ compatible, but built on a different machine.
  1 file changed, 16 deletions(-)
 
 diff --git a/ext/Errno/Errno_pm.PL b/ext/Errno/Errno_pm.PL
-index ee2f4a3..2c52aa5 100644
+index 77aa19b..8e33044 100644
 --- a/ext/Errno/Errno_pm.PL
 +++ b/ext/Errno/Errno_pm.PL
-@@ -283,22 +283,6 @@ package Errno;
+@@ -288,22 +288,6 @@ package Errno;
  use Exporter 'import';
  use strict;
  
@@ -29,8 +29,8 @@ index ee2f4a3..2c52aa5 100644
 -        print <<"CONFIG_CHECK_END";
 -use Config;
 -"\$Config{'archname'}-\$Config{'osvers'}" eq
--"$archname-$Config{'osvers'}" or
--	die "Errno architecture ($archname-$Config{'osvers'}) does not match executable architecture (\$Config{'archname'}-\$Config{'osvers'})";
+-"$archname-$osvers" or
+-	die "Errno architecture ($archname-$osvers) does not match executable architecture (\$Config{'archname'}-\$Config{'osvers'})";
 -
 -CONFIG_CHECK_END
 -}

@@ -71,7 +71,7 @@ package main;
 
 $| = 1;
 BEGIN { require './test.pl'; require './charset_tools.pl' }
-plan tests => 5363;
+plan tests => 5367;
 
 use Scalar::Util qw(tainted);
 
@@ -1100,7 +1100,7 @@ is("a$utfvar", "a".200.2.1); # 224 - overload via sv_2pv_flags
 # were to eval the overload code in the caller's namespace, the privatisation
 # would be quite transparent.
 package Hderef;
-use overload '%{}' => sub { (caller(0))[0] eq 'Foo' ? $_[0] : die "zap" };
+use overload '%{}' => sub { caller(0) eq 'Foo' ? $_[0] : die "zap" };
 package Foo;
 @Foo::ISA = 'Hderef';
 sub new { bless {}, shift }
@@ -1906,11 +1906,11 @@ foreach my $op (qw(<=> == != < <= > >=)) {
 
 	# eval should do tie, overload on its arg before checking taint */
 	push @tests, [ '1;', 'eval q(eval %s); $@ =~ /Insecure/',
-		'("")', '("")', [ 1, 2, 0 ], 0 ];
+		'("")', '("")', [ 1, 1, 0 ], 0 ];
 
 
 	for my $sub (keys %subs) {
-	    no warnings 'experimental::smartmatch';
+	    no warnings 'deprecated';
 	    my $term = $subs{$sub};
 	    my $t = sprintf $term, '$_[0][0]';
 	    my $e ="sub { \$funcs .= '($sub)'; my \$r; if (\$use_int) {"
@@ -1952,7 +1952,7 @@ foreach my $op (qw(<=> == != < <= > >=)) {
 				    ? "-\$_[0][0]"
 				    : "$_[3](\$_[0][0])";
 			my $r;
-			no warnings 'experimental::smartmatch';
+			no warnings 'deprecated';
 			if ($use_int) {
 			    use integer; $r = eval $e;
 			}
@@ -1999,7 +1999,7 @@ foreach my $op (qw(<=> == != < <= > >=)) {
 	    $use_int = ($int ne '');
 	    my $plain = $tainted_val;
 	    my $plain_term = $int . sprintf $sub_term, '$plain';
-	    my $exp = do {no warnings 'experimental::smartmatch'; eval $plain_term };
+	    my $exp = do {no warnings 'deprecated'; eval $plain_term };
 	    diag("eval of plain_term <$plain_term> gave <$@>") if $@;
 	    SKIP: {
 		is_if_taint_supported(tainted($exp), $exp_taint,
@@ -2029,7 +2029,7 @@ foreach my $op (qw(<=> == != < <= > >=)) {
 
 		    my $res_term  = $int . sprintf $sub_term, $var;
 		    my $desc =  "<$res_term> $ov_pkg" ;
-		    my $res = do { no warnings 'experimental::smartmatch'; eval $res_term };
+		    my $res = do { no warnings 'deprecated'; eval $res_term };
 		    diag("eval of res_term $desc gave <$@>") if $@;
 		    # uniquely, the inc/dec ops return the original
 		    # ref rather than a copy, so stringify it to
@@ -3227,4 +3227,30 @@ package RT33789 {
         my $result = '1' . ( '2' . ( '3' . ( '4' . ( '5' . $o ) ) ) );
     }
     ::is($destroy, 1, "RT #133789: delayed destroy");
+}
+
+# GH #21477: with an overloaded object $obj, ($obj ~~ $scalar) wasn't
+# popping the original args off the stack. So in list context, rather than
+# returning (Y/N), it was returning ($obj, $scalar, Y/N)
+
+
+package GH21477 {
+    use overload
+        '""'  => sub { $_[0][0]; },
+        '~~'  => sub { $_[0][0] eq $_[1] },
+        'eq'  => sub { $_[0][0] eq $_[1] },
+    ;
+
+    my $o = bless ['cat'];
+
+    # smartmatch is deprecated and will be removed in 5.042
+    no warnings 'deprecated';
+
+    my @result = ($o ~~ 'cat');
+    ::is(scalar(@result), 1, "GH #21477: return one result");
+    ::is($result[0], 1, "GH #21477: return true");
+
+    @result = ($o ~~ 'dog');
+    ::is(scalar(@result), 1, "GH #21477: return one result - part 2");
+    ::is($result[0], "", "GH #21477: return false");
 }

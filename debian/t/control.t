@@ -38,6 +38,7 @@ my %known_digits = (
     "libtime-piece-perl" => 4,
     "libjson-pp-perl"    => 5,
     "libextutils-parsexs-perl" => 6,
+    "libmath-complex-perl" => 4,
 );
 
 # list special cases of version numbers that are OK here
@@ -60,6 +61,9 @@ my %ok = (
        "libautodie-perl" => {
                 "2.26"   => "2.29",
        },
+       "libio-socket-ip-perl" => {
+                "0.41_01"   => "0.41",
+       },
 );
 
 # epochs in the archive (including past ones)
@@ -73,7 +77,9 @@ my %known_epochs = (
 # Replaces+Provides
 my %triplet_check_skip = (
 	"perl-base" => [ "libfile-spec-perl" ],
-	"libperl5.36" => [ "libfilter-perl" ],
+	"libperl5.40" => [ "libfilter-perl" ],
+	# merged into libtest-simple-perl
+	"perl-modules-5.40" => [ "libtest2-suite-perl" ],
 );
 
 # list special cases where the name of the Debian package does not
@@ -88,14 +94,6 @@ my %special_modules = (
 	"podlators-perl" => "Pod::Man",
 	"libnet-perl" => "Net::Cmd",
 	"libfilter-perl" => "Filter::Util::Call",
-);
-
-# list special cases where we're not providing a dual-lived module from
-# core even though Module::CoreList says we are. Arguably we should
-# patch our Module::CoreList, but that module probably works better as a
-# reference point than something which matches the Debian view of the world.
-my %not_in_debian_core = (
-    "libcgi-fast-perl" => 1,
 );
 
 use Test::More;
@@ -158,8 +156,8 @@ for my $perl_package_info ($control->get_packages) {
 	for my $deptype ($breaksname, "Replaces", "Provides") {
 		next if !exists $perl_package_info->{$deptype};
 
-		# Dpkg::Deps cannot parse unsubstituted substvars so remove this
-		$perl_package_info->{$deptype} =~ s/\$\{perlapi:Provides}//;
+		# Dpkg::Deps cannot parse unsubstituted substvars so remove those
+		$perl_package_info->{$deptype} =~ s/\$\{\w+:Provides}//;
 
 		my $parsed = deps_parse($perl_package_info->{$deptype});
 		next if !defined $parsed;
@@ -294,7 +292,6 @@ for my $module (keys %$corelist) {
 	my $package = $cpan_from_debian_guess{$module};
 	next if grep $deps_found{$_}{$breaksname}{$package}, keys %deps_found;
 	next if $is_perl_binary{$package};
-	next if $not_in_debian_core{$package};
 	push @found_in_archive, $package
 		if exists $apt->{$package}
 		&& exists $apt->{$package}{VersionList};

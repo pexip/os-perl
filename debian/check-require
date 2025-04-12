@@ -76,10 +76,6 @@ sub check {
 	# this file does not return a true value, and is not to be used
 	# directly
 	return if $_ eq 'unicore/To/Isc.pl';
-	if (m|([^/]+)_heavy\.pl|) {
-		# bytes_heavy.pl needs bytes.pm loaded first
-		check($1);
-	};
 	print "$_: ";
 	if (/\.p[hl]$/) { #  require "unicore/To/Upper.pl";
 		require $_;

@@ -8,7 +8,7 @@ Bug-Debian: https://bugs.debian.org/922609
  1 file changed, 3 insertions(+)
 
 diff --git a/t/io/msg.t b/t/io/msg.t
-index 2c3f75b..f5bc991 100644
+index e024ba7..0cff32b 100644
 --- a/t/io/msg.t
 +++ b/t/io/msg.t
 @@ -14,6 +14,9 @@ BEGIN {

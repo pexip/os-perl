@@ -1,2 +1,4 @@
 # the lintian check doesn't understand diversions
 binaries-have-file-conflict perl perl-doc usr/bin/perldoc
+# not an ar file
+unpack-message-for-orig perl_5.40.1.orig.tar.xz . ar failed for perl-5.40.1/regen-configure/dist/lib/errnolist.a

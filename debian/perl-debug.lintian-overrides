@@ -4,3 +4,5 @@ missing-depends-on-sensible-utils
 spelling-error-in-binary usr/bin/debugperl Inseperable Inseparable
 # Not a spelling error
 spelling-error-in-binary usr/bin/debugperl alow allow
+# unstripped by design
+unstripped-binary-or-object [usr/bin/debugperl]

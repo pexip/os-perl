@@ -14,14 +14,14 @@ and some of the original list may be present on buildds (see Bug#128355).
  2 files changed, 2 insertions(+), 3 deletions(-)
 
 diff --git a/regen-configure/U/modified/Myinit.U b/regen-configure/U/modified/Myinit.U
-index 0e3155a..e1d58c2 100644
+index 4108da0..e1d58c2 100644
 --- a/regen-configure/U/modified/Myinit.U
 +++ b/regen-configure/U/modified/Myinit.U
 @@ -32,8 +32,7 @@
  ?X: Put crypt here, even though I should really fix d_crypt.U to look
  ?X: for it correctly, including possible shared library versions.
  : If anyone needs extra -lxxx, put those in a hint file.
--libswanted="cl pthread socket bind inet nsl ndbm gdbm dbm db malloc dl ld"
+-libswanted="cl pthread socket bind inet ndbm gdbm dbm db malloc dl ld"
 -libswanted="$libswanted sun m crypt sec util c cposix posix ucb bsd BSD"
 +libswanted='gdbm gdbm_compat db dl m c crypt'
  : We probably want to search /usr/shlib before most other libraries.

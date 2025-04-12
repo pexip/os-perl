@@ -3,7 +3,7 @@ BEGIN {
         chdir 't';
         unshift @INC, '../lib';
     }
-    require Config; import Config;
+    require Config; Config->import();
     if ($Config{'extensions'} !~ /\bEncode\b/) {
       print "1..0 # Skip: Encode was not built\n";
       exit 0;
@@ -11,6 +11,10 @@ BEGIN {
     if (ord("A") == 193) {
       print "1..0 # Skip: EBCDIC\n";
       exit 0;
+    }
+    if ( $] < 5.009 ) {
+        print "1..0 # Skip: Perl <= 5.9 or later required\n";
+        exit 0;
     }
     $| = 1;
 }
