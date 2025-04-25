@@ -7,14 +7,14 @@ use warnings;
 use strict;
 
 # Test::More doesn't have fresh_perl_is() yet
-# use Test::More tests => 342;
+# use Test::More tests => 344;
 
 BEGIN {
     require '../../t/test.pl';
-    plan(538);
+    plan(542);
     use_ok('XS::APItest')
 };
-
+use Config;
 #########################
 
 # f(): general test sub to be called by call_sv() etc.
@@ -340,11 +340,31 @@ for my $fn_type (qw(eval_pv eval_sv call_sv)) {
     }
 }
 
+{
+    use feature "fc";
+    use strict;
+    # the XS eval_sv() returns the count of results
+    is(eval_sv('my $z = fc("A") eq fc("a"); 1', G_LIST), 0,
+       "don't inherit hints by default (so the eval fails)");
+    is(eval_sv('my $z = fc("A") eq fc("a"); 1', G_LIST | G_USEHINTS), 1,
+       "inherit hints when requested (so the eval succeeds)")
+      or diag($@);
+    # prevent Variable "$z" is not imported
+    no warnings 'misc';
+    is(eval_sv('$z = 1', G_LIST), 1,
+       "don't inherit hints (strict) by default, so the eval succeeds");
+    is(eval_sv('$z = 1', G_LIST | G_USEHINTS), 0,
+       "inherit hints (strict) when requested, so the eval fails");
+}
+
 # DAPM 9-Aug-04. A taint test in eval_sv() could die after setting up
 # a new jump level but before pushing an eval context, leading to
 # stack corruption
+SKIP: {
+    skip("Your perl was built without taint support", 1)
+        unless $Config{taint_support};
 
-fresh_perl_is(<<'EOF', "x=2", { switches => ['-T', '-I../../lib'] }, 'eval_sv() taint');
+    fresh_perl_is(<<'EOF', "x=2", { switches => ['-T', '-I../../lib'] }, 'eval_sv() taint');
 use XS::APItest;
 
 my $x = 0;
@@ -357,4 +377,4 @@ sub f {
 eval { my @a = sort f 2, 1;  $x++};
 print "x=$x\n";
 EOF
-
+}

@@ -38,6 +38,7 @@
 #include <io.h>
 #include <signal.h>
 #include <winioctl.h>
+#include <winternl.h>
 
 /* #include "config.h" */
 
@@ -109,14 +110,14 @@ static char*	get_regstr(const char *valuename, SV **svp);
 #endif
 
 static char*	get_emd_part(SV **prev_pathp, STRLEN *const len,
-                        char *trailing, ...);
+                        const char *trailing, ...);
 static char*	win32_get_xlib(const char *pl,
                         WIN32_NO_REGISTRY_M_(const char *xlib)
                         const char *libname, STRLEN *const len);
 
 static BOOL	has_shell_metachars(const char *ptr);
 static long	tokenize(const char *str, char **dest, char ***destv);
-static void	get_shell(void);
+static int	get_shell(void);
 static char*	find_next_space(const char *s);
 static int	do_spawn2(pTHX_ const char *cmd, int exectype);
 static int	do_spawn2_handles(pTHX_ const char *cmd, int exectype,
@@ -130,8 +131,10 @@ static void	remove_dead_process(long child);
 static int	terminate_process(DWORD pid, HANDLE process_handle, int sig);
 static int	my_killpg(int pid, int sig);
 static int	my_kill(int pid, int sig);
-static void	out_of_memory(void);
+static void	out_of_memory(const char *context, STRLEN len);
+#ifdef _DEBUG
 static char*	wstr_to_str(const wchar_t* wstr);
+#endif
 static long	filetime_to_clock(PFILETIME ft);
 static BOOL	filetime_from_time(PFILETIME ft, time_t t);
 static char*	create_command_line(char *cname, STRLEN clen,
@@ -156,9 +159,6 @@ static void translate_to_errno(void);
 START_EXTERN_C
 HANDLE	w32_perldll_handle = INVALID_HANDLE_VALUE;
 char	w32_module_name[MAX_PATH+1];
-#ifdef WIN32_DYN_IOINFO_SIZE
-Size_t	w32_ioinfo_size;/* avoid 0 extend op b4 mul, otherwise could be a U8 */
-#endif
 END_EXTERN_C
 
 static OSVERSIONINFO g_osver = {0, 0, 0, 0, 0, ""};
@@ -328,7 +328,7 @@ get_regstr(const char *valuename, SV **svp)
 
 /* *prev_pathp (if non-NULL) is expected to be POK (valid allocated SvPVX(sv)) */
 static char *
-get_emd_part(SV **prev_pathp, STRLEN *const len, char *trailing_path, ...)
+get_emd_part(SV **prev_pathp, STRLEN *const len, const char *trailing_path, ...)
 {
     char base[10];
     va_list ap;
@@ -396,7 +396,7 @@ get_emd_part(SV **prev_pathp, STRLEN *const len, char *trailing_path, ...)
 EXTERN_C char *
 win32_get_privlib(WIN32_NO_REGISTRY_M_(const char *pl) STRLEN *const len)
 {
-    char *stdlib = "lib";
+    const char *stdlib = "lib";
     SV *sv = NULL;
 #ifndef WIN32_NO_REGISTRY
     char buffer[MAX_PATH+1];
@@ -602,7 +602,13 @@ tokenize(const char *str, char **dest, char ***destv)
     return items;
 }
 
-static void
+static const char
+cmd_opts[] = "/x/d/c";
+
+static const char
+shell_cmd[] = "cmd.exe";
+
+static int
 get_shell(void)
 {
     dTHX;
@@ -614,18 +620,59 @@ get_shell(void)
          *     interactive use (which is what most programs look in COMSPEC
          *     for).
          */
-        const char* defaultshell = "cmd.exe /x/d/c";
-        const char *usershell = PerlEnv_getenv("PERL5SHELL");
-        w32_perlshell_items = tokenize(usershell ? usershell : defaultshell,
-                                       &w32_perlshell_tokens,
-                                       &w32_perlshell_vec);
+        const char *shell = PerlEnv_getenv("PERL5SHELL");
+        if (shell) {
+            w32_perlshell_items = tokenize(shell,
+                                           &w32_perlshell_tokens,
+                                           &w32_perlshell_vec);
+        }
+        else {
+            /* tokenize does some Unix-ish like things like
+               \\ escaping that don't work well here
+            */
+            char shellbuf[MAX_PATH];
+            UINT len = GetSystemDirectoryA(shellbuf, sizeof(shellbuf));
+            if (len == 0) {
+                translate_to_errno();
+                return -1;
+            }
+            else if (len >= MAX_PATH) {
+                /* buffer too small */
+                errno = E2BIG;
+                return -1;
+            }
+            if (shellbuf[len-1] != '\\') {
+                my_strlcat(shellbuf, "\\", sizeof(shellbuf));
+                ++len;
+            }
+            if (len + sizeof(shell_cmd) > sizeof(shellbuf)) {
+                errno = E2BIG;
+                return -1;
+            }
+            my_strlcat(shellbuf, shell_cmd, sizeof(shellbuf));
+            len += sizeof(shell_cmd)-1;
+
+            Newx(w32_perlshell_vec, 3, char *);
+            Newx(w32_perlshell_tokens, len + 1 + sizeof(cmd_opts), char);
+
+            my_strlcpy(w32_perlshell_tokens, shellbuf, len+1);
+            my_strlcpy(w32_perlshell_tokens + len +1, cmd_opts,
+                       sizeof(cmd_opts));
+
+            w32_perlshell_vec[0] = w32_perlshell_tokens;
+            w32_perlshell_vec[1] = w32_perlshell_tokens + len + 1;
+            w32_perlshell_vec[2] = NULL;
+
+            w32_perlshell_items = 2;
+        }
     }
+    return 0;
 }
 
 int
 Perl_do_aspawn(pTHX_ SV *really, SV **mark, SV **sp)
 {
-    char **argv;
+    const char **argv;
     char *str;
     int status;
     int flag = P_WAIT;
@@ -637,8 +684,10 @@ Perl_do_aspawn(pTHX_ SV *really, SV **mark, SV **sp)
     if (sp <= mark)
         return -1;
 
-    get_shell();
-    Newx(argv, (sp - mark) + w32_perlshell_items + 2, char*);
+    if (get_shell() < 0)
+        return -1;
+
+    Newx(argv, (sp - mark) + w32_perlshell_items + 2, const char*);
 
     if (SvNIOKp(*(mark+1)) && !SvPOKp(*(mark+1))) {
         ++mark;
@@ -767,7 +816,8 @@ do_spawn2_handles(pTHX_ const char *cmd, int exectype, const int *handles)
     if (needToTry) {
         char **argv;
         int i = -1;
-        get_shell();
+        if (get_shell() < 0)
+            return -1;
         Newx(argv, w32_perlshell_items + 2, char*);
         while (++i < w32_perlshell_items)
             argv[i] = w32_perlshell_vec[i];
@@ -1016,7 +1066,12 @@ win32_telldir(DIR *dirp)
 DllExport void
 win32_seekdir(DIR *dirp, long loc)
 {
-    dirp->curr = loc == -1 ? NULL : dirp->start + loc;
+    /* Ensure dirp->curr remains within `dirp->start` buffer. */
+    if (loc >= 0 && dirp->end - dirp->start > (ptrdiff_t) loc) {
+        dirp->curr = dirp->start + loc;
+    } else {
+        dirp->curr = NULL;
+    }
 }
 
 /* Rewinddir resets the string pointer to the start */
@@ -1146,6 +1201,9 @@ int
 chown(const char *path, uid_t owner, gid_t group)
 {
     /* XXX noop */
+    PERL_UNUSED_ARG(path);
+    PERL_UNUSED_ARG(owner);
+    PERL_UNUSED_ARG(group);
     return 0;
 }
 
@@ -1402,7 +1460,7 @@ win32_kill(int pid, int sig)
                     /* kill -9 style un-graceful exit */
                     /* Do a wait to make sure child starts and isn't in DLL
                      * Loader Lock */
-                    HWND hwnd = get_hwnd_delay(aTHX, child, 5);
+                    (void)get_hwnd_delay(aTHX, child, 5);
                     if (TerminateThread(hProcess, sig)) {
                         /* Allow the scheduler to finish cleaning up the other
                          * thread.
@@ -1469,34 +1527,101 @@ win32_kill(int pid, int sig)
 PERL_STATIC_INLINE
 time_t
 translate_ft_to_time_t(FILETIME ft) {
-    SYSTEMTIME st, local_st;
+    SYSTEMTIME st;
     struct tm pt;
+    time_t retval;
+    dTHX;
 
-    if (!FileTimeToSystemTime(&ft, &st) ||
-        !SystemTimeToTzSpecificLocalTime(NULL, &st, &local_st)) {
+    if (!FileTimeToSystemTime(&ft, &st))
         return -1;
-    }
 
     Zero(&pt, 1, struct tm);
-    pt.tm_year = local_st.wYear - 1900;
-    pt.tm_mon = local_st.wMonth - 1;
-    pt.tm_mday = local_st.wDay;
-    pt.tm_hour = local_st.wHour;
-    pt.tm_min = local_st.wMinute;
-    pt.tm_sec = local_st.wSecond;
-    pt.tm_isdst = -1;
+    pt.tm_year = st.wYear - 1900;
+    pt.tm_mon = st.wMonth - 1;
+    pt.tm_mday = st.wDay;
+    pt.tm_hour = st.wHour;
+    pt.tm_min = st.wMinute;
+    pt.tm_sec = st.wSecond;
 
-    return mktime(&pt);
+    MKTIME_LOCK;
+    retval = _mkgmtime(&pt);
+    MKTIME_UNLOCK;
+
+    return retval;
 }
 
 typedef DWORD (__stdcall *pGetFinalPathNameByHandleA_t)(HANDLE, LPSTR, DWORD, DWORD);
 
+/* Adapted from:
+
+https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-_reparse_data_buffer
+
+Renamed to avoid conflicts, apparently some SDKs define this
+structure.
+
+Hoisted the symlink and mount point data into a new type to allow us
+to make a pointer to it, and to avoid C++ scoping issues.
+
+*/
+
+typedef struct {
+    USHORT SubstituteNameOffset;
+    USHORT SubstituteNameLength;
+    USHORT PrintNameOffset;
+    USHORT PrintNameLength;
+    ULONG  Flags;
+    WCHAR  PathBuffer[MAX_PATH*3];
+} MY_SYMLINK_REPARSE_BUFFER, *PMY_SYMLINK_REPARSE_BUFFER;
+
+typedef struct {
+    USHORT SubstituteNameOffset;
+    USHORT SubstituteNameLength;
+    USHORT PrintNameOffset;
+    USHORT PrintNameLength;
+    WCHAR  PathBuffer[MAX_PATH*3];
+} MY_MOUNT_POINT_REPARSE_BUFFER;
+
+typedef struct {
+  ULONG  ReparseTag;
+  USHORT ReparseDataLength;
+  USHORT Reserved;
+  union {
+    MY_SYMLINK_REPARSE_BUFFER SymbolicLinkReparseBuffer;
+    MY_MOUNT_POINT_REPARSE_BUFFER MountPointReparseBuffer;
+    struct {
+      UCHAR DataBuffer[1];
+    } GenericReparseBuffer;
+  } Data;
+} MY_REPARSE_DATA_BUFFER, *PMY_REPARSE_DATA_BUFFER;
+
+#ifndef IO_REPARSE_TAG_SYMLINK
+#  define IO_REPARSE_TAG_SYMLINK                  (0xA000000CL)
+#endif
+#ifndef IO_REPARSE_TAG_AF_UNIX
+#  define IO_REPARSE_TAG_AF_UNIX 0x80000023
+#endif
+#ifndef IO_REPARSE_TAG_LX_FIFO
+#  define IO_REPARSE_TAG_LX_FIFO 0x80000024
+#endif
+#ifndef IO_REPARSE_TAG_LX_CHR
+#  define IO_REPARSE_TAG_LX_CHR  0x80000025
+#endif
+#ifndef IO_REPARSE_TAG_LX_BLK
+#  define IO_REPARSE_TAG_LX_BLK  0x80000026
+#endif
+
 static int
-win32_stat_low(HANDLE handle, const char *path, STRLEN len, Stat_t *sbuf) {
+win32_stat_low(HANDLE handle, const char *path, STRLEN len, Stat_t *sbuf,
+               DWORD reparse_type) {
     DWORD type = GetFileType(handle);
     BY_HANDLE_FILE_INFORMATION bhi;
 
     Zero(sbuf, 1, Stat_t);
+
+    if (reparse_type) {
+        /* Lie to get to the right place */
+        type = FILE_TYPE_DISK;
+    }
 
     type &= ~FILE_TYPE_REMOTE;
 
@@ -1521,7 +1646,35 @@ win32_stat_low(HANDLE handle, const char *path, STRLEN len, Stat_t *sbuf) {
             sbuf->st_mtime = translate_ft_to_time_t(bhi.ftLastWriteTime);
             sbuf->st_ctime = translate_ft_to_time_t(bhi.ftCreationTime);
 
-            if (bhi.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+            if (reparse_type) {
+                /* https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-fscc/c8e77b37-3909-4fe6-a4ea-2b9d423b1ee4
+                   describes all of these as WSL only, but the AF_UNIX tag
+                   is known to be used for AF_UNIX sockets without WSL.
+                */
+                switch (reparse_type) {
+                case IO_REPARSE_TAG_AF_UNIX:
+                    sbuf->st_mode = _S_IFSOCK;
+                    break;
+
+                case IO_REPARSE_TAG_LX_FIFO:
+                    sbuf->st_mode = _S_IFIFO;
+                    break;
+
+                case IO_REPARSE_TAG_LX_CHR:
+                    sbuf->st_mode = _S_IFCHR;
+                    break;
+
+                case IO_REPARSE_TAG_LX_BLK:
+                    sbuf->st_mode = _S_IFBLK;
+                    break;
+
+                default:
+                    /* Is there anything else we can do here? */
+                    errno = EINVAL;
+                    return -1;
+                }
+            }
+            else if (bhi.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
                 sbuf->st_mode = _S_IFDIR | _S_IREAD | _S_IEXEC;
                 /* duplicate the logic from the end of the old win32_stat() */
                 if (!(bhi.dwFileAttributes & FILE_ATTRIBUTE_READONLY)) {
@@ -1588,13 +1741,129 @@ win32_stat_low(HANDLE handle, const char *path, STRLEN len, Stat_t *sbuf) {
     return 0;
 }
 
+/* https://docs.microsoft.com/en-us/windows/win32/fileio/reparse-points */
+#define SYMLINK_FOLLOW_LIMIT 63
+
+/*
+
+Given a pathname, required to be a symlink, follow it until we find a
+non-symlink path.
+
+This should only be called when the symlink() chain doesn't lead to a
+normal file, which should have been caught earlier.
+
+On success, returns a HANDLE to the target and sets *reparse_type to
+the ReparseTag of the target.
+
+Returns INVALID_HANDLE_VALUE on error, which might be that the symlink
+chain is broken, or requires too many links to resolve.
+
+*/
+
+static HANDLE
+S_follow_symlinks_to(pTHX_ const char *pathname, DWORD *reparse_type) {
+    char link_target[MAX_PATH];
+    SV *work_path = newSVpvn(pathname, strlen(pathname));
+    int link_count = 0;
+    int link_len;
+    HANDLE handle;
+
+    *reparse_type = 0;
+
+    while ((link_len = win32_readlink(SvPVX(work_path), link_target,
+                                      sizeof(link_target))) > 0) {
+        if (link_count++ >= SYMLINK_FOLLOW_LIMIT) {
+            /* Windows doesn't appear to ever return ELOOP,
+               let's do better ourselves
+            */
+            SvREFCNT_dec(work_path);
+            errno = ELOOP;
+            return INVALID_HANDLE_VALUE;
+        }
+        /* Adjust the linktarget based on the link source or current
+           directory as needed.
+        */
+        if (link_target[0] == '\\'
+            || link_target[0] == '/'
+            || (link_len >=2 && link_target[1] == ':')) {
+            /* link is absolute */
+            sv_setpvn(work_path, link_target, link_len);
+        }
+        else {
+            STRLEN work_len;
+            const char *workp = SvPV(work_path, work_len);
+            const char *final_bslash =
+                (const char *)my_memrchr(workp, '\\', work_len);
+            const char *final_slash =
+                (const char *)my_memrchr(workp, '/', work_len);
+            const char *path_sep = NULL;
+            if (final_bslash && final_slash)
+                path_sep = final_bslash > final_slash ? final_bslash : final_slash;
+            else if (final_bslash)
+                path_sep = final_bslash;
+            else if (final_slash)
+                path_sep = final_slash;
+
+            if (path_sep) {
+                SV *new_path = newSVpv(workp, path_sep - workp + 1);
+                sv_catpvn(new_path, link_target, link_len);
+                SvREFCNT_dec(work_path);
+                work_path = new_path;
+            }
+            else {
+                /* should only get here the first time around */
+                assert(link_count == 1);
+                char path_temp[MAX_PATH];
+                DWORD path_len = GetCurrentDirectoryA(sizeof(path_temp), path_temp);
+                if (!path_len || path_len > sizeof(path_temp)) {
+                    SvREFCNT_dec(work_path);
+                    errno = EINVAL;
+                    return INVALID_HANDLE_VALUE;
+                }
+
+                SV *new_path = newSVpvn(path_temp, path_len);
+                if (path_temp[path_len-1] != '\\') {
+                    sv_catpvs(new_path, "\\");
+                }
+                sv_catpvn(new_path, link_target, link_len);
+                SvREFCNT_dec(work_path);
+                work_path = new_path;
+            }
+        }
+    }
+
+    handle =
+        CreateFileA(SvPVX(work_path), GENERIC_READ, 0, NULL, OPEN_EXISTING,
+                    FILE_FLAG_OPEN_REPARSE_POINT|FILE_FLAG_BACKUP_SEMANTICS, 0);
+    SvREFCNT_dec(work_path);
+    if (handle != INVALID_HANDLE_VALUE) {
+        MY_REPARSE_DATA_BUFFER linkdata;
+        DWORD linkdata_returned;
+
+        if (!DeviceIoControl(handle, FSCTL_GET_REPARSE_POINT, NULL, 0,
+                             &linkdata, sizeof(linkdata),
+                             &linkdata_returned, NULL)) {
+            translate_to_errno();
+            CloseHandle(handle);
+            return INVALID_HANDLE_VALUE;
+        }
+        *reparse_type = linkdata.ReparseTag;
+        return handle;
+    }
+    else {
+        translate_to_errno();
+    }
+
+    return handle;
+}
+
 DllExport int
 win32_stat(const char *path, Stat_t *sbuf)
 {
     dTHX;
-    BOOL        expect_dir = FALSE;
     int result;
     HANDLE handle;
+    DWORD reparse_type = 0;
 
     path = PerlDir_mapA(path);
 
@@ -1602,8 +1871,21 @@ win32_stat(const char *path, Stat_t *sbuf)
         CreateFileA(path, FILE_READ_ATTRIBUTES,
                     FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
                     NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
+    if (handle == INVALID_HANDLE_VALUE) {
+        /* AF_UNIX sockets need to be opened as a reparse point, but
+           that will also open symlinks rather than following them.
+
+           There may be other reparse points that need similar
+           treatment.
+        */
+        handle = S_follow_symlinks_to(aTHX_ path, &reparse_type);
+        if (handle == INVALID_HANDLE_VALUE) {
+            /* S_follow_symlinks_to() will set errno */
+            return -1;
+        }
+    }
     if (handle != INVALID_HANDLE_VALUE) {
-        result = win32_stat_low(handle, path, strlen(path), sbuf);
+        result = win32_stat_low(handle, path, strlen(path), sbuf, reparse_type);
         CloseHandle(handle);
     }
     else {
@@ -1656,57 +1938,9 @@ translate_to_errno(void)
     }
 }
 
-/* Adapted from:
-
-https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-_reparse_data_buffer
-
-Renamed to avoid conflicts, apparently some SDKs define this
-structure.
-
-Hoisted the symlink and mount point data into a new type to allow us
-to make a pointer to it, and to avoid C++ scoping issues.
-
-*/
-
-typedef struct {
-    USHORT SubstituteNameOffset;
-    USHORT SubstituteNameLength;
-    USHORT PrintNameOffset;
-    USHORT PrintNameLength;
-    ULONG  Flags;
-    WCHAR  PathBuffer[MAX_PATH*3];
-} MY_SYMLINK_REPARSE_BUFFER, *PMY_SYMLINK_REPARSE_BUFFER;
-
-typedef struct {
-    USHORT SubstituteNameOffset;
-    USHORT SubstituteNameLength;
-    USHORT PrintNameOffset;
-    USHORT PrintNameLength;
-    WCHAR  PathBuffer[MAX_PATH*3];
-} MY_MOUNT_POINT_REPARSE_BUFFER;
-
-typedef struct {
-  ULONG  ReparseTag;
-  USHORT ReparseDataLength;
-  USHORT Reserved;
-  union {
-    MY_SYMLINK_REPARSE_BUFFER SymbolicLinkReparseBuffer;
-    MY_MOUNT_POINT_REPARSE_BUFFER MountPointReparseBuffer;
-    struct {
-      UCHAR DataBuffer[1];
-    } GenericReparseBuffer;
-  } Data;
-} MY_REPARSE_DATA_BUFFER, *PMY_REPARSE_DATA_BUFFER;
-
-#ifndef IO_REPARSE_TAG_SYMLINK
-#  define IO_REPARSE_TAG_SYMLINK                  (0xA000000CL)
-#endif
-
 static BOOL
 is_symlink(HANDLE h) {
     MY_REPARSE_DATA_BUFFER linkdata;
-    const MY_SYMLINK_REPARSE_BUFFER * const sd =
-        &linkdata.Data.SymbolicLinkReparseBuffer;
     DWORD linkdata_returned;
 
     if (!DeviceIoControl(h, FSCTL_GET_REPARSE_POINT, NULL, 0, &linkdata, sizeof(linkdata), &linkdata_returned, NULL)) {
@@ -1738,41 +1972,21 @@ is_symlink_name(const char *name) {
     return result;
 }
 
-DllExport int
-win32_readlink(const char *pathname, char *buf, size_t bufsiz) {
+static int
+do_readlink_handle(HANDLE hlink, char *buf, size_t bufsiz, bool *is_symlink) {
     MY_REPARSE_DATA_BUFFER linkdata;
-    HANDLE hlink;
-    DWORD fileattr = GetFileAttributes(pathname);
     DWORD linkdata_returned;
-    int bytes_out;
-    BOOL used_default;
 
-    if (fileattr == INVALID_FILE_ATTRIBUTES) {
-        translate_to_errno();
-        return -1;
-    }
-
-    if (!(fileattr & FILE_ATTRIBUTE_REPARSE_POINT)) {
-        /* not a symbolic link */
-        errno = EINVAL;
-        return -1;
-    }
-
-    hlink =
-        CreateFileA(pathname, GENERIC_READ, 0, NULL, OPEN_EXISTING,
-                    FILE_FLAG_OPEN_REPARSE_POINT|FILE_FLAG_BACKUP_SEMANTICS, 0);
-    if (hlink == INVALID_HANDLE_VALUE) {
-        translate_to_errno();
-        return -1;
-    }
+    if (is_symlink)
+        *is_symlink = FALSE;
 
     if (!DeviceIoControl(hlink, FSCTL_GET_REPARSE_POINT, NULL, 0, &linkdata, sizeof(linkdata), &linkdata_returned, NULL)) {
         translate_to_errno();
-        CloseHandle(hlink);
         return -1;
     }
-    CloseHandle(hlink);
 
+    int bytes_out;
+    BOOL used_default;
     switch (linkdata.ReparseTag) {
     case IO_REPARSE_TAG_SYMLINK:
         {
@@ -1784,9 +1998,11 @@ win32_readlink(const char *pathname, char *buf, size_t bufsiz) {
             }
             bytes_out =
                 WideCharToMultiByte(CP_ACP, WC_NO_BEST_FIT_CHARS,
-                                    sd->PathBuffer + sd->SubstituteNameOffset/2,
-                                    sd->SubstituteNameLength/2,
+                                    sd->PathBuffer + sd->PrintNameOffset/2,
+                                    sd->PrintNameLength/2,
                                     buf, (int)bufsiz, NULL, &used_default);
+            if (is_symlink)
+                *is_symlink = TRUE;
         }
         break;
     case IO_REPARSE_TAG_MOUNT_POINT:
@@ -1799,9 +2015,11 @@ win32_readlink(const char *pathname, char *buf, size_t bufsiz) {
             }
             bytes_out =
                 WideCharToMultiByte(CP_ACP, WC_NO_BEST_FIT_CHARS,
-                                    rd->PathBuffer + rd->SubstituteNameOffset/2,
-                                    rd->SubstituteNameLength/2,
+                                    rd->PathBuffer + rd->PrintNameOffset/2,
+                                    rd->PrintNameLength/2,
                                     buf, (int)bufsiz, NULL, &used_default);
+            if (is_symlink)
+                *is_symlink = TRUE;
         }
         break;
 
@@ -1815,6 +2033,47 @@ win32_readlink(const char *pathname, char *buf, size_t bufsiz) {
         errno = EINVAL;
         return -1;
     }
+
+    return bytes_out;
+}
+
+DllExport int
+win32_readlink(const char *pathname, char *buf, size_t bufsiz) {
+    if (pathname == NULL || buf == NULL) {
+        errno = EFAULT;
+        return -1;
+    }
+    if (bufsiz <= 0) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    DWORD fileattr = GetFileAttributes(pathname);
+    if (fileattr == INVALID_FILE_ATTRIBUTES) {
+        translate_to_errno();
+        return -1;
+    }
+
+    if (!(fileattr & FILE_ATTRIBUTE_REPARSE_POINT)) {
+        /* not a symbolic link */
+        errno = EINVAL;
+        return -1;
+    }
+
+    HANDLE hlink =
+        CreateFileA(pathname, GENERIC_READ, 0, NULL, OPEN_EXISTING,
+                    FILE_FLAG_OPEN_REPARSE_POINT|FILE_FLAG_BACKUP_SEMANTICS, 0);
+    if (hlink == INVALID_HANDLE_VALUE) {
+        translate_to_errno();
+        return -1;
+    }
+    int bytes_out = do_readlink_handle(hlink, buf, bufsiz, NULL);
+    CloseHandle(hlink);
+    if (bytes_out < 0) {
+        /* errno already set */
+        return -1;
+    }
+
     if ((size_t)bytes_out > bufsiz) {
         errno = EINVAL;
         return -1;
@@ -1845,18 +2104,25 @@ win32_lstat(const char *path, Stat_t *sbuf)
         translate_to_errno();
         return -1;
     }
-
-    if (!is_symlink(f)) {
+    bool is_symlink;
+    int size = do_readlink_handle(f, NULL, 0, &is_symlink);
+    if (!is_symlink) {
+        /* it isn't a symlink, fallback to normal stat */
         CloseHandle(f);
         return win32_stat(path, sbuf);
     }
-
-    result = win32_stat_low(f, NULL, 0, sbuf);
-    CloseHandle(f);
+    else if (size < 0) {
+        /* some other error, errno already set */
+        CloseHandle(f);
+        return -1;
+    }
+    result = win32_stat_low(f, NULL, 0, sbuf, 0);
 
     if (result != -1){
         sbuf->st_mode = (sbuf->st_mode & ~_S_IFMT) | _S_IFLNK;
+        sbuf->st_size = size;
     }
+    CloseHandle(f);
 
     return result;
 }
@@ -1963,11 +2229,11 @@ win32_longpath(char *path)
 }
 
 static void
-out_of_memory(void)
+out_of_memory(const char *context, STRLEN len)
 {
 
     if (PL_curinterp)
-        croak_no_mem();
+        croak_no_mem_ext(context, len);
     exit(1);
 }
 
@@ -1979,6 +2245,7 @@ win32_croak_not_implemented(const char * fname)
     Perl_croak_nocontext("%s not implemented!\n", fname);
 }
 
+#ifdef _DEBUG
 /* Converts a wide character (UTF-16) string to the Windows ANSI code page,
  * potentially using the system's default replacement character for any
  * unrepresentable characters. The caller must free() the returned string. */
@@ -1991,11 +2258,12 @@ wstr_to_str(const wchar_t* wstr)
                                    NULL, 0, NULL, NULL);
     char* str = (char*)malloc(len);
     if (!str)
-        out_of_memory();
+        out_of_memory(STR_WITH_LEN("win32:wstr_to_str"));
     WideCharToMultiByte(CP_ACP, WC_NO_BEST_FIT_CHARS, wstr, wlen,
                         str, len, NULL, &used_default);
     return str;
 }
+#endif
 
 /* The win32_ansipath() function takes a Unicode filename and converts it
  * into the current Windows codepage. If some characters cannot be mapped,
@@ -2024,7 +2292,7 @@ win32_ansipath(const WCHAR *widename)
                                   NULL, 0, NULL, NULL);
     name = (char*)win32_malloc(len);
     if (!name)
-        out_of_memory();
+        out_of_memory(STR_WITH_LEN("win32:win32_ansipath"));
 
     WideCharToMultiByte(CP_ACP, WC_NO_BEST_FIT_CHARS, widename, widelen,
                         name, len, NULL, &use_default);
@@ -2033,14 +2301,14 @@ win32_ansipath(const WCHAR *widename)
         if (shortlen) {
             WCHAR *shortname = (WCHAR*)win32_malloc(shortlen*sizeof(WCHAR));
             if (!shortname)
-                out_of_memory();
+                out_of_memory(STR_WITH_LEN("win32:win32_ansipath"));
             shortlen = GetShortPathNameW(widename, shortname, shortlen)+1;
 
             len = WideCharToMultiByte(CP_ACP, WC_NO_BEST_FIT_CHARS, shortname, shortlen,
                                       NULL, 0, NULL, NULL);
             name = (char*)win32_realloc(name, len);
             if (!name)
-                out_of_memory();
+                out_of_memory(STR_WITH_LEN("win32:win32_ansipath"));
             WideCharToMultiByte(CP_ACP, WC_NO_BEST_FIT_CHARS, shortname, shortlen,
                                 name, len, NULL, NULL);
             win32_free(shortname);
@@ -2073,7 +2341,7 @@ win32_getenvironmentstrings(void)
                                           lpWStr, wenvstrings_len, NULL, 0, NULL, NULL);
     lpTmp = lpStr = (char *)win32_calloc(aenvstrings_len, sizeof(char));
     if(!lpTmp)
-        out_of_memory();
+        out_of_memory(STR_WITH_LEN("win32:win32_getenvironmentstrings"));
 
     /* Convert the string from UTF-16 encoding to ACP encoding */
     WideCharToMultiByte(CP_ACP, WC_NO_BEST_FIT_CHARS, lpWStr, wenvstrings_len, lpStr, 
@@ -2218,12 +2486,14 @@ filetime_from_time(PFILETIME pFileTime, time_t Time)
 {
     struct tm *pt;
     SYSTEMTIME st;
+    dTHX;
 
+    GMTIME_LOCK;
     pt = gmtime(&Time);
     if (!pt) {
+        GMTIME_UNLOCK;
         pFileTime->dwLowDateTime = 0;
         pFileTime->dwHighDateTime = 0;
-        fprintf(stderr, "fail bad gmtime\n");
         return FALSE;
     }
 
@@ -2234,6 +2504,8 @@ filetime_from_time(PFILETIME pFileTime, time_t Time)
     st.wMinute = pt->tm_min;
     st.wSecond = pt->tm_sec;
     st.wMilliseconds = 0;
+
+    GMTIME_UNLOCK;
 
     if (!SystemTimeToFileTime(&st, pFileTime)) {
         pFileTime->dwLowDateTime = 0;
@@ -2336,6 +2608,7 @@ DllExport int
 win32_gettimeofday(struct timeval *tp, void *not_used)
 {
     FT_t ft;
+    PERL_UNUSED_ARG(not_used);
 
     /* this returns time in 100-nanosecond units  (i.e. tens of usecs) */
     GetSystemTimeAsFileTime(&ft.ft_val);
@@ -2406,7 +2679,7 @@ win32_uname(struct utsname *name)
     {
         SYSTEM_INFO info;
         DWORD procarch;
-        char *arch;
+        const char *arch;
         GetSystemInfo(&info);
 
 #if (defined(__MINGW32__) && !defined(_ANONYMOUS_UNION) && !defined(__MINGW_EXTENSION))
@@ -2485,7 +2758,7 @@ win32_async_check(pTHX)
     MSG msg;
     HWND hwnd = w32_message_hwnd;
 
-    /* Reset w32_poll_count before doing anything else, incase we dispatch
+    /* Reset w32_poll_count before doing anything else, in case we dispatch
      * messages that end up calling back into perl */
     w32_poll_count = 0;
 
@@ -2769,7 +3042,7 @@ DllExport unsigned int
 win32_alarm(unsigned int sec)
 {
     /*
-     * the 'obvious' implentation is SetTimer() with a callback
+     * the 'obvious' implementation is SetTimer() with a callback
      * which does whatever receiving SIGALRM would do
      * we cannot use SIGALRM even via raise() as it is not
      * one of the supported codes in <signal.h>
@@ -3095,11 +3368,7 @@ win32_freopen(const char *path, const char *mode, FILE *stream)
 DllExport int
 win32_fclose(FILE *pf)
 {
-#ifdef WIN32_NO_SOCKETS
     return fclose(pf);
-#else
-    return my_fclose(pf);	/* defined in win32sck.c */
-#endif
 }
 
 DllExport int
@@ -3256,7 +3525,7 @@ win32_fstat(int fd, Stat_t *sbufptr)
 {
     HANDLE handle = (HANDLE)win32_get_osfhandle(fd);
 
-    return win32_stat_low(handle, NULL, 0, sbufptr);
+    return win32_stat_low(handle, NULL, 0, sbufptr, 0);
 }
 
 DllExport int
@@ -3268,7 +3537,8 @@ win32_pipe(int *pfd, unsigned int size, int mode)
 DllExport PerlIO*
 win32_popenlist(const char *mode, IV narg, SV **args)
 {
-    get_shell();
+    if (get_shell() < 0)
+        return NULL;
 
     return do_popen(mode, NULL, narg, args);
 }
@@ -3278,25 +3548,18 @@ do_popen(const char *mode, const char *command, IV narg, SV **args) {
     int p[2];
     int handles[3];
     int parent, child;
-    int stdfd;
     int ourmode;
     int childpid;
-    DWORD nhandle;
-    int lock_held = 0;
     const char **args_pvs = NULL;
 
     /* establish which ends read and write */
     if (strchr(mode,'w')) {
-        stdfd = 0;		/* stdin */
         parent = 1;
         child = 0;
-        nhandle = STD_INPUT_HANDLE;
     }
     else if (strchr(mode,'r')) {
-        stdfd = 1;		/* stdout */
         parent = 0;
         child = 1;
-        nhandle = STD_OUTPUT_HANDLE;
     }
     else
         return NULL;
@@ -3437,6 +3700,17 @@ win32_pclose(PerlIO *pf)
 #endif /* USE_RTL_POPEN */
 }
 
+/* wcscpy() arguments are restrict qualified, but if they're equal
+   we don't need to do the copy
+*/
+static inline WCHAR *
+cond_wcsncpy(WCHAR *out, const WCHAR *in, size_t n) {
+    assert(wcslen(in) < n);
+    if (out != in)
+        wcsncpy(out, in, n);
+    return out;
+}
+
 DllExport int
 win32_link(const char *oldname, const char *newname)
 {
@@ -3446,7 +3720,8 @@ win32_link(const char *oldname, const char *newname)
 
     if (MultiByteToWideChar(CP_ACP, 0, oldname, -1, wOldName, MAX_PATH+1) &&
         MultiByteToWideChar(CP_ACP, 0, newname, -1, wNewName, MAX_PATH+1) &&
-        ((aTHXa(PERL_GET_THX)), wcscpy(wOldName, PerlDir_mapW(wOldName)),
+        ((aTHXa(PERL_GET_THX)),
+          cond_wcsncpy(wOldName, PerlDir_mapW(wOldName), C_ARRAY_LENGTH(wOldName)),
         CreateHardLinkW(PerlDir_mapW(wNewName), wOldName, NULL)))
     {
         return 0;
@@ -3470,8 +3745,10 @@ win32_symlink(const char *oldfile, const char *newfile)
 {
     dTHX;
     size_t oldfile_len = strlen(oldfile);
+    GCC_DIAG_IGNORE_DECL(-Wcast-function-type);
     pCreateSymbolicLinkA_t pCreateSymbolicLinkA =
         (pCreateSymbolicLinkA_t)GetProcAddress(GetModuleHandle("kernel32.dll"), "CreateSymbolicLinkA");
+    GCC_DIAG_RESTORE_DECL;
     DWORD create_flags = 0;
 
     /* this flag can be used only on Windows 10 1703 or newer */
@@ -3492,6 +3769,24 @@ win32_symlink(const char *oldfile, const char *newfile)
     */
     newfile = PerlDir_mapA(newfile);
 
+    if (strchr(oldfile, '/')) {
+        /* Win32 (or perhaps NTFS) won't follow symlinks containing
+           /, so replace any with \\
+        */
+        char *temp = savepv(oldfile);
+        SAVEFREEPV(temp);
+        char *p = temp;
+        while (*p) {
+            if (*p == '/') {
+                *p = '\\';
+            }
+            ++p;
+        }
+        *p = 0;
+        oldfile = temp;
+        oldfile_len = p - temp;
+    }
+
     /* are we linking to a directory?
        CreateSymlinkA() needs to know if the target is a directory,
        If it looks like a directory name:
@@ -3509,7 +3804,6 @@ win32_symlink(const char *oldfile, const char *newfile)
         strEQ(oldfile, ".") ||
         (isSLASH(oldfile[oldfile_len-2]) && oldfile[oldfile_len-1] == '.') ||
         strEQ(oldfile+oldfile_len-3, "\\..") ||
-        strEQ(oldfile+oldfile_len-3, "/..") ||
         (oldfile_len == 2 && oldfile[1] == ':')) {
         create_flags |= SYMBOLIC_LINK_FLAG_DIRECTORY;
     }
@@ -3518,15 +3812,14 @@ win32_symlink(const char *oldfile, const char *newfile)
         const char *dest_path = oldfile;
         char szTargetName[MAX_PATH+1];
 
-        if (oldfile_len >= 3 && oldfile[1] == ':' && oldfile[2] != '\\' && oldfile[2] != '/') {
-            /* relative to current directory on a drive */
+        if (oldfile_len >= 3 && oldfile[1] == ':') {
+            /* relative to current directory on a drive, or absolute */
             /* dest_path = oldfile; already done */
         }
-        else if (oldfile[0] != '\\' && oldfile[0] != '/') {
-            size_t newfile_len = strlen(newfile);
-            char *last_slash = strrchr(newfile, '/');
-            char *last_bslash = strrchr(newfile, '\\');
-            char *end_dir = last_slash && last_bslash
+        else if (oldfile[0] != '\\') {
+            const char *last_slash = strrchr(newfile, '/');
+            const char *last_bslash = strrchr(newfile, '\\');
+            const char *end_dir = last_slash && last_bslash
                 ? ( last_slash > last_bslash ? last_slash : last_bslash)
                 : last_slash ? last_slash : last_bslash ? last_bslash : NULL;
 
@@ -3628,10 +3921,11 @@ win32_chsize(int fd, Off_t size)
         /* must grow the file, padding with nulls */
         char b[4096];
         int oldmode = win32_setmode(fd, O_BINARY);
-        size_t count;
+        Off_t count;
         memset(b, '\0', sizeof(b));
         do {
-            count = extend >= sizeof(b) ? sizeof(b) : (size_t)extend;
+            /* Casts to 'Off_t' avoid '[-Wsign-compare]' warning */
+            count = extend >= (Off_t)sizeof(b) ? (Off_t)sizeof(b) : extend;
             count = win32_write(fd, b, count);
             if ((int)count < 0) {
                 retval = -1;
@@ -3682,17 +3976,10 @@ win32_open(const char *path, int flag, ...)
     return open(PerlDir_mapA(path), flag, pmode);
 }
 
-/* close() that understands socket */
-extern int my_close(int);	/* in win32sck.c */
-
 DllExport int
 win32_close(int fd)
 {
-#ifdef WIN32_NO_SOCKETS
-    return close(fd);
-#else
-    return my_close(fd);
-#endif
+    return _close(fd);
 }
 
 DllExport int
@@ -3849,7 +4136,7 @@ win32_read(int fd, void *buf, unsigned int cnt)
     int ret;
     if (UNLIKELY(win32_isatty(fd) && GetConsoleCP() == 65001)) {
         MUTEX_LOCK(&win32_read_console_mutex);
-        ret = win32_read_console(fd, buf, cnt);
+        ret = win32_read_console(fd, (U8 *)buf, cnt);
         MUTEX_UNLOCK(&win32_read_console_mutex);
     }
     else
@@ -3868,6 +4155,7 @@ DllExport int
 win32_mkdir(const char *dir, int mode)
 {
     dTHX;
+    PERL_UNUSED_ARG(mode);
     return mkdir(PerlDir_mapA(dir)); /* just ignore mode */
 }
 
@@ -3907,7 +4195,7 @@ static char *
 create_command_line(char *cname, STRLEN clen, const char * const *args)
 {
     PERL_DEB(dTHX;)
-    int index, argc;
+    int index;
     char *cmd, *ptr;
     const char *arg;
     STRLEN len = 0;
@@ -3977,7 +4265,6 @@ create_command_line(char *cname, STRLEN clen, const char * const *args)
     }
     DEBUG_p(PerlIO_printf(Perl_debug_log, "\n"));
 
-    argc = index;
     Newx(cmd, len, char);
     ptr = cmd;
 
@@ -4174,6 +4461,7 @@ win32_get_childenv(void)
 DllExport void
 win32_free_childenv(void* d)
 {
+    PERL_UNUSED_ARG(d);
 }
 
 DllExport void
@@ -4469,7 +4757,9 @@ win32_fgets(char *s, int n, FILE *pf)
 DllExport char*
 win32_gets(char *s)
 {
+    GCC_DIAG_IGNORE_STMT(-Wattribute-warning); /* gets() only for compat */
     return gets(s);
+    GCC_DIAG_RESTORE_STMT;
 }
 
 DllExport int
@@ -4731,6 +5021,7 @@ XS(w32_SetChildShowWindow)
 XS(w32_GetCwd)
 {
     dXSARGS;
+    PERL_UNUSED_VAR(items);
     /* Make the host for current directory */
     char* ptr = PerlEnv_get_childdir();
     /*
@@ -4758,7 +5049,7 @@ void
 Perl_init_os_extras(void)
 {
     dTHXa(NULL);
-    char *file = __FILE__;
+    const char *file = __FILE__;
 
     /* Initialize Win32CORE if it has been statically linked. */
 #ifndef PERL_IS_MINIPERL
@@ -4766,7 +5057,9 @@ Perl_init_os_extras(void)
     HMODULE module = (HMODULE)((w32_perldll_handle == INVALID_HANDLE_VALUE)
                                ? GetModuleHandle(NULL)
                                : w32_perldll_handle);
+    GCC_DIAG_IGNORE_DECL(-Wcast-function-type);
     pfn_init = (void (*)(pTHX))GetProcAddress(module, "init_Win32CORE");
+    GCC_DIAG_RESTORE_DECL;
     aTHXa(PERL_GET_THX);
     if (pfn_init)
         pfn_init(aTHX);
@@ -4945,9 +5238,202 @@ ansify_path(void)
     win32_free(wide_path);
 }
 
+/* This hooks a function that is imported by the specified module. The hook is
+ * local to that module. */
+static bool
+win32_hook_imported_function_in_module(
+    HMODULE module, LPCSTR fun_name, FARPROC hook_ptr
+)
+{
+    ULONG_PTR image_base = (ULONG_PTR)module;
+    PIMAGE_DOS_HEADER dos_header = (PIMAGE_DOS_HEADER)image_base;
+    PIMAGE_NT_HEADERS nt_headers
+        = (PIMAGE_NT_HEADERS)(image_base + dos_header->e_lfanew);
+    PIMAGE_OPTIONAL_HEADER opt_header = &nt_headers->OptionalHeader;
+
+    PIMAGE_DATA_DIRECTORY data_dir = opt_header->DataDirectory;
+    DWORD data_dir_len = opt_header->NumberOfRvaAndSizes;
+
+    BOOL is_idt_present = data_dir_len > IMAGE_DIRECTORY_ENTRY_IMPORT
+        && data_dir[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress != 0;
+
+    if (!is_idt_present)
+        return FALSE;
+
+    BOOL found = FALSE;
+
+    /* Import Directory Table */
+    PIMAGE_IMPORT_DESCRIPTOR idt = (PIMAGE_IMPORT_DESCRIPTOR)(
+        image_base + data_dir[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress
+    );
+
+    for (; idt->Name != 0; ++idt) {
+        /* Import Lookup Table */
+        PIMAGE_THUNK_DATA ilt
+            = (PIMAGE_THUNK_DATA)(image_base + idt->OriginalFirstThunk);
+        /* Import Address Table */
+        PIMAGE_THUNK_DATA iat
+            = (PIMAGE_THUNK_DATA)(image_base + idt->FirstThunk);
+
+        ULONG_PTR address_of_data;
+        for (; (address_of_data = ilt->u1.AddressOfData); ++ilt, ++iat) {
+            /* Ordinal imports are quite rare, so skipping them will most likely
+             * not cause any problems. */
+            BOOL is_ordinal
+                = address_of_data >> ((sizeof(address_of_data) * 8) - 1);
+
+            if (is_ordinal)
+                continue;
+
+            LPCSTR name = (
+                (PIMAGE_IMPORT_BY_NAME)(image_base + address_of_data)
+            )->Name;
+
+            if (strEQ(name, fun_name)) {
+                DWORD old_protect = 0;
+                BOOL succ = VirtualProtect(
+                    &iat->u1.Function, sizeof(iat->u1.Function), PAGE_READWRITE,
+                    &old_protect
+                );
+                if (!succ)
+                    return FALSE;
+
+                iat->u1.Function = (ULONG_PTR)hook_ptr;
+                found = TRUE;
+
+                VirtualProtect(
+                    &iat->u1.Function, sizeof(iat->u1.Function), old_protect,
+                    &old_protect
+                );
+                break;
+            }
+        }
+    }
+
+    return found;
+}
+
+typedef NTSTATUS (NTAPI *pNtQueryInformationFile_t)(HANDLE, PIO_STATUS_BLOCK, PVOID, ULONG, ULONG);
+pNtQueryInformationFile_t pNtQueryInformationFile = NULL;
+
+typedef BOOL (WINAPI *pCloseHandle)(HANDLE h);
+static pCloseHandle CloseHandle_orig;
+
+/* CloseHandle() that supports sockets. CRT uses mutexes during file operations,
+ * so the lack of thread safety in this function isn't a problem. */
+static BOOL WINAPI
+my_CloseHandle(HANDLE h)
+{
+    /* In theory, passing a non-socket handle to closesocket() is fine. It
+     * should return a WSAENOTSOCK error, which is easy to recover from.
+     * However, we should avoid doing that because it's not that simple in
+     * practice. For instance, it can deadlock on a handle to a stuck pipe (see:
+     * https://github.com/Perl/perl5/issues/19963).
+     *
+     * There's no foolproof way to tell if a handle is a socket (mostly because
+     * of the non-IFS sockets), but in some cases we can tell if a handle
+     * is definitely *not* a socket.
+     */
+
+    /* GetFileType() always returns FILE_TYPE_PIPE for sockets. */
+    BOOL maybe_socket = (GetFileType(h) == FILE_TYPE_PIPE);
+
+    if (maybe_socket && pNtQueryInformationFile) {
+        IO_STATUS_BLOCK isb;
+        struct {
+            ULONG name_len;
+            WCHAR name[100];
+        } volume = {0};
+
+        /* There are many ways to tell a named pipe from a socket, but almost
+         * all of them can deadlock on a handle to a stuck pipe (like in the
+         * bug ticket mentioned above). According to my tests,
+         * FileVolumeNameInfomation is the only relevant function that doesn't
+         * suffer from this problem.
+         *
+         * It's undocumented and it requires Windows 10, so on older systems
+         * we always pass pipes to closesocket().
+         */
+        NTSTATUS s = pNtQueryInformationFile(
+            h, &isb, &volume, sizeof(volume), 58 /* FileVolumeNameInformation */
+        );
+        if (NT_SUCCESS(s)) {
+            maybe_socket = (_wcsnicmp(
+                volume.name, L"\\Device\\NamedPipe", C_ARRAY_LENGTH(volume.name)
+            ) != 0);
+        }
+    }
+
+    if (maybe_socket) {
+        if (closesocket((SOCKET)h) == 0)
+            return TRUE;
+        else if (WSAGetLastError() != WSAENOTSOCK)
+            return FALSE;
+    }
+    return CloseHandle_orig(h);
+}
+
+/* Hook CloseHandle() inside CRT so its functions like _close() or
+ * _dup2() can close sockets properly. */
+static void
+win32_hook_closehandle_in_crt()
+{
+    /* Get the handle to the CRT module basing on the address of _close()
+     * function. */
+    HMODULE crt_handle;
+    BOOL succ = GetModuleHandleExA(
+        GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS
+        | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, (LPCSTR)_close,
+        &crt_handle
+    );
+    if (!succ)
+        return;
+
+    CloseHandle_orig = (pCloseHandle)GetProcAddress(
+        GetModuleHandleA("kernel32.dll"), "CloseHandle"
+    );
+    if (!CloseHandle_orig)
+        return;
+
+    win32_hook_imported_function_in_module(
+        crt_handle, "CloseHandle", (FARPROC)my_CloseHandle
+    );
+
+    pNtQueryInformationFile = (pNtQueryInformationFile_t)GetProcAddress(
+        GetModuleHandleA("ntdll.dll"), "NtQueryInformationFile"
+    );
+}
+
+/* Remove the hook installed by win32_hook_closehandle_crt(). This is needed in
+ * case the Perl DLL is unloaded, which would cause the hook become invalid.
+ * This can happen in embedded Perls, for example in mod_perl. */
+static void
+win32_unhook_closehandle_in_crt()
+{
+    if (!CloseHandle_orig)
+        return;
+
+    HMODULE crt_handle;
+    BOOL succ = GetModuleHandleExA(
+        GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS
+        | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, (LPCSTR)_close,
+        &crt_handle
+    );
+    if (!succ)
+        return;
+
+    win32_hook_imported_function_in_module(
+        crt_handle, "CloseHandle", (FARPROC)CloseHandle_orig
+    );
+
+    CloseHandle_orig = NULL;
+}
+
 void
 Perl_win32_init(int *argcp, char ***argvp)
 {
+    PERL_UNUSED_ARG(argcp);
+    PERL_UNUSED_ARG(argvp);
 #ifdef SET_INVALID_PARAMETER_HANDLER
     _invalid_parameter_handler oldHandler, newHandler;
     newHandler = my_invalid_parameter_handler;
@@ -4975,20 +5461,13 @@ Perl_win32_init(int *argcp, char ***argvp)
      */
     InitCommonControls();
 
+    WSADATA wsadata;
+    WSAStartup(MAKEWORD(2, 2), &wsadata);
+
     g_osver.dwOSVersionInfoSize = sizeof(g_osver);
     GetVersionEx(&g_osver);
 
-#ifdef WIN32_DYN_IOINFO_SIZE
-    {
-        Size_t ioinfo_size = _msize((void*)__pioinfo[0]);;
-        if((SSize_t)ioinfo_size <= 0) { /* -1 is err */
-            fprintf(stderr, "panic: invalid size for ioinfo\n"); /* no interp */
-            exit(1);
-        }
-        ioinfo_size /= IOINFO_ARRAY_ELTS;
-        w32_ioinfo_size = ioinfo_size;
-    }
-#endif
+    win32_hook_closehandle_in_crt();
 
     ansify_path();
 
@@ -5036,6 +5515,7 @@ Perl_win32_term(void)
     RegCloseKey(HKCU_Perl_hnd);
     /* the handles are in an undefined state until the next PERL_SYS_INIT3 */
 #endif
+    win32_unhook_closehandle_in_crt();
 }
 
 void
@@ -5103,7 +5583,8 @@ win32_process_message(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
      * complexity of getting the correct context passed into
      * win32_create_message_window() */
     dTHX;
-
+    PERL_UNUSED_ARG(hwnd);
+    PERL_UNUSED_ARG(lParam);
     switch(msg) {
 
 #ifdef USE_ITHREADS
@@ -5189,6 +5670,7 @@ win32_csighandler(int sig)
     dTHXa(PERL_GET_SIG_CONTEXT);
     Perl_warn(aTHX_ "Got signal %d",sig);
 #endif
+    PERL_UNUSED_ARG(sig);
     /* Does nothing */
 }
 

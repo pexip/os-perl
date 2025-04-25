@@ -11,13 +11,15 @@ use Test::More tests => 8;
 use Config;
 
 BEGIN {
-    use_ok('version', 0.9929);
+    use_ok('version', 0.9930);
 }
 
 SKIP: {
 	skip 'No locale testing for Perl < 5.6.0', 7 if $] < 5.006;
 	skip 'No locale testing without d_setlocale', 7
 	    if(!$Config{d_setlocale});
+	skip 'No locale testing without LC_NUMERIC', 7
+	    if($Config{ccflags}) =~ /-DNO_LOCALE_NUMERIC\b/;
 
 	# test locale handling
 	my $warning = '';

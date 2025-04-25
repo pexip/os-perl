@@ -35,10 +35,12 @@ print $out_fh <<END;
  *
  * The macros that have the suffix "_UTF8" may have further suffixes, as
  * follows:
- *  "_FIRST_BYTE" if the value is just the first byte of the UTF-8
- *                representation; the value will be a numeric constant.
- *  "_TAIL"       if instead it represents all but the first byte.  This, and
- *                with no additional suffix are both string constants */
+ *  "_FIRST_BYTE"   if the value is just the first byte of the UTF-8
+ *                  representation; the value will be a numeric constant.
+ *  "_FIRST_BYTEs"  same, but the first byte is represented as a literal
+ *                  string
+ *  "_TAIL"         if instead it represents all but the first byte.  This,
+ *                  and with no additional suffix are both string constants */
 
 /*
 =for apidoc_section \$unicode
@@ -376,6 +378,7 @@ my $unpaired = "Didn't find a mirror";
 my $illegal = "Mirror illegal";
 my $no_encoded_mate = "Mirrored, but Unicode has no encoded mirror";
 my $bidirectional = "Bidirectional";
+my $r2l = "Is in a Right to Left script";
 
 my %unused_bidi_pairs;
 my %inverted_unused_bidi_pairs;
@@ -594,7 +597,7 @@ foreach my $list (qw(Punctuation Symbol)) {
 
         if ($is_Symbol) {
 
-            # Skip if the the direction is followed by a vertical motion
+            # Skip if the direction is followed by a vertical motion
             # (which defeats the left-right directionality).
             if (        $name =~ / ^ .* $no_barb_re
                                    \b (UP|DOWN|NORTH|SOUTH) /gx
@@ -628,6 +631,15 @@ foreach my $list (qw(Punctuation Symbol)) {
         {
             $discards{$code_point} = { reason => $illegal,
                                         mirror => $mirror_code_point
+                                     };
+            next;
+        }
+
+        # Exclude characters that are R to L ordering, as this can cause
+        # confusion.  See GH #22228
+        if ($chr =~ / (?[ \p{Bidi_Class:R} + \p{Bidi_Class:AL} ]) /x) {
+            $discards{$code_point} = { reason => $r2l,
+                                       mirror => $mirror_code_point
                                      };
             next;
         }
@@ -772,10 +784,17 @@ foreach my $charset (get_supported_code_pages()) {
                     $suffix .= '_TAIL';
                     $str = "\"$str\"";  # Will be a string constant
             }
-            elsif ($flag eq 'first') {
+            elsif ($flag =~ / ^ first (_s)? $ /x) {
+                my $wants_string = defined $1;
                 $str =~ s/ \\x ( .. ) .* /$1/x; # Get the two nibbles of the 1st byte
                 $suffix .= '_FIRST_BYTE';
-                $str = "0x$str";        # Is a numeric constant
+                if ($wants_string) {
+                    $suffix .= '_s';
+                    $str = "\"\\x$str\"";
+                }
+                else {
+                    $str = "0x$str";        # Is a numeric constant
+                }
             }
             else {
                 die "Unknown flag at line $.: $_\n";
@@ -869,7 +888,7 @@ foreach my $charset (get_supported_code_pages()) {
     $max_PRINT_A = sprintf "0x%02X", $max_PRINT_A;
     print $out_fh <<"EOT";
 
-#   ifdef PERL_IN_REGCOMP_C
+#   ifdef PERL_IN_REGCOMP_ANY
 #     define MAX_PRINT_A  $max_PRINT_A   /* The max code point that isPRINT_A */
 #   endif
 EOT
@@ -931,7 +950,7 @@ $count = 0x110000 - $count;
 print $out_fh <<~"EOT";
 
     /* The number of code points not matching \\pC */
-    #ifdef PERL_IN_REGCOMP_C
+    #ifdef PERL_IN_REGCOMP_ANY
     #  define NON_OTHER_COUNT  $count
     #endif
     EOT
@@ -984,6 +1003,7 @@ read_only_bottom_close_and_rename($out_fh);
 #           code point doesn't exist, the line is just skipped: no output is
 #           generated for it
 #   first   indicates that the output is to be of the FIRST_BYTE form.
+#   first_s indicates that the output is to be of the FIRST_BYTEs form.
 #   tail    indicates that the output is of the _TAIL form.
 #   native  indicates that the output is the code point, converted to the
 #           platform's native character set if applicable
@@ -1033,3 +1053,7 @@ U+00C5 native
 U+00FF native
 U+00B5 native
 U+00B5 string
+U+066B string
+U+066B first
+U+066B tail
+U+066B first_s

@@ -287,14 +287,14 @@ case "$osvers" in  # Note: osvers is the kernel version, not the 10.x
    ldflags="${ldflags} -flat_namespace"
    lddlflags="${ldflags} -bundle -undefined suppress"
    ;;
-[7-9].*)   # OS X 10.3.x - 10.5.x
+[7-8].*)   # OS X 10.3.x - 10.4.x
    lddlflags="${ldflags} -bundle -undefined dynamic_lookup"
    case "$ld" in
        *MACOSX_DEPLOYMENT_TARGET*) ;;
        *) ld="env MACOSX_DEPLOYMENT_TARGET=10.3 ${ld}" ;;
    esac
    ;;
-*)        # OS X 10.6.x - current
+*)        # OS X 10.5.x - current
    # The MACOSX_DEPLOYMENT_TARGET is not needed,
    # but the -mmacosx-version-min option is always used.
 
@@ -360,6 +360,13 @@ EOM
    lddlflags="${ldflags} -bundle -undefined dynamic_lookup"
    ;;
 esac
+
+# Darwin's querylocale() has races
+ccflags="$ccflags -DNO_THREAD_SAFE_QUERYLOCALE"
+
+# But it doesn't much matter because the whole implementation has bugs [GH
+# #21556]
+ccflags="$ccflags -DNO_POSIX_2008_LOCALE"
 
 ldlibpthname='DYLD_LIBRARY_PATH';
 
@@ -508,16 +515,6 @@ esac
 # makefile in the same place.  Since Darwin uses GNU make, this dodges
 # the problem.
 firstmakefile=GNUmakefile;
-
-# Parts of the system call setenv(), in particular in an atfork handler.
-# This causes problems when the child tries to clean up environ[], so
-# let libc manage environ[].
-cat >> config.over <<'EOOVER'
-if test "$d_unsetenv" = "$define" -a \
-    `expr "$ccflags" : '.*-DPERL_USE_SAFE_PUTENV'` -eq 0; then
-        ccflags="$ccflags -DPERL_USE_SAFE_PUTENV"
-fi
-EOOVER
 
 # if you use a newer toolchain before OS X 10.9 these functions may be
 # incorrectly detected, so disable them

@@ -365,7 +365,6 @@ unlike( $@, qr/Can't use string .* as a symbol ref/, "Can import autoloaded cons
 
 SKIP: {
     skip("locales not available", 26) unless locales_enabled([ qw(NUMERIC MONETARY) ]);
-    skip("localeconv() not available", 26) unless $Config{d_locconv};
     my $conv = localeconv;
     is(ref $conv, 'HASH', 'localeconv returns a hash reference');
 
@@ -373,10 +372,9 @@ SKIP: {
 		currency_symbol mon_decimal_point mon_thousands_sep
 		mon_grouping positive_sign negative_sign)) {
     SKIP: {
-	    skip("localeconv has no result for $_", 1)
-		unless exists $conv->{$_};
-	    unlike(delete $conv->{$_}, qr/\A\z/,
-		   "localeconv returned a non-empty string for $_");
+	    my $value = delete $conv->{$_};
+	    skip("localeconv '$_' may be empty", 1) if $_ ne 'decimal_point';
+	    isnt($value, "", "localeconv returned a non-empty string for $_");
 	}
     }
 
@@ -399,8 +397,6 @@ SKIP: {
 
     foreach (@lconv) {
     SKIP: {
-	    skip("localeconv has no result for $_", 1)
-		unless exists $conv->{$_};
 	    like(delete $conv->{$_}, qr/\A-?\d+\z/,
 		 "localeconv returned an integer for $_");
 	}

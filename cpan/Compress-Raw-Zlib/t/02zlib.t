@@ -11,7 +11,6 @@ use warnings;
 use bytes;
 
 use Test::More  ;
-use CompTestUtils;
 
 use constant ZLIB_1_2_12_0 => 0x12C0;
 
@@ -39,6 +38,8 @@ BEGIN
     use_ok('Compress::Raw::Zlib', 2) ;
 }
 
+use CompTestUtils;
+
 
 my $Zlib_ver = Compress::Raw::Zlib::zlib_version ;
 
@@ -50,12 +51,7 @@ EOM
 my $len   = length $hello ;
 
 # Check zlib_version and ZLIB_VERSION are the same.
-SKIP: {
-    skip "TEST_SKIP_VERSION_CHECK is set", 1
-        if $ENV{TEST_SKIP_VERSION_CHECK};
-    is Compress::Raw::Zlib::zlib_version, ZLIB_VERSION,
-        "ZLIB_VERSION matches Compress::Raw::Zlib::zlib_version" ;
-}
+test_zlib_header_matches_library();
 
 {
     title "Error Cases" ;
@@ -492,7 +488,8 @@ SKIP:
     }
 
     # Z_STREAM_END returned by 1.12.2, Z_DATA_ERROR for older zlib
-    if (ZLIB_VERNUM >= ZLIB_1_2_12_0)
+    # ZLIB_NG has the fix for all versions
+    if (ZLIB_VERNUM >= ZLIB_1_2_12_0 ||  Compress::Raw::Zlib::is_zlibng)
     {
         cmp_ok $status, '==', Z_STREAM_END ;
     }
@@ -526,7 +523,7 @@ SKIP:
     $GOT = '';
     $status = $k->inflate($rest, $GOT);
     # Z_STREAM_END returned by 1.12.2, Z_DATA_ERROR for older zlib
-    if (ZLIB_VERNUM >= ZLIB_1_2_12_0 )
+    if (ZLIB_VERNUM >= ZLIB_1_2_12_0 || Compress::Raw::Zlib::is_zlibng)
     {
         cmp_ok $status, '==', Z_STREAM_END ;
     }
@@ -638,11 +635,17 @@ SKIP:
 
 }
 
+SKIP:
 foreach (1 .. 2)
 {
     next if $] < 5.005 ;
 
     title 'test inflate/deflate with a substr';
+
+    # # temp workaround for
+    # # https://github.com/pmqs/Compress-Raw-Zlib/issues/27
+    # skip "skipping substr tests for Perl 5.6.*", 15
+    #     if $] < 5.008 ;
 
     my $contents = '' ;
     foreach (1 .. 5000)
@@ -650,6 +653,8 @@ foreach (1 .. 2)
     ok  my $x = new Compress::Raw::Zlib::Deflate(-AppendOutput => 1) ;
 
     my $X ;
+    # my $data = substr($contents,0) ;
+    # my $status = $x->deflate($data, $X);
     my $status = $x->deflate(substr($contents,0), $X);
     cmp_ok $status, '==', Z_OK ;
 
@@ -721,9 +726,15 @@ foreach (1 .. 2)
 
 }
 
+SKIP: {
 if ($] >= 5.005)
 {
     title 'test inflate input parameter via substr';
+
+    # # temp workaround for
+    # # https://github.com/pmqs/Compress-Raw-Zlib/issues/27
+    # skip "skipping substr tests for Perl 5.6.*", 11
+    #     if $] < 5.008 ;
 
     my $hello = "I am a HAL 9000 computer" ;
     my $data = $hello ;
@@ -753,12 +764,14 @@ if ($] >= 5.005)
     ok $k = new Compress::Raw::Zlib::Inflate ( -AppendOutput => 1,
                                           -ConsumeInput => 0 ) ;
 
-    cmp_ok $k->inflate(substr($X, 0, -1), $Z), '==', Z_STREAM_END ; ;
-    #cmp_ok $k->inflate(substr($X, 0), $Z), '==', Z_STREAM_END ; ;
+    # my $data = substr($X, 0, -1);
+    # cmp_ok $k->inflate($data, $Z), '==', Z_STREAM_END ; ;
+    cmp_ok $k->inflate(substr($X, 0), $Z), '==', Z_STREAM_END ; ;
 
     ok $hello eq $Z ;
     is $X, $keep;
 
+}
 }
 
 {
@@ -1023,7 +1036,7 @@ SKIP:
 
     my $flags = Compress::Raw::Zlib::zlibCompileFlags;
 
-    if (ZLIB_VERNUM() < 0x1210)
+    if (!Compress::Raw::Zlib::is_zlibng && ZLIB_VERNUM() < 0x1210)
     {
         is $flags, 0, "zlibCompileFlags == 0 if < 1.2.1";
     }

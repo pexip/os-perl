@@ -189,6 +189,27 @@ Perl_sv_derived_from_pvn(pTHX_ SV *sv, const char *const name, const STRLEN len,
 }
 
 /*
+=for apidoc sv_derived_from_hv
+
+Exactly like L</sv_derived_from_pvn>, but takes the name string as the
+C<HvNAME> of the given HV (which would presumably represent a stash).
+
+=cut
+*/
+
+bool
+Perl_sv_derived_from_hv(pTHX_ SV *sv, HV *hv)
+{
+    PERL_ARGS_ASSERT_SV_DERIVED_FROM_HV;
+
+    const char *hvname = HvNAME(hv);
+    if(!hvname)
+        return FALSE;
+
+    return sv_derived_from_svpvn(sv, NULL, hvname, HvNAMELEN(hv), HvNAMEUTF8(hv) ? SVf_UTF8 : 0);
+}
+
+/*
 =for apidoc sv_isa_sv
 
 Returns a boolean indicating whether the SV is an object reference and is
@@ -376,6 +397,7 @@ A specialised variant of C<croak()> for emitting the usage message for xsubs
 works out the package name and subroutine name from C<cv>, and then calls
 C<croak()>.  Hence if C<cv> is C<&ouch::awk>, it would call C<croak> as:
 
+ diag_listed_as: SKIPME
  Perl_croak(aTHX_ "Usage: %" SVf "::%" SVf "(%s)", "ouch" "awk",
                                                      "eee_yow");
 
@@ -432,6 +454,34 @@ XS(XS_UNIVERSAL_isa)
         XSRETURN(1);
     }
 }
+
+XS(XS_UNIVERSAL_import_unimport); /* prototype to pass -Wmissing-prototypes */
+XS(XS_UNIVERSAL_import_unimport)
+{
+    dXSARGS;
+    dXSI32;
+
+    if (items > 1) {
+        char *class_pv= SvPV_nolen(ST(0));
+        if (strEQ(class_pv,"UNIVERSAL"))
+            Perl_croak(aTHX_ "UNIVERSAL does not export anything");
+        /* _charnames is special - ignore it for now as the code that
+         * depends on it has its own "no import" logic that produces better
+         * warnings than this does. */
+        if (strNE(class_pv,"_charnames"))
+            Perl_ck_warner_d(aTHX_
+                packWARN(WARN_DEPRECATED__MISSING_IMPORT_CALLED_WITH_ARGS),
+                "Attempt to call undefined %s method with arguments "
+                "(%" SVf_QUOTEDPREFIX "%s) via package "
+                "%" SVf_QUOTEDPREFIX " (Perhaps you forgot to load the package?)",
+                ix ? "unimport" : "import", 
+                SVfARG(ST(1)), 
+                (items > 2 ? " ..." : ""),
+                SVfARG(ST(0)));
+    }
+    XSRETURN_EMPTY;
+}
+
 
 XS(XS_UNIVERSAL_can); /* prototype to pass -Wmissing-prototypes */
 XS(XS_UNIVERSAL_can)
@@ -572,11 +622,21 @@ XS(XS_utf8_upgrade)
         croak_xs_usage(cv, "sv");
     else {
         SV * const sv = ST(0);
-        STRLEN	RETVAL;
+        STRLEN	RETVAL = 0;
         dXSTARG;
 
-        RETVAL = sv_utf8_upgrade(sv);
-        XSprePUSH; PUSHi((IV)RETVAL);
+        XSprePUSH;
+        if (UNLIKELY(! sv)) {
+            XSRETURN_UNDEF;
+        }
+
+        SvGETMAGIC(sv);
+        if (UNLIKELY(! SvOK(sv))) {
+            XSRETURN_UNDEF;
+        }
+
+        RETVAL = sv_utf8_upgrade_nomg(sv);
+        PUSHi( (IV) RETVAL);
     }
     XSRETURN(1);
 }
@@ -722,6 +782,20 @@ XS(XS_Internals_hv_clear_placehold)
     }
 }
 
+XS(XS_Internals_stack_refcounted); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Internals_stack_refcounted)
+{
+    dXSARGS;
+    UV val = 0;
+
+    if (items != 0)
+        croak_xs_usage(cv, "");
+#ifdef PERL_RC_STACK
+    val |= 1;
+#endif
+    XSRETURN_UV(val);
+}
+
 XS(XS_PerlIO_get_layers); /* prototype to pass -Wmissing-prototypes */
 XS(XS_PerlIO_get_layers)
 {
@@ -732,7 +806,7 @@ XS(XS_PerlIO_get_layers)
     {
         SV *	sv;
         GV *	gv;
-        IO *	io;
+        IO *	io = NULL;
         bool	input = TRUE;
         bool	details = FALSE;
 
@@ -775,12 +849,16 @@ XS(XS_PerlIO_get_layers)
         }
 
         sv = POPs;
-        gv = MAYBE_DEREF_GV(sv);
 
-        if (!gv && !SvROK(sv))
-            gv = gv_fetchsv_nomg(sv, 0, SVt_PVIO);
+        /* MAYBE_DEREF_GV will call get magic */
+        if ((gv = MAYBE_DEREF_GV(sv)))
+            io = GvIO(gv);
+        else if (SvROK(sv) && SvTYPE(SvRV(sv)) == SVt_PVIO)
+            io = (IO*)SvRV(sv);
+        else if (!SvROK(sv) && (gv = gv_fetchsv_nomg(sv, 0, SVt_PVIO)))
+            io = GvIO(gv);
 
-        if (gv && (io = GvIO(gv))) {
+        if (io) {
              AV* const av = PerlIO_get_layers(aTHX_ input ?
                                         IoIFP(io) : IoOFP(io));
              SSize_t i;
@@ -958,6 +1036,7 @@ XS(XS_re_regnames)
         entry = av_fetch(av, i, FALSE);
         
         if (!entry)
+            /* diag_listed_as: SKIPME */
             Perl_croak(aTHX_ "NULL array element in re::regnames()");
 
         mPUSHs(SvREFCNT_inc_simple_NN(*entry));
@@ -1252,6 +1331,8 @@ static const struct xsub_details these_details[] = {
     {"UNIVERSAL::isa", XS_UNIVERSAL_isa, NULL, 0 },
     {"UNIVERSAL::can", XS_UNIVERSAL_can, NULL, 0 },
     {"UNIVERSAL::DOES", XS_UNIVERSAL_DOES, NULL, 0 },
+    {"UNIVERSAL::import", XS_UNIVERSAL_import_unimport, NULL, 0},
+    {"UNIVERSAL::unimport", XS_UNIVERSAL_import_unimport, NULL, 1},
 #define VXS_XSUB_DETAILS
 #include "vxs.inc"
 #undef VXS_XSUB_DETAILS
@@ -1266,6 +1347,7 @@ static const struct xsub_details these_details[] = {
     {"Internals::SvREADONLY", XS_Internals_SvREADONLY, "\\[$%@];$", 0 },
     {"Internals::SvREFCNT", XS_Internals_SvREFCNT, "\\[$%@];$", 0 },
     {"Internals::hv_clear_placeholders", XS_Internals_hv_clear_placehold, "\\%", 0 },
+    {"Internals::stack_refcounted", XS_Internals_stack_refcounted, NULL, 0 },
     {"constant::_make_const", XS_constant__make_const, "\\[$@]", 0 },
     {"PerlIO::get_layers", XS_PerlIO_get_layers, "*;@", 0 },
     {"re::is_regexp", XS_re_is_regexp, "$", 0 },
