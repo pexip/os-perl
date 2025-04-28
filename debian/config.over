@@ -127,7 +127,7 @@ esac
 
 case "$osname" in
   linux)
-      osvers=4.19.0
+      osvers=6.1.0
       osdesc="#1 smp debian $osvers"
       os=gnulinux
       ;;

@@ -34,7 +34,7 @@
 ?RCS:
 ?MAKE:libs ignore_versioned_solibs libsfound libsfiles libsdirs libspath: \
 	test cat Myread Oldconfig Loc libpth package xlibpth so _a \
-	usesocks sed uselongdouble usequadmath
+	usesocks sed uselongdouble
 ?MAKE:	-pick add $@ %<
 ?S:libs:
 ?S:	This variable holds the additional libraries we want to use.
@@ -110,9 +110,6 @@ esac
 case "$usecbacktrace" in
 "$define") libswanted="$libswanted bfd" ;;
 esac
-case "$usequadmath" in
-"$define") libswanted="$libswanted quadmath" ;;
-esac
 libsfound=''
 libsfiles=''
 libsdirs=''
@@ -130,6 +127,16 @@ for thislib in $libswanted; do
 		xxx=`ls $thisdir/lib$thislib.[0-9].$so 2>/dev/null|sed -n '$p'`
 	        $test -f "$xxx" && eval $libscheck
 		$test -f "$xxx" && libstyle=shared
+	    fi
+	    if test ! -f "$xxx"; then
+		xxx=$thisdir/lib$thislib.$so$_a
+		$test -f "$xxx" && eval $libscheck
+		$test -f "$xxx" && libstyle="import"
+	    fi
+	    if test ! -f "$xxx"; then
+		xxx=$thisdir/$thislib.$so$_a
+		$test -f "$xxx" && eval $libscheck
+		$test -f "$xxx" && libstyle="import"
 	    fi
 	    if test ! -f "$xxx"; then
 		xxx=$thisdir/lib$thislib.$so
@@ -166,14 +173,14 @@ for thislib in $libswanted; do
 		case " $dflt " in
 		*"-l$thislib "*);;
 		*) dflt="$dflt -l$thislib"
-                   libsfound="$libsfound $xxx"
-                   yyy=`basename $xxx`
-                   libsfiles="$libsfiles $yyy"
-                   yyy=`echo $xxx|$sed -e "s%/$yyy\\$%%"`
-                   case " $libsdirs " in
-                   *" $yyy "*) ;;
-                   *) libsdirs="$libsdirs $yyy" ;;
-                   esac
+		   libsfound="$libsfound $xxx"
+		   yyy=`basename $xxx`
+		   libsfiles="$libsfiles $yyy"
+		   yyy=`echo $xxx|$sed -e "s%/$yyy\\$%%"`
+		   case " $libsdirs " in
+		   *" $yyy "*) ;;
+		   *) libsdirs="$libsdirs $yyy" ;;
+		   esac
 		   ;;
 		esac
 		break

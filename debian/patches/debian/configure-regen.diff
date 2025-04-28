@@ -8,10 +8,10 @@ Bug-Debian: https://bugs.debian.org/762638
  1 file changed, 4 insertions(+), 6 deletions(-)
 
 diff --git a/Configure b/Configure
-index bd96249..a7a64f7 100755
+index 72c3794..ee4d40d 100755
 --- a/Configure
 +++ b/Configure
-@@ -1472,7 +1472,6 @@ glibpth="/lib /usr/lib $xlibpth"
+@@ -1484,7 +1484,6 @@ glibpth="/lib /usr/lib $xlibpth"
  glibpth="$glibpth /usr/ccs/lib /usr/ucblib /usr/local/lib"
  test -f /usr/shlib/libc.so && glibpth="/usr/shlib $glibpth"
  test -f /shlib/libc.so     && glibpth="/shlib $glibpth"
@@ -19,17 +19,17 @@ index bd96249..a7a64f7 100755
  
  : Private path used by Configure to find libraries.  Its value
  : is prepended to libpth. This variable takes care of special
-@@ -1503,8 +1502,7 @@ archname=''
+@@ -1515,8 +1514,7 @@ archname=''
  usereentrant='undef'
  : List of libraries we want.
  : If anyone needs extra -lxxx, put those in a hint file.
--libswanted="cl pthread socket bind inet nsl ndbm gdbm dbm db malloc dl ld"
+-libswanted="cl pthread socket bind inet ndbm gdbm dbm db malloc dl ld"
 -libswanted="$libswanted sun m crypt sec util c cposix posix ucb bsd BSD"
 +libswanted='gdbm gdbm_compat db dl m c crypt'
  : We probably want to search /usr/shlib before most other libraries.
  : This is only used by the lib/ExtUtils/MakeMaker.pm routine extliblist.
  glibpth=`echo " $glibpth " | sed -e 's! /usr/shlib ! !'`
-@@ -4936,7 +4934,7 @@ case "$ccname" in
+@@ -4963,7 +4961,7 @@ case "$ccname" in
  	if $test $# -gt 0; then
  	    for i in $*; do
  		case $realpath in
@@ -38,7 +38,7 @@ index bd96249..a7a64f7 100755
  		esac
  		incpth="$incpth $i"
  		j="`$echo $i | $sed 's,/include[^/]*,/lib,'`"
-@@ -4948,7 +4946,7 @@ case "$ccname" in
+@@ -4975,7 +4973,7 @@ case "$ccname" in
  	    for xxx in $inclibpth $loclibpth $plibpth $glibpth; do
  		if $test -d $xxx; then
  		    case $realpath in
@@ -47,7 +47,7 @@ index bd96249..a7a64f7 100755
  		    esac
  		    case " $libpth " in
  		    *" $xxx "*) ;;
-@@ -24381,7 +24379,7 @@ sunos*X4*)
+@@ -24745,7 +24743,7 @@ sunos*X4*)
      ;;
  *) case "$usedl" in
      $define|true|[yY]*)

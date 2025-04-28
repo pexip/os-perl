@@ -1,0 +1,27 @@
+From: Leon Timmermans <fawaka@gmail.com>
+Date: Thu, 13 Jun 2024 21:37:33 +0200
+Subject: Prevent double summary on bail-out
+
+(backported to Debian 5.40.0 Perl core package by Niko Tyni)
+
+Origin: backport, https://github.com/Perl-Toolchain-Gang/Test-Harness/commit/3d9b4c6850b5d5b02f78f9de1679568a93aec944
+Bug: https://github.com/Perl-Toolchain-Gang/Test-Harness/pull/127
+Bug-Debian: https://bugs.debian.org/1078060
+---
+ cpan/Test-Harness/lib/TAP/Harness.pm | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/cpan/Test-Harness/lib/TAP/Harness.pm b/cpan/Test-Harness/lib/TAP/Harness.pm
+index 4fbb045..46288f6 100644
+--- a/cpan/Test-Harness/lib/TAP/Harness.pm
++++ b/cpan/Test-Harness/lib/TAP/Harness.pm
+@@ -558,8 +558,8 @@ sub runtests {
+         my $bailout;
+         eval { $self->aggregate_tests( $aggregate, @tests ); 1 }
+             or do { $bailout = $@ || 'unknown_error' };
+-        $finish->();
+         die $bailout if defined $bailout;
++        $finish->();
+     };
+     $self->{bail_summary} = sub{
+         print "\n";

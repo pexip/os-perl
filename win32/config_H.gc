@@ -9,8 +9,8 @@
 
 /* Package name      : perl5
  * Source directory  : 
- * Configuration time: Sat Sep 18 00:47:56 2021
- * Configured by     : xenu
+ * Configuration time: Thu Aug  3 07:04:05 2023
+ * Configured by     : khw
  * Target system     : 
  */
 
@@ -1038,18 +1038,6 @@
 #define HAS_STATIC_INLINE				/**/
 #define PERL_STATIC_INLINE static __inline__	/**/
 
-/* PERL_THREAD_LOCAL:
- *	This symbol, if defined, gives a linkage specification for thread-local
- *	storage. For example, for a C11 compiler this will be _Thread_local.
- *	Beware, some compilers are sensitive to the C language standard they are
- *	told to parse. For example, suncc defaults to C11, so our probe will
- *	report that _Thread_local can be used. However, if the -std=c99 is later
- *	added to the compiler flags, then _Thread_local will become a syntax
- *	error. Hence it is important for these flags to be consistent between
- *	probing and use.
- */
-/*#define PERL_THREAD_LOCAL 	/ **/
-
 /* USE_STDIO_PTR:
  *	This symbol is defined if the _ptr and _cnt fields (or similar)
  *	of the stdio FILE structure can be used to access the stdio buffer
@@ -1086,9 +1074,9 @@
  */
 #define USE_STDIO_PTR	/**/
 #ifdef USE_STDIO_PTR
-#define FILE_ptr(fp)	((fp)->_ptr)
+#define FILE_ptr(fp)	PERLIO_FILE_ptr(fp)
 #define STDIO_PTR_LVALUE		/**/
-#define FILE_cnt(fp)	((fp)->_cnt)
+#define FILE_cnt(fp)	PERLIO_FILE_cnt(fp)
 #define STDIO_CNT_LVALUE		/**/
 /*#define STDIO_PTR_LVAL_SETS_CNT	/ **/
 #define STDIO_PTR_LVAL_NOCHANGE_CNT	/**/
@@ -1116,8 +1104,8 @@
  */
 #define USE_STDIO_BASE	/**/
 #ifdef USE_STDIO_BASE
-#define FILE_base(fp)	((fp)->_base)
-#define FILE_bufsiz(fp)	((fp)->_cnt + (fp)->_ptr - (fp)->_base)
+#define FILE_base(fp)	PERLIO_FILE_base(fp)
+#define FILE_bufsiz(fp)	(PERLIO_FILE_cnt(fp) + PERLIO_FILE_ptr(fp) - PERLIO_FILE_base(fp))
 #endif
 
 /* DOUBLESIZE:
@@ -1381,7 +1369,7 @@
  *	feature tests from Configure are generally more reliable.
  */
 #define OSNAME "MSWin32"		/**/
-#define OSVERS "10.0.19043.1237"		/**/
+#define OSVERS "10.0.22621.1992"		/**/
 
 /* CAT2:
  *	This macro concatenates 2 tokens together.
@@ -1472,6 +1460,10 @@
  *	Can we handle GCC attribute for functions that should always be
  *	inlined.
  */
+/* HASATTRIBUTE_VISIBILITY:
+ *	Can we handle GCC attribute for functions that should have a
+ *	different visibility.
+ */
 /*#define HASATTRIBUTE_DEPRECATED	/ **/
 /*#define HASATTRIBUTE_FORMAT	/ **/
 /*#define PRINTF_FORMAT_NULL_OK	/ **/
@@ -1482,6 +1474,7 @@
 /*#define HASATTRIBUTE_UNUSED	/ **/
 /*#define HASATTRIBUTE_WARN_UNUSED_RESULT	/ **/
 /*#define HASATTRIBUTE_ALWAYS_INLINE	/ **/
+/*#define HASATTRIBUTE_VISIBILITY	/ **/
 
 /* HAS_BACKTRACE:
  *	This symbol, if defined, indicates that the backtrace() routine is
@@ -2258,7 +2251,7 @@
  */
 #ifndef USE_CROSS_COMPILE
 /*#define	USE_CROSS_COMPILE	/ **/
-#define	PERL_TARGETARCH	""	/**/
+#define PERL_TARGETARCH	""	/**/
 #endif
 
 /* PERL_USE_DEVEL:
@@ -2411,7 +2404,7 @@
 /*#define	HAS_DBMINIT_PROTO	/ **/
 
 /* HAS_DIR_DD_FD:
- *	This symbol, if defined, indicates that the the DIR* dirstream
+ *	This symbol, if defined, indicates that the DIR* dirstream
  *	structure contains a member variable named dd_fd.
  */
 /*#define HAS_DIR_DD_FD		/ **/
@@ -2809,13 +2802,13 @@
  *	This symbol, if defined, indicates that the inet_ntop() function
  *	is available to parse IPv4 and IPv6 strings.
  */
-/*#define HAS_INETNTOP		/ **/
+#define HAS_INETNTOP		/**/
 
 /* HAS_INETPTON:
  *	This symbol, if defined, indicates that the inet_pton() function
  *	is available to parse IPv4 and IPv6 strings.
  */
-/*#define HAS_INETPTON		/ **/
+#define HAS_INETPTON		/**/
 
 /* HAS_INT64_T:
  *	This symbol will defined if the C compiler supports int64_t.
@@ -3150,10 +3143,16 @@
 
 /* HAS_NL_LANGINFO:
  *	This symbol, if defined, indicates that the nl_langinfo routine is
- *	available to return local data.  You will also need <langinfo.h>
+ *	available to return locale data.  You will also need <langinfo.h>
+ *	and therefore I_LANGINFO.
+ */
+/* HAS_NL_LANGINFO_L:
+ *	This symbol, if defined, indicates that the nl_langinfo_l routine is
+ *	available to return locale data.  You will also need <langinfo.h>
  *	and therefore I_LANGINFO.
  */
 /*#define HAS_NL_LANGINFO		/ **/
+/*#define HAS_NL_LANGINFO_L		/ **/
 
 /* HAS_OFF64_T:
  *	This symbol will be defined if the C compiler supports off64_t.
@@ -3270,6 +3269,12 @@
  *	available to send structured socket messages.
  */
 /*#define HAS_SENDMSG		/ **/
+
+/* HAS_SETENV:
+ *	This symbol, if defined, indicates that the setenv routine is
+ *	available for use.
+ */
+/*#define HAS_SETENV		/ **/
 
 /* HAS_SETITIMER:
  *	This symbol, if defined, indicates that the setitimer routine is
@@ -3595,7 +3600,7 @@
 
 /* HAS_WCSXFRM:
  *	This symbol, if defined, indicates that the wcsxfrm routine is
- *	available to tranform a wide character string for wcscmp().
+ *	available to transform a wide character string for wcscmp().
  */
 #define HAS_WCSXFRM	/**/
 
@@ -3610,6 +3615,31 @@
  *	including '.' at the end of @INC.
  */
 #define DEFAULT_INC_EXCLUDES_DOT	/**/
+
+/* PERL_LC_ALL_USES_NAME_VALUE_PAIRS:
+ *	This symbol, if defined, indicates to the C program that the string
+ *	returned by setlocale(LC_ALL, NULL) uses 'name=value;' pairs to
+ *	indicate what each category's locale is when they aren't all set to the
+ *	same locale.  For example, "LC_NUMERIC=C;LC_CTYPE=de_DE;..."
+ *	When not defined, the system uses positional notation.
+ */
+/* PERL_LC_ALL_SEPARATOR:
+ *	This symbol, if defined, gives the string returned by
+ *	setlocale(LC_ALL, NULL) to separate categories that are in different
+ *	locales on systems that use a positional notation as opposed to
+ *	'name=value' pairs.  An example on some platforms could be the '/' in
+ *	"C/de_DE/C/en_UK/C/C"
+ */
+/* PERL_LC_ALL_CATEGORY_POSITIONS_INIT:
+ *	This symbol, when defined, gives the C initializer for an array whose
+ *	element [0] is the first category in the string returned by
+ *	setlocale(LC_ALL, NULL) when not all categories are the same, on
+ *	systems that use a positional notation.  After element [0] is
+ *	LC_ALL_SEPARATOR, then the category given by element [1] and so on.
+ */
+#define PERL_LC_ALL_USES_NAME_VALUE_PAIRS  	/**/
+/*#define  PERL_LC_ALL_SEPARATOR undef	/ **/
+/*#define  PERL_LC_ALL_CATEGORY_POSITIONS_INIT  undef	/ **/
 
 /* USE_DYNAMIC_LOADING:
  *	This symbol, if defined, indicates that dynamic loading of
@@ -3812,6 +3842,11 @@
  */
 /*#define	I_SYS_STATVFS		/ **/
 
+/* I_SYS_SYSCALL:
+ *	This symbol, if defined, indicates that <sys/syscall.h> exists.
+ */
+/*#define	I_SYS_SYSCALL		/ **/
+
 /* I_SYSUTSNAME:
  *	This symbol, if defined, indicates that <sys/utsname.h> exists and
  *	should be included.
@@ -3992,6 +4027,32 @@
  */
 /*#define	NEED_VA_COPY		/ **/
 
+/* I32df:
+ *	This symbol defines the format string used for printing a Perl I32
+ *	as a signed decimal integer.
+ */
+/* U32uf:
+ *	This symbol defines the format string used for printing a Perl U32
+ *	as an unsigned decimal integer.
+ */
+/* U32of:
+ *	This symbol defines the format string used for printing a Perl U32
+ *	as an unsigned octal integer.
+ */
+/* U32xf:
+ *	This symbol defines the format string used for printing a Perl U32
+ *	as an unsigned hexadecimal integer in lowercase abcdef.
+ */
+/* U32Xf:
+ *	This symbol defines the format string used for printing a Perl U32
+ *	as an unsigned hexadecimal integer in uppercase ABCDEF.
+ */
+#define I32df		"ld"		/**/
+#define U32of		"lo"		/**/
+#define U32uf		"lu"		/**/
+#define U32xf		"lx"		/**/
+#define U32Xf		"lX"		/**/
+
 /* IVTYPE:
  *	This symbol defines the C type used for Perl's IV.
  */
@@ -4081,35 +4142,35 @@
  *	This symbol, if defined, indicates that a variable of type NVTYPE
  *	stores 0.0 in memory as all bits zero.
  */
-#define	IVTYPE		long long		/**/
-#define	UVTYPE		unsigned long long		/**/
-#define	I8TYPE		char		/**/
-#define	U8TYPE		unsigned char		/**/
-#define	I16TYPE		short	/**/
-#define	U16TYPE		unsigned short	/**/
-#define	I32TYPE		long	/**/
-#define	U32TYPE		unsigned long	/**/
+#define IVTYPE		long long		/**/
+#define UVTYPE		unsigned long long		/**/
+#define I8TYPE		char		/**/
+#define U8TYPE		unsigned char		/**/
+#define I16TYPE		short	/**/
+#define U16TYPE		unsigned short	/**/
+#define I32TYPE		long	/**/
+#define U32TYPE		unsigned long	/**/
 #ifdef HAS_QUAD
-#define	I64TYPE		long long	/**/
-#define	U64TYPE		unsigned long long	/**/
+#define I64TYPE		long long	/**/
+#define U64TYPE		unsigned long long	/**/
 #endif
-#define	NVTYPE		double		/**/
-#define	IVSIZE		8		/**/
-#define	UVSIZE		8		/**/
-#define	I8SIZE		1		/**/
-#define	U8SIZE		1		/**/
-#define	I16SIZE		2	/**/
-#define	U16SIZE		2	/**/
-#define	I32SIZE		4	/**/
-#define	U32SIZE		4	/**/
+#define NVTYPE		double		/**/
+#define IVSIZE		8		/**/
+#define UVSIZE		8		/**/
+#define I8SIZE		1		/**/
+#define U8SIZE		1		/**/
+#define I16SIZE		2	/**/
+#define U16SIZE		2	/**/
+#define I32SIZE		4	/**/
+#define U32SIZE		4	/**/
 #ifdef HAS_QUAD
-#define	I64SIZE		8	/**/
-#define	U64SIZE		8	/**/
+#define I64SIZE		8	/**/
+#define U64SIZE		8	/**/
 #endif
-#define	NVSIZE		8		/**/
+#define NVSIZE		8		/**/
 #undef	NV_PRESERVES_UV
-#define	NV_PRESERVES_UV_BITS	53
-#define	NV_OVERFLOWS_INTEGERS_AT	(256.0*256.0*256.0*256.0*256.0*256.0*2.0*2.0*2.0*2.0*2.0)
+#define NV_PRESERVES_UV_BITS	53
+#define NV_OVERFLOWS_INTEGERS_AT	(256.0*256.0*256.0*256.0*256.0*256.0*2.0*2.0*2.0*2.0*2.0)
 #define	NV_ZERO_IS_ALLBITS_ZERO
 #if UVSIZE == 8
 #   ifdef BYTEORDER
@@ -4157,14 +4218,14 @@
  *	This symbol defines the format string used for printing a Perl NV
  *	using %g-ish floating point format.
  */
-#define	IVdf		"I64d"		/**/
-#define	UVuf		"I64u"		/**/
-#define	UVof		"I64o"		/**/
-#define	UVxf		"I64x"		/**/
-#define	UVXf		"I64X"		/**/
-#define	NVef		"e"		/**/
-#define	NVff		"f"		/**/
-#define	NVgf		"g"		/**/
+#define IVdf		"I64d"		/**/
+#define UVuf		"I64u"		/**/
+#define UVof		"I64o"		/**/
+#define UVxf		"I64x"		/**/
+#define UVXf		"I64X"		/**/
+#define NVef		"e"		/**/
+#define NVff		"f"		/**/
+#define NVgf		"g"		/**/
 
 /* SELECT_MIN_BITS:
  *	This symbol holds the minimum number of bits operated by select.
@@ -4182,6 +4243,9 @@
  *	This symbol holds the signedness of struct stat's st_dev.
  *	1 for unsigned, -1 for signed.
  */
+#define ST_DEV_SIGN 1	/* st_dev sign */
+#define ST_DEV_SIZE 4	/* st_dev size */
+
 /* ST_INO_SIZE:
  *	This variable contains the size of struct stat's st_ino in bytes.
  */
@@ -4189,8 +4253,6 @@
  *	This symbol holds the signedness of struct stat's st_ino.
  *	1 for unsigned, -1 for signed.
  */
-#define ST_DEV_SIGN 1	/* st_dev sign */
-#define ST_DEV_SIZE 4	/* st_dev size */
 #define ST_INO_SIGN 1	/* st_ino sign */
 #define ST_INO_SIZE 8	/* st_ino size */
 
@@ -4925,17 +4987,6 @@
  */
 /*#define HAS_MBRTOWC	/ **/
 
-/* HAS_NL_LANGINFO_L:
- *	This symbol, when defined, indicates presence of the nl_langinfo_l()
- *	function
- */
-/* HAS_THREAD_SAFE_NL_LANGINFO_L:
- *	This symbol, when defined, indicates presence of the nl_langinfo_l()
- *	function, and that it is thread-safe.
- */
-/*#define HAS_NL_LANGINFO_L	/ **/
-/*#define HAS_THREAD_SAFE_NL_LANGINFO_L	/ **/
-
 /* OLD_PTHREAD_CREATE_JOINABLE:
  *	This symbol, if defined, indicates how to create pthread
  *	in joinable (aka undetached) state.  NOTE: not defined
@@ -5152,6 +5203,18 @@
  */
 /*#define HAS_STRTOLD_L		/ **/
 
+/* PERL_THREAD_LOCAL:
+ *	This symbol, if defined, gives a linkage specification for thread-local
+ *	storage. For example, for a C11 compiler this will be _Thread_local.
+ *	Beware, some compilers are sensitive to the C language standard they are
+ *	told to parse. For example, suncc defaults to C11, so our probe will
+ *	report that _Thread_local can be used. However, if the -std=c99 is later
+ *	added to the compiler flags, then _Thread_local will become a syntax
+ *	error. Hence it is important for these flags to be consistent between
+ *	probing and use.
+ */
+/*#define PERL_THREAD_LOCAL 	/ **/
+
 /* HAS_TMPNAM_R:
  *	This symbol, if defined, indicates that the tmpnam_r routine
  *	is available to tmpnam re-entrantly.
@@ -5248,7 +5311,7 @@
 /* Gid_t_f:
  *	This symbol defines the format string used for printing a Gid_t.
  */
-#define	Gid_t_f		"ld"		/**/
+#define Gid_t_f		"ld"		/**/
 
 /* Gid_t_sign:
  *	This symbol holds the signedness of a Gid_t.
@@ -5316,7 +5379,7 @@
 /* Uid_t_f:
  *	This symbol defines the format string used for printing a Uid_t.
  */
-#define	Uid_t_f		"ld"		/**/
+#define Uid_t_f		"ld"		/**/
 
 /* Uid_t_sign:
  *	This symbol holds the signedness of a Uid_t.

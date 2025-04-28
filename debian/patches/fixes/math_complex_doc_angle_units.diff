@@ -5,14 +5,14 @@ Subject: Math::Trig: document angle units
 Bug: https://rt.cpan.org/Ticket/Display.html?id=114106
 Bug-Debian: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=731505
 ---
- cpan/Math-Complex/lib/Math/Trig.pm | 5 +++++
+ dist/Math-Complex/lib/Math/Trig.pm | 5 +++++
  1 file changed, 5 insertions(+)
 
-diff --git a/cpan/Math-Complex/lib/Math/Trig.pm b/cpan/Math-Complex/lib/Math/Trig.pm
-index acad31f..bc7ac78 100644
---- a/cpan/Math-Complex/lib/Math/Trig.pm
-+++ b/cpan/Math-Complex/lib/Math/Trig.pm
-@@ -263,6 +263,11 @@ core Perl which defines only the C<sin()> and C<cos()>.  The constant
+diff --git a/dist/Math-Complex/lib/Math/Trig.pm b/dist/Math-Complex/lib/Math/Trig.pm
+index 3d504fd..fa082c0 100644
+--- a/dist/Math-Complex/lib/Math/Trig.pm
++++ b/dist/Math-Complex/lib/Math/Trig.pm
+@@ -271,6 +271,11 @@ core Perl which defines only the C<sin()> and C<cos()>.  The constant
  B<pi> is also defined as are a few convenience functions for angle
  conversions, and I<great circle formulas> for spherical movement.
  

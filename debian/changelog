@@ -1,14 +1,218 @@
+perl (5.40.1-3) unstable; urgency=high
+
+  * [SECURITY] CVE-2024-56406: Fix heap-buffer-overflow with tr//
+
+ -- Niko Tyni <ntyni@debian.org>  Sat, 12 Apr 2025 18:34:34 +0300
+
+perl (5.40.1-2) unstable; urgency=medium
+
+  * Refresh cross support files with 5.40.1-1 results.
+  * Add 5.40.1 to debian/released-versions.
+  * Upload to unstable.
+
+ -- Niko Tyni <ntyni@debian.org>  Sun, 16 Feb 2025 17:16:32 +0200
+
+perl (5.40.1-1) experimental; urgency=medium
+
+  * Update to new upstream version 5.40.1.
+
+ -- Niko Tyni <ntyni@debian.org>  Sun, 19 Jan 2025 12:39:06 +0200
+
+perl (5.40.0-8) unstable; urgency=medium
+
+  [ Luca Boccassi ]
+  * Drop Pre-Depends satisfied since Debian 8 Jessie. (Closes: #1087762)
+
+  [ Niko Tyni ]
+  * Minor packaging tweaks:
+    + Remove long obsolete maintainer script parts
+    + Add debian/upstream-metadata
+    + Update upstream URLs
+    + Disable reprotest check on Gitlab CI
+    + Update some lintian overrides
+
+ -- Niko Tyni <ntyni@debian.org>  Sat, 23 Nov 2024 17:42:23 +0200
+
+perl (5.40.0-7) unstable; urgency=medium
+
+  * Move Getopt::Long::Parser back to perl-base. (Closes: #1086809)
+
+ -- Niko Tyni <ntyni@debian.org>  Wed, 06 Nov 2024 22:29:57 +0200
+
+perl (5.40.0-6) unstable; urgency=medium
+
+  * Add 5.40.0 to debian/released-versions.
+  * Upload to unstable.
+
+ -- Niko Tyni <ntyni@debian.org>  Mon, 14 Oct 2024 19:58:37 +0300
+
+perl (5.40.0-5) experimental; urgency=medium
+
+  * Stop Providing libtest2-suite-perl to make libtest-simple-perl
+    installable again. (Closes: #1080359)
+  * Remove an outdated special case for libcgi-fast-perl in a
+    maintainer test.
+  * Refresh cross build support files.
+
+ -- Niko Tyni <ntyni@debian.org>  Fri, 13 Sep 2024 15:16:23 +0300
+
+perl (5.40.0-4) experimental; urgency=medium
+
+  * Apply upstream Test-Harness patch to prevent double summary
+    on bail-out. (Closes: #1078060)
+
+ -- Niko Tyni <ntyni@debian.org>  Sun, 01 Sep 2024 20:04:39 +0300
+
+perl (5.40.0-3) experimental; urgency=medium
+
+  * Cherry-pick upstream patch fixing strftime format handling.
+    (Closes: #1078152)
+
+ -- Niko Tyni <ntyni@debian.org>  Mon, 12 Aug 2024 20:43:44 +0300
+
+perl (5.40.0-2) experimental; urgency=medium
+
+  * Refresh cross build support files for most architectures.
+  * Make perl-base Break libur-perl (<< 0.470+ds-3) for partial upgrades
+    (Closes: #1078078)
+  * Fix json_pp option handling. (Closes: #1078058)
+
+ -- Niko Tyni <ntyni@debian.org>  Wed, 07 Aug 2024 23:08:04 +0300
+
+perl (5.40.0-1) experimental; urgency=medium
+
+  * Update to new upstream version 5.40.0.
+
+ -- Niko Tyni <ntyni@debian.org>  Wed, 31 Jul 2024 16:17:39 +0300
+
+perl (5.40.0~rc1-1) experimental; urgency=medium
+
+  * New upstream release candidate.
+    + Now bundles libterm-table-perl libtest2-suite-perl.
+    + Includes better fixes to locale initialization (#1060679)
+      that don't crash when freeing locales. (Closes: #1071129)
+  * Retire debian/disable-stack-check.diff and build debugperl with
+    the new PERL_NO_HWM toggle instead for #902779.
+  * Undo perlabi and libperl t64 changes, no longer needed.
+  * Include time64 build flags in $Config{ccflags}. (Closes: #1067241)
+  * Fix parallel build support.
+
+ -- Niko Tyni <ntyni@debian.org>  Mon, 03 Jun 2024 10:25:23 +0300
+
+perl (5.38.2-5) unstable; urgency=medium
+
+  [ Bo YU ]
+  * move riscv64 from debian-ports to official debian in debian/cross/README
+
+  [ Niko Tyni ]
+  * Mark most autopkgtest checks superficial (Closes: #970026)
+  * Update architecture list in debian/cross/README
+  * Refresh cross build support files (Closes: #1062784)
+    + also introduces loong64 support (Closes: #1024636)
+
+ -- Niko Tyni <ntyni@debian.org>  Thu, 30 May 2024 22:24:33 +0300
+
+perl (5.38.2-4) unstable; urgency=medium
+
+  * Import t64 NMUs.
+  * Fix autopkgtest regression caused by the NMUs. (Closes: #1068934)
+
+ -- Niko Tyni <ntyni@debian.org>  Sat, 27 Apr 2024 18:32:01 +0300
+
+perl (5.38.2-3.2) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * Fix check for i386 to avoid transitioning there.  Closes: #1065483.
+  * Manually add perlapi-5.38.2t64 to Provides: on i386 to avoid another
+    difficult transition.
+
+ -- Steve Langasek <vorlon@debian.org>  Wed, 06 Mar 2024 17:19:01 +0000
+
+perl (5.38.2-3.1) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * Update perlabi for time_t transition.  Closes: #1060246.
+  * Rename libperl5.38 to libperl5.38t64 for time_t transition.
+
+ -- Steve Langasek <vorlon@debian.org>  Sat, 02 Mar 2024 21:34:58 +0000
+
+perl (5.38.2-3) unstable; urgency=medium
+
+  * Unbreak locale initialization when embedding perl. (Closes: #1060679)
+
+ -- Niko Tyni <ntyni@debian.org>  Fri, 12 Jan 2024 18:16:08 +0200
+
+perl (5.38.2-2) unstable; urgency=medium
+
+  * Update copyright file for the superfast hash algorithm removal.
+    Thanks to Milton Moura. (Closes: #1054457)
+  * Add 5.38.2 to debian/released-versions.
+  * Upload to unstable.
+
+ -- Niko Tyni <ntyni@debian.org>  Tue, 09 Jan 2024 22:05:06 +0200
+
+perl (5.38.2-1) experimental; urgency=medium
+
+  * Update to new upstream version 5.38.2.
+    + [SECURITY] CVE-2023-47038: Write past buffer end via illegal
+      user-defined Unicode property. (Closes: #1056746)
+  * Restore optimization level of op.c and opmini.c on hppa and sh4.
+    Many thanks to John David Anglin. (Closes: #1055109)
+  * Build depend on libc6-dev (>= 2.37-8) on ppc64el for correct F_GETLK
+    et al. (See  #1050592)
+  * Explicitly do not use strlcpy and strlcat from glibc 2.38 to keep
+    libperl5.38 symbols stable. (Closes: #1051427)
+
+ -- Niko Tyni <ntyni@debian.org>  Thu, 30 Nov 2023 20:28:47 +0200
+
+perl (5.38.0-2) experimental; urgency=medium
+
+  * Unbreak builds with the nodoc build profile. (See: #50091)
+  * Add cross build support files for hurd-amd64 (Closes: #1043394)
+  * Break older versions of libgnupg-interface-perl due to #1042985.
+    (Closes: #1043230)
+  * Break older versions of liblexical-failure-perl due to #1042852.
+    (Closes: #1042864)
+  * Backport upstream fix for a bug in Math::BigFloat subclass numeric
+    comparison that broke LedgerSMB. (See: #1043234)
+
+ -- Niko Tyni <ntyni@debian.org>  Fri, 18 Aug 2023 22:58:34 +0300
+
+perl (5.38.0-1) experimental; urgency=medium
+
+  * Update to new upstream version 5.38.0.
+  * Break libnumber-format-perl (<< 1.76). (See #1040376)
+
+ -- Niko Tyni <ntyni@debian.org>  Wed, 05 Jul 2023 10:58:57 +0300
+
+perl (5.38.0~rc2-1) experimental; urgency=medium
+
+  * Update to new upstream release candidate 5.38.0-RC2.
+    + [SECURITY] CVE-2023-31484: CPAN.pm now verifies TLS certificates.
+                                 (Closes: #1035109)
+    + [SECURITY] CVE-2023-31486: HTTP-Tiny now verifies TLS certificates
+                                 by default.  (Closes: #954089)
+    + no longer panics on s///gre with tainted utf8 strings.
+      (Closes: #1006280)
+    + fixes a syntax error in Math::Complex documentation.
+      (Closes: #944883)
+    + improves perlretut formatting.(Closes: #1033649)
+    + POD with italics inside C<> now gets correctly formatted.
+      (Closes: #1021955)
+    + zero-width space in POD is now converted correctly.
+      (Closes: #941980)
+    + converted POD no longer causes point size warnings from troff
+      specific heuristics. (Closes: #871225)
+    + Pod::Text now does output encoding correctly. (Closes: #1020574)
+  * Add build dependency on libcrypt-dev. (Closes: #1029753)
+
+ -- Niko Tyni <ntyni@debian.org>  Sun, 02 Jul 2023 13:12:07 +0300
+
 perl (5.36.0-7+pexip24u4+deb12u2) pexip; urgency=medium
 
   * New upstream release.
 
  -- Steve McIntyre <steve.mcintyre@pexip.com>  Tue, 22 Apr 2025 11:56:10 +0100
-
-perl (5.36.0-7+deb12u2) bookworm-security; urgency=medium
-
-  * [SECURITY] CVE-2024-56406: Fix heap-buffer-overflow with tr//
-
- -- Niko Tyni <ntyni@debian.org>  Sat, 12 Apr 2025 18:16:31 +0300
 
 perl (5.36.0-7+deb12u1+pexip24u4) pexip-bookworm; urgency=medium
 
@@ -33,13 +237,6 @@ perl (5.36.0-7+deb12u1pexip1) pexip-bookworm; urgency=medium
   * New upstream release.
 
  -- Mark Hymers <mark.hymers@pexip.com>  Sat, 09 Dec 2023 11:14:58 +0000
-
-perl (5.36.0-7+deb12u1) bookworm; urgency=medium
-
-  * [SECURITY] CVE-2023-47038: Write past buffer end via illegal
-    user-defined Unicode property. (Closes: #1056746)
-
- -- Niko Tyni <ntyni@debian.org>  Sat, 25 Nov 2023 22:59:54 +0200
 
 perl (5.36.0-7pexip1) pexip-bookworm; urgency=medium
 

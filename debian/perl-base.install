@@ -71,6 +71,7 @@ File/Spec.pm
 File/Spec/Unix.pm
 FileHandle.pm
 Getopt/Long.pm
+Getopt/Long/Parser.pm
 IPC/Open2.pm
 IPC/Open3.pm
 SelectSaver.pm
@@ -82,7 +83,6 @@ Tie/Hash.pm
 attributes.pm
 base.pm
 bytes.pm
-bytes_heavy.pl
 constant.pm
 fields.pm
 integer.pm

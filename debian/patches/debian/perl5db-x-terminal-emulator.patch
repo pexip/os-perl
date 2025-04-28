@@ -12,7 +12,7 @@ Forwarded: not-needed
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/lib/perl5db.pl b/lib/perl5db.pl
-index 64f7fcb..0354f06 100644
+index 9af8fe4..e86d317 100644
 --- a/lib/perl5db.pl
 +++ b/lib/perl5db.pl
 @@ -6993,7 +6993,7 @@ properly set up.

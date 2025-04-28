@@ -11,18 +11,15 @@
  * it under the same terms as Perl itself.
  */
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 #define PERL_NO_GET_CONTEXT
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
 #include "reentr.h"
-#ifdef USE_PPPORT_H
+#if !defined(IS_SAFE_PATHNAME) && defined(TIME_HIRES_UTIME) && defined(HAS_UTIMENSAT)
 #define NEED_ck_warner
-#  include "ppport.h"
 #endif
+#include "ppport.h"
 #if defined(__CYGWIN__) && defined(HAS_W32API_WINDOWS_H)
 #  include <w32api/windows.h>
 #  define CYGWIN_WITH_W32API
@@ -40,9 +37,6 @@ extern "C" {
 #if defined(TIME_HIRES_CLOCK_GETTIME_SYSCALL) || defined(TIME_HIRES_CLOCK_GETRES_SYSCALL)
 #  include <syscall.h>
 #endif
-#ifdef __cplusplus
-}
-#endif
 
 #ifndef GCC_DIAG_IGNORE
 #  define GCC_DIAG_IGNORE(x)
@@ -51,6 +45,14 @@ extern "C" {
 #ifndef GCC_DIAG_IGNORE_STMT
 #  define GCC_DIAG_IGNORE_STMT(x) GCC_DIAG_IGNORE(x) NOOP
 #  define GCC_DIAG_RESTORE_STMT GCC_DIAG_RESTORE NOOP
+#endif
+
+#ifdef __cplusplus
+#  define GCC_DIAG_IGNORE_CPP_COMPAT_STMT NOOP
+#  define GCC_DIAG_IGNORE_CPP_COMPAT_RESTORE_STMT NOOP
+#else
+#  define GCC_DIAG_IGNORE_CPP_COMPAT_STMT GCC_DIAG_IGNORE_STMT(-Wc++-compat)
+#  define GCC_DIAG_IGNORE_CPP_COMPAT_RESTORE_STMT GCC_DIAG_RESTORE_STMT
 #endif
 
 #if PERL_VERSION_GE(5,7,3) && !PERL_VERSION_GE(5,10,1)
@@ -263,8 +265,6 @@ _gettimeofday(pTHX_ struct timeval *tp, void *not_used)
 static int
 _clock_gettime(pTHX_ clockid_t clock_id, struct timespec *tp)
 {
-    FT_t ft;
-
     switch (clock_id) {
     case CLOCK_REALTIME: {
         FT_t ft;
@@ -1193,7 +1193,7 @@ gettimeofday()
         int status;
         status = gettimeofday (&Tp, NULL);
         if (status == 0) {
-            if (GIMME == G_LIST) {
+            if (GIMME_V == G_LIST) {
                 EXTEND(sp, 2);
                 PUSHs(sv_2mortal(newSViv(Tp.tv_sec)));
                 PUSHs(sv_2mortal(newSViv(Tp.tv_usec)));
@@ -1246,16 +1246,16 @@ setitimer(which, seconds, interval = 0)
         /* on some platforms the 1st arg to setitimer is an enum, which
          * causes -Wc++-compat to complain about passing an int instead
          */
-        GCC_DIAG_IGNORE_STMT(-Wc++-compat);
+        GCC_DIAG_IGNORE_CPP_COMPAT_STMT;
         if (setitimer(which, &newit, &oldit) == 0) {
             EXTEND(sp, 1);
             PUSHs(sv_2mortal(newSVnv(TV2NV(oldit.it_value))));
-            if (GIMME == G_LIST) {
+            if (GIMME_V == G_LIST) {
                 EXTEND(sp, 1);
                 PUSHs(sv_2mortal(newSVnv(TV2NV(oldit.it_interval))));
             }
         }
-        GCC_DIAG_RESTORE_STMT;
+        GCC_DIAG_IGNORE_CPP_COMPAT_RESTORE_STMT;
 
 void
 getitimer(which)
@@ -1266,16 +1266,16 @@ getitimer(which)
         /* on some platforms the 1st arg to getitimer is an enum, which
          * causes -Wc++-compat to complain about passing an int instead
          */
-        GCC_DIAG_IGNORE_STMT(-Wc++-compat);
+        GCC_DIAG_IGNORE_CPP_COMPAT_STMT;
         if (getitimer(which, &nowit) == 0) {
             EXTEND(sp, 1);
             PUSHs(sv_2mortal(newSVnv(TV2NV(nowit.it_value))));
-            if (GIMME == G_LIST) {
+            if (GIMME_V == G_LIST) {
                 EXTEND(sp, 1);
                 PUSHs(sv_2mortal(newSVnv(TV2NV(nowit.it_interval))));
             }
         }
-        GCC_DIAG_RESTORE_STMT;
+        GCC_DIAG_IGNORE_CPP_COMPAT_RESTORE_STMT;
 
 #endif /* #if defined(HAS_GETITIMER) && defined(HAS_SETITIMER) */
 

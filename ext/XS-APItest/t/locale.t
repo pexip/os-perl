@@ -6,34 +6,94 @@ BEGIN {
 use XS::APItest;
 use Config;
 
-skip_all("locales not available") unless locales_enabled('LC_NUMERIC');
+skip_all("locales not available") unless locales_enabled();
 
 my @locales = eval { find_locales( &LC_NUMERIC ) };
-skip_all("no LC_NUMERIC locales available") unless @locales;
 
-my $non_dot_locale;
-for (@locales) {
+if (@locales) {
+    use POSIX;
+    no warnings;
+    use warnings 'locale';
+    my $warning = "";
+    local $SIG{__WARN__} = sub { $warning = shift; };
+                   # Choose a number unlikely to be a legal category
+    ok(! setlocale(1114112, $locales[0]),
+                   "Fails to set an illegal category to a legal locale");
+    like($warning, qr/Unknown locale category/i,
+         "And warns about the illegal category, using the proper warning"
+       . " category");
+}
+
+my $comma_locale;
+for my $locale (@locales) {
+    use POSIX;
     use locale;
-    setlocale(LC_NUMERIC, $_) or next;
+    setlocale(LC_NUMERIC, $locale) or next;
     my $in = 4.2; # avoid any constant folding bugs
-    if (sprintf("%g", $in) ne "4.2") {
-        $non_dot_locale = $_;
+    my $s = sprintf("%g", $in);
+    if ($s eq "4,2")  {
+        $comma_locale = $locale;
         last;
     }
 }
 
+SKIP: {
+          if ($Config{usequadmath}) {
+              skip "no gconvert with usequadmath", 2;
+          }
+          is(test_Gconvert(4.179, 2), "4.2", "Gconvert doesn't recognize underlying locale outside 'use locale'");
+          use locale;
+          is(test_Gconvert(4.179, 2), "4.2", "Gconvert doesn't recognize underlying locale inside 'use locale'");
+      }
+
+sub check_in_bounds($$$) {
+    my ($value, $lower, $upper) = @_;
+
+    $value >= $lower && $value <= $upper
+}
 
 SKIP: {
-      if ($Config{usequadmath}) {
-            skip "no gconvert with usequadmath", 2;
-      }
-      is(test_Gconvert(4.179, 2), "4.2", "Gconvert doesn't recognize underlying locale outside 'use locale'");
-      use locale;
-      is(test_Gconvert(4.179, 2), "4.2", "Gconvert doesn't recognize underlying locale inside 'use locale'");
+    # This checks that when switching to the global locale, the service that
+    # Perl provides of transparently dealing with locales that have a non-dot
+    # radix is turned off, but gets turned on again after a sync_locale();
+
+    skip "no locale with a comma radix available", 5 unless $comma_locale;
+
+    my $global_locale = switch_to_global_and_setlocale(LC_NUMERIC,
+                                                       $comma_locale);
+    # Can't do a compare of $global_locale and $comma_locale because what the
+    # system returns may be an alias.  ALl we can do is test for
+    # success/failure
+    if (ok($global_locale, "Successfully switched to $comma_locale")) {
+        is(newSvNV("4.888"), 4,
+           "dot not recognized in global comma locale for SvNV");
+
+        no warnings 'numeric';  # Otherwise get "Argument isn't numeric in
+                                # subroutine entry"
+
+        is(check_in_bounds(newSvNV("4,888"), 4.88, 4.89), 1,
+           "comma recognized in global comma locale for SvNV");
+        isnt(sync_locale, 0,
+             "sync_locale() returns that was in the global locale");
+
+        is(check_in_bounds(newSvNV("4.888"), 4.88, 4.89), 1,
+        "dot recognized in perl-controlled comma locale for SvNV");
+    }
+    else {
+        skip "Couldn't switch to $comma_locale", 4;
+    }
 }
 
 my %correct_C_responses = (
         # Entries that are undef could have varying returns
+                            CODESET => undef,
+                            CRNCYSTR => undef,
+                            NOEXPR => undef,
+                            NOSTR => undef,
+                            RADIXCHAR => '.',
+                            THOUSEP => '',
+                            YESEXPR => undef,
+                            YESSTR => undef,
                             ABDAY_1 => 'Sun',
                             ABDAY_2 => 'Mon',
                             ABDAY_3 => 'Tue',
@@ -91,6 +151,46 @@ my %correct_C_responses = (
                             T_FMT_AMPM => undef,
                             YESEXPR => undef,
                             YESSTR => undef,
+                            _NL_ADDRESS_POSTAL_FMT => undef,
+                            _NL_ADDRESS_COUNTRY_NAME => undef,
+                            _NL_ADDRESS_COUNTRY_POST => undef,
+                            _NL_ADDRESS_COUNTRY_AB2 => undef,
+                            _NL_ADDRESS_COUNTRY_AB3 => undef,
+                            _NL_ADDRESS_COUNTRY_CAR => undef,
+                            _NL_ADDRESS_COUNTRY_NUM => 0,
+                            _NL_ADDRESS_COUNTRY_ISBN => undef,
+                            _NL_ADDRESS_LANG_NAME => undef,
+                            _NL_ADDRESS_LANG_AB => undef,
+                            _NL_ADDRESS_LANG_TERM => undef,
+                            _NL_ADDRESS_LANG_LIB => undef,
+                            _NL_IDENTIFICATION_TITLE => undef,
+                            _NL_IDENTIFICATION_SOURCE => undef,
+                            _NL_IDENTIFICATION_ADDRESS => undef,
+                            _NL_IDENTIFICATION_CONTACT => undef,
+                            _NL_IDENTIFICATION_EMAIL => undef,
+                            _NL_IDENTIFICATION_TEL => undef,
+                            _NL_IDENTIFICATION_FAX => undef,
+                            _NL_IDENTIFICATION_LANGUAGE => undef,
+                            _NL_IDENTIFICATION_TERRITORY => "ISO",
+                            _NL_IDENTIFICATION_AUDIENCE => undef,
+                            _NL_IDENTIFICATION_APPLICATION => undef,
+                            _NL_IDENTIFICATION_ABBREVIATION => undef,
+                            _NL_IDENTIFICATION_REVISION => undef,
+                            _NL_IDENTIFICATION_DATE => undef,
+                            _NL_IDENTIFICATION_CATEGORY => undef,
+                            _NL_MEASUREMENT_MEASUREMENT => undef,
+                            _NL_NAME_NAME_FMT => undef,
+                            _NL_NAME_NAME_GEN => undef,
+                            _NL_NAME_NAME_MR => undef,
+                            _NL_NAME_NAME_MRS => undef,
+                            _NL_NAME_NAME_MISS => undef,
+                            _NL_NAME_NAME_MS => undef,
+                            _NL_PAPER_HEIGHT => undef,
+                            _NL_PAPER_WIDTH => undef,
+                            _NL_TELEPHONE_TEL_INT_FMT => undef,
+                            _NL_TELEPHONE_TEL_DOM_FMT => undef,
+                            _NL_TELEPHONE_INT_SELECT => undef,
+                            _NL_TELEPHONE_INT_PREFIX => undef,
                         );
 
 my $hdr = "../../perl_langinfo.h";
@@ -98,7 +198,7 @@ open my $fh, "<", $hdr;
 $|=1;
 
 SKIP: {
-    skip "No LC_ALL", 1 unless find_locales( &LC_ALL );
+    skip "No LC_ALL", 1 unless locales_enabled('LC_ALL');
 
     use POSIX;
     setlocale(LC_ALL, "C");
@@ -118,7 +218,7 @@ SKIP: {
         chomp;
         next unless / - \d+ $ /x;
         s/ ^ \# \s* define \s*//x;
-        m/ (.*) \  (.*) /x;
+        m/ (\S+) \s+ (.*) /x;
         $items{$1} = ($has_nl_langinfo)
                      ? $1       # Yields 'YESSTR'
                      : $2;      # Yields -54
@@ -144,6 +244,27 @@ SKIP: {
             else {
                 fail("Returned undef for $formal_item");
             }
+        }
+    }
+}
+
+@locales = eval { find_locales( &LC_TIME ) };
+
+SKIP: {
+    skip("no LC_TIME locales available") unless @locales;
+
+    for my $locale (@locales) {
+        use POSIX 'strftime';
+        use locale;
+        setlocale(LC_TIME, $locale) or next;
+
+        # This isn't guaranteed to find failing locales, as it is impractical
+        # to test all possible dates.  But it is much better than no test at
+        # all
+        if (strftime('%c', 0, 0, , 12, 18, 11, 87) eq "") {
+            fail('strftime() built-in expansion factor works for all locales');
+            diag("Failed for locale $locale");
+            last;
         }
     }
 }

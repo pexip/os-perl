@@ -493,6 +493,10 @@ d_attribute_unused (d_attribut.U):
 	and arguments may not always be used, and to not throw warnings
 	if they don't get used.
 
+d_attribute_visibility (d_attribut.U):
+	This variable conditionally defines the HASATTRIBUTE_VISIBILITY symbol,
+	and indicates different GCC attribute visibility
+
 d_attribute_warn_unused_result (d_attribut.U):
 	This variable conditionally defines
 	HASATTRIBUTE_WARN_UNUSED_RESULT, which indicates that the C
@@ -1899,10 +1903,9 @@ d_nl_langinfo (d_nl_langinfo.U):
 	This variable conditionally defines the HAS_NL_LANGINFO symbol, which
 	indicates to the C program that the nl_langinfo() routine is available.
 
-d_nl_langinfo_l (d_nl_langinfo_l.U):
-	This variable contains the eventual value of the
-	HAS_NL_LANGINFO_L symbol, which indicates if the
-	nl_langinfo_l() function exists.
+d_nl_langinfo_l (d_nl_langinfo.U):
+	This variable conditionally defines the HAS_NL_LANGINFO_L symbol, which
+	indicates to the C program that the nl_langinfo_l() routine is available.
 
 d_non_int_bitfields (d_bitfield.U):
 	This variable conditionally defines HAS_NON_INT_BITFIELDS
@@ -1953,6 +1956,19 @@ d_pause (d_pause.U):
 	This variable conditionally defines the HAS_PAUSE symbol, which
 	indicates to the C program that the pause() routine is available
 	to suspend a process until a signal is received.
+
+d_perl_lc_all_category_positions_init (disparate_lc_all.U):
+	This symbol, if defined, indicates that $lc_all_category_positions_init
+	is valid
+
+d_perl_lc_all_separator (disparate_lc_all.U):
+	This symbol, if defined, indicates that $perl_lc_all_separator is valid
+
+d_perl_lc_all_uses_name_value_pairs (disparate_lc_all.U):
+	This symbol, if defined, indicates that the string returned by
+	setlocale(LC_ALL, NULL) uses 'name=value;' pairs to indicate what each
+	category's locale is when they aren't all set to the same locale.
+	When not defined, the platform uses positional notation.
 
 d_perl_otherlibdirs (otherlibdirs.U):
 	This variable conditionally defines PERL_OTHERLIBDIRS, which
@@ -2278,6 +2294,10 @@ d_setegid (d_setegid.U):
 	This variable conditionally defines the HAS_SETEGID symbol, which
 	indicates to the C program that the setegid() routine is available
 	to change the effective gid of the current program.
+
+d_setenv (d_setenv.U):
+	This variable conditionally defines the HAS_SETENV symbol, which
+	indicates to the C program that the setenv routine is available.
 
 d_seteuid (d_seteuid.U):
 	This variable conditionally defines the HAS_SETEUID symbol, which
@@ -2790,11 +2810,6 @@ d_tgamma (d_tgamma.U):
 d_thread_local (d_thread_local.U):
 	This variable conditionally defines the PERL_THREAD_LOCAL symbol. In
 	turn that gives a linkage specification for thread-local storage.
-
-d_thread_safe_nl_langinfo_l (d_nl_langinfo_l.U):
-	This variable contains the eventual value of the
-	HAS_THREAD_SAFE_NL_LANGINFO_L symbol, which indicates if the
-	nl_langinfo_l() function exists and is thread-safe.
 
 d_time (d_time.U):
 	This variable conditionally defines the HAS_TIME symbol, which indicates
@@ -3501,6 +3516,10 @@ i16size (perlxv.U):
 i16type (perlxv.U):
 	This variable contains the C type used for Perl's I16.
 
+i32dformat (perlx32f.U):
+	This variable contains the format string used for printing
+	a Perl I32 as a signed decimal integer.
+
 i32size (perlxv.U):
 	This variable is the size of an I32 in bytes.
 
@@ -3794,6 +3813,10 @@ i_sysstatfs (i_sysstatfs.U):
 i_sysstatvfs (i_sysstatvfs.U):
 	This variable conditionally defines the I_SYSSTATVFS symbol,
 	and indicates whether a C program should include <sys/statvfs.h>.
+
+i_syssyscall (i_syssyscall.U):
+	This variable conditionally defines the I_SYS_SYSCALL symbol,
+	and indicates whether a C program should include <sys/syscall.h>.
 
 i_systime (i_time.U):
 	This variable conditionally defines I_SYS_TIME, which indicates
@@ -4674,6 +4697,19 @@ PERL_CONFIG_SH (Oldsyms.U):
 	This is set to 'true' in config.sh so that a shell script
 	sourcing config.sh can tell if it has been sourced already.
 
+perl_lc_all_category_positions_init (disparate_lc_all.U):
+	This symbol, when defined, gives the C initializer for an array whose
+	element [0] is the first category in the string returned by
+	setlocale(LC_ALL, NULL) when not all categories are the same, on
+	systems that use a positional notation.  After element [0] is
+	$lc_all_separator_init, then the category given by element [1], and so on.
+
+perl_lc_all_separator (disparate_lc_all.U):
+	This symbol, when defined, gives the substring used to separate
+	categories in the aggregated string returned by setlocale(LC_ALL, NULL)
+	when not all categories are in the same locale.  This is for systems
+	that use a positional notation as opposed to 'name=value' pairs.
+
 PERL_PATCHLEVEL (Oldsyms.U):
 	This symbol reflects the patchlevel, if available. Will usually
 	come from the .patch file, which is available when the perl
@@ -5518,11 +5554,27 @@ u16size (perlxv.U):
 u16type (perlxv.U):
 	This variable contains the C type used for Perl's U16.
 
+u32oformat (perlx32f.U):
+	This variable contains the format string used for printing
+	a Perl U32 as an unsigned octal integer.
+
 u32size (perlxv.U):
 	This variable is the size of an U32 in bytes.
 
 u32type (perlxv.U):
 	This variable contains the C type used for Perl's U32.
+
+u32uformat (perlx32f.U):
+	This variable contains the format string used for printing
+	a Perl U32 as an unsigned decimal integer.
+
+u32xformat (perlx32f.U):
+	This variable contains the format string used for printing
+	a Perl U32 as an unsigned hexadecimal integer in lowercase abcdef.
+
+u32XUformat (perlx32f.U):
+	This variable contains the format string used for printing
+	a Perl U32 as an unsigned hexadecimal integer in uppercase ABCDEF.
 
 u64size (perlxv.U):
 	This variable is the size of an U64 in bytes.

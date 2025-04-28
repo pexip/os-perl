@@ -9,7 +9,7 @@ Bug-Debian: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=367291
  1 file changed, 3 insertions(+)
 
 diff --git a/cpan/CPAN/lib/CPAN.pm b/cpan/CPAN/lib/CPAN.pm
-index 19dcad2..5c1e384 100644
+index 1e257b5..5f55914 100644
 --- a/cpan/CPAN/lib/CPAN.pm
 +++ b/cpan/CPAN/lib/CPAN.pm
 @@ -4111,6 +4111,9 @@ your operating system) then typing C<cpan> in a console window will
