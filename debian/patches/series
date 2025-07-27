@@ -41,3 +41,8 @@ debian/configure-regen.diff
 fixes/json-pp-options.diff
 fixes/test-harness-bailout.diff
 fixes/CVE-2024-56406.diff
+fixes/CVE-2025-40909-metaconfig.diff
+fixes/CVE-2025-40909-1.diff
+fixes/CVE-2025-40909-2.diff
+fixes/CVE-2025-40909-3.diff
+fixes/CVE-2025-40909-metaconfig-reorder.diff

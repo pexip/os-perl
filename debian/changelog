@@ -1,3 +1,23 @@
+perl (5.40.1-6) unstable; urgency=medium
+
+  * Update cross support files for the CVE-2025-40909 fix.
+    (Closes: #1109972)
+
+ -- Niko Tyni <ntyni@debian.org>  Sun, 27 Jul 2025 22:41:22 +0300
+
+perl (5.40.1-5) unstable; urgency=medium
+
+  * Upload to unstable. (See #1108676)
+
+ -- Niko Tyni <ntyni@debian.org>  Thu, 03 Jul 2025 19:14:17 +0300
+
+perl (5.40.1-4) experimental; urgency=medium
+
+  * [SECURITY] CVE-2025-40909: Clone dirhandles without fchdir
+                               (Closes: #1098226)
+
+ -- Niko Tyni <ntyni@debian.org>  Fri, 27 Jun 2025 17:26:56 +0300
+
 perl (5.40.1-3) unstable; urgency=high
 
   * [SECURITY] CVE-2024-56406: Fix heap-buffer-overflow with tr//
