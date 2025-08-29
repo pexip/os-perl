@@ -1,3 +1,12 @@
+perl (5.36.0-7+deb12u3) bookworm; urgency=medium
+
+  * [SECURITY] CVE-2023-31484: CPAN.pm now verifies TLS certificates.
+                               (Closes: #1035109)
+  * [SECURITY] CVE-2025-40909: Clone dirhandles without fchdir
+                               (Closes: #1098226)
+
+ -- Niko Tyni <ntyni@debian.org>  Fri, 29 Aug 2025 15:09:36 +0300
+
 perl (5.36.0-7+deb12u2) bookworm-security; urgency=medium
 
   * [SECURITY] CVE-2024-56406: Fix heap-buffer-overflow with tr//
