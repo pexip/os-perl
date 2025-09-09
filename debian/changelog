@@ -1,3 +1,18 @@
+perl (5.36.0-7+pexip24u5+deb12u3) pexip; urgency=medium
+
+  * New upstream release with security fixes.
+
+ -- Steve McIntyre <steve.mcintyre@pexip.com>  Tue, 09 Sep 2025 17:49:26 +0100
+
+perl (5.36.0-7+deb12u3) bookworm; urgency=medium
+
+  * [SECURITY] CVE-2023-31484: CPAN.pm now verifies TLS certificates.
+                               (Closes: #1035109)
+  * [SECURITY] CVE-2025-40909: Clone dirhandles without fchdir
+                               (Closes: #1098226)
+
+ -- Niko Tyni <ntyni@debian.org>  Fri, 29 Aug 2025 15:09:36 +0300
+
 perl (5.36.0-7+pexip24u4+deb12u2) pexip; urgency=medium
 
   * New upstream release.
